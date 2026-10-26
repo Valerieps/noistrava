@@ -3,7 +3,7 @@
 // `npx wrangler secret put <NAME>`, and locally in .dev.vars (see .dev.vars.example).
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "app-name",
+  "name": "noistrava",
   "main": "server/entry/worker.ts",
   "compatibility_date": "2026-10-01",
   "assets": {
