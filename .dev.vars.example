@@ -6,7 +6,7 @@ BOOTSTRAP_ADMIN_EMAILS=
 # Strava (ADR-008). The client ID is public and also goes in wrangler.jsonc; the rest are secrets.
 STRAVA_CLIENT_ID=
 STRAVA_CLIENT_SECRET=
-# 32 random bytes in base64: encrypts the Strava tokens at rest.
+# 32 random bytes in base64 (`openssl rand -base64 32`): encrypts the Strava tokens at rest.
 STRAVA_TOKEN_KEY=
 # Random string: part of the webhook path, so only Strava knows where to post events.
 STRAVA_WEBHOOK_SECRET=

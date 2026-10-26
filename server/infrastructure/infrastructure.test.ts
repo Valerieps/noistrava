@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { clearCookie, readCookie, setCookie } from './cookies';
-import { base64Url, constantTimeEqual, decryptText, encryptText } from './crypto';
+import { base64Url, constantTimeEqual, decryptText, encryptText, isValidTokenKey } from './crypto';
 import { authorizationUrl, decodePendingLogin, encodePendingLogin, newPendingLogin, profileFromIdToken } from './google-oauth';
 import { devProfile, devSignInAllowed } from './dev-sign-in';
 import { stravaAuthorizationUrl, tokensFromResponse } from './strava-oauth';
@@ -117,6 +117,13 @@ describe('token encryption', () => {
     expect(a).not.toBe(b);
     expect(a).not.toContain('secret-token');
     expect(await decryptText(key, a)).toBe('secret-token');
+  });
+
+  it('accepts only a 32-byte key in base64', () => {
+    expect(isValidTokenKey(key)).toBe(true);
+    expect(isValidTokenKey('0123456789abcdef0123456789abcdef01234567')).toBe(false);
+    expect(isValidTokenKey('not base64 at all!')).toBe(false);
+    expect(isValidTokenKey(undefined)).toBe(false);
   });
 
   it('refuses a key of the wrong size and a tampered text', async () => {

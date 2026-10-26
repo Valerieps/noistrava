@@ -29,9 +29,23 @@ export function constantTimeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
+function keyBytes(keyBase64: string): Uint8Array<ArrayBuffer> | null {
+  try {
+    const raw = fromBase64Url(keyBase64.trim());
+    return raw.length === 32 ? raw : null;
+  } catch {
+    return null;
+  }
+}
+
+/** True when the key is 32 bytes in base64, as `openssl rand -base64 32` makes. */
+export function isValidTokenKey(keyBase64: string | undefined): boolean {
+  return keyBase64 !== undefined && keyBytes(keyBase64) !== null;
+}
+
 async function aesKey(keyBase64: string): Promise<CryptoKey> {
-  const raw = fromBase64Url(keyBase64.trim());
-  if (raw.length !== 32) throw new Error('The key must be 32 bytes in base64');
+  const raw = keyBytes(keyBase64);
+  if (!raw) throw new Error('The key must be 32 bytes in base64');
   return crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt', 'decrypt']);
 }
 
