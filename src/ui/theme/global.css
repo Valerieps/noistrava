@@ -697,6 +697,8 @@ svg text {
 
 .map {
   position: relative;
+  /* Keeps Leaflet's z-indexes (up to 1000) inside the map, below menus. */
+  isolation: isolate;
   border-radius: var(--radius-card);
   overflow: hidden;
   background: var(--color-land);
