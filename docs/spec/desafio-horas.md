@@ -79,7 +79,11 @@ O grupo soma horas de atividade para bater uma meta num período, com ou sem jor
 - Ao criar, eu escolho se o desafio tem jornada. *(1)*
 - Com jornada, eu escolho o ponto de partida e o de chegada buscando lugares no mapa, e o app
   calcula a rota a pé entre eles. A meta é a distância da rota. *(1)*
+- Eu busco cada lugar pelo nome e escolho entre até 5 resultados. *(1)*
 - Eu posso acrescentar paradas no caminho; cada parada é um marco, além de 25%, 50% e 75%. *(1)*
+- As paradas seguem a ordem em que eu acrescento; para mudar a ordem, eu tiro e acrescento de novo. *(1)*
+- Se a busca ou o cálculo da rota não responder, eu tento de novo mais tarde; um desafio em
+  andamento continua com a rota guardada. *(1)*
 - Cada hora de atividade vale 5 km na jornada, para todas as modalidades. O app mostra também a
   meta equivalente em horas. *(1)*
 - O mapa mostra a rota e onde o grupo está nela. *(1)*

@@ -14,6 +14,7 @@ import {
   newPendingLogin,
   profileFromIdToken,
 } from '../infrastructure/google-oauth';
+import { normalizeSearchQuery, parseRouteRequest, planRoute, searchPlaces, userAgent } from '../infrastructure/openstreetmap';
 import { exchangeStravaCode, stravaAuthorizationUrl } from '../infrastructure/strava-oauth';
 import type { Env } from './env';
 import { Group, SESSION_HASH_HEADER } from './group-object';
@@ -155,6 +156,32 @@ async function finishStravaConnection(request: Request, env: Env, url: URL): Pro
   return done(result.error === 'conflict' ? 'outra-conta' : 'erro');
 }
 
+/**
+ * The journey's place search and walking route (ADR-009), for any member: only someone creating a
+ * challenge calls them, one call per search or route she asks for. A failure of the public server
+ * answers `unavailable`, and the creator tries again later.
+ */
+async function places(request: Request, env: Env, url: URL, hash: string, kind: 'search' | 'route'): Promise<Response> {
+  if (!(await group(env).query(hash, 'me', {})).ok) return json({ error: 'unauthenticated' }, 401);
+  const body = (await request.json().catch(() => null)) as { query?: unknown } | null;
+  const agent = userAgent(url.origin, env.OSM_CONTACT);
+  try {
+    if (kind === 'search') {
+      const query = normalizeSearchQuery(body?.query);
+      if (!query) return json({ error: 'invalid' }, 400);
+      const found = await searchPlaces(query, agent);
+      return found ? json({ value: found }) : json({ error: 'unavailable' }, 503);
+    }
+    const route = parseRouteRequest(body);
+    if (!route) return json({ error: 'invalid' }, 400);
+    const planned = await planRoute(route, agent);
+    return planned.ok ? json({ value: planned.journey }) : json({ error: planned.error }, STATUS[planned.error]);
+  } catch (error) {
+    console.error('OpenStreetMap request failed', error instanceof Error ? error.message : 'unknown error');
+    return json({ error: 'unavailable' }, 503);
+  }
+}
+
 async function api(request: Request, env: Env, url: URL): Promise<Response> {
   const path = url.pathname;
 
@@ -185,6 +212,12 @@ async function api(request: Request, env: Env, url: URL): Promise<Response> {
   if (path === '/api/strava/connect') {
     if (!hash) return json({ error: 'unauthenticated' }, 401);
     return stravaConnect(request, env, url, hash);
+  }
+
+  const place = /^\/api\/places\/(search|route)$/.exec(path);
+  if (place) {
+    if (!hash) return json({ error: 'unauthenticated' }, 401);
+    return places(request, env, url, hash, place[1] as 'search' | 'route');
   }
 
   const match = /^\/api\/(query|command)\/([a-zA-Z.]+)$/.exec(path);

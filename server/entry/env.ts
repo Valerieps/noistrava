@@ -13,6 +13,11 @@ export interface Env {
   readonly STRAVA_CLIENT_SECRET?: string;
   /** 32 random bytes in base64: the AES-GCM key for the tokens at rest. */
   readonly STRAVA_TOKEN_KEY?: string;
+  /**
+   * Optional: an e-mail or page where OpenStreetMap's operators can reach the group, added to the
+   * User-Agent of the journey's place search and routing (ADR-009).
+   */
+  readonly OSM_CONTACT?: string;
   /** "1" turns on the test sign-in on localhost (ADR-007). Only ever set in `.dev.vars`. */
   readonly DEV_SIGN_IN?: string;
 }

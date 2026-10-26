@@ -1,7 +1,7 @@
 // The contract between the app and the server: query and command names, inputs and outputs.
 // Types only. The server imports it with `import type`, so nothing here runs on either side.
 import type { ActivitySource } from '../domain/activity';
-import type { ChallengeResponse, ChallengeState, Journey } from '../domain/challenge/challenge';
+import type { ChallengeResponse, ChallengeState, Journey, Place } from '../domain/challenge/challenge';
 import type { Role } from '../domain/group/roles';
 
 export interface MemberView {
@@ -116,6 +116,21 @@ export interface ChallengeSetupInput {
   endDate: string;
   goalHours?: number;
   journey?: Journey | null;
+}
+
+/** A place found by the journey's search (ADR-009): a short name, and the full address to tell apart. */
+export interface PlaceSuggestion {
+  readonly name: string;
+  readonly detail: string;
+  readonly lat: number;
+  readonly lng: number;
+}
+
+/** The walking route to compute: the start, the end, and the stops in the order they are walked. */
+export interface RouteInput {
+  start: Place;
+  end: Place;
+  stops: Place[];
 }
 
 export interface ActivityInput {

@@ -12,14 +12,13 @@ O que ainda não está pronto.
 | Feature | Fase | Spec | Observação |
 | --- | --- | --- | --- |
 | Strava no Worker: webhook, trazer as atividades desde o início do desafio, renovar os tokens, desconectar | 1 | `spec/strava.md` | ADR-008. O `Group` já recebe a atividade (`importStravaActivity`) |
-| Jornada: busca de lugares e rota no Worker; escolher partida, chegada e paradas na tela de criar | 1 | `spec/desafio-horas.md` | ADR-009. Hoje o comando aceita a rota pronta do app; o Worker precisa calculá-la. Até lá, "Com jornada" fica desligado na tela de criar |
 | Jornada: postal de cada marco (foto e resumo do lugar), "Onde estamos" e números do caminho (países, rios) | 1 | `spec/desafio-horas.md` | Estão nos rascunhos; precisam de dados que o servidor não tem |
 | Notificações | 2 | `spec/desafio-horas.md` | Regras em aberto |
 
 ## O código ainda não segue o spec
 
-- O mapa da jornada desenha a rota guardada em SVG, sem os tiles do OpenStreetMap nem o Leaflet que o
-  ADR-009 prevê. Funciona sem dependência nova; os tiles entram junto com a busca de lugares.
+- O comando de criar e editar aceita a jornada que o app manda: o servidor confere o formato, mas
+  não recalcula a rota (ADR-009).
 - A imagem ilustrativa do desafio, que os rascunhos mostram, não existe no servidor: a tela mostra
   só o fundo listrado.
 
@@ -36,6 +35,8 @@ O que ainda não está pronto.
   início não pode estar no futuro (`spec/atividades.md`).
 - [ ] "No ritmo" é estar a até 1% da meta do programado; a reta final são os 5 últimos dias do
   período (`spec/desafio-horas.md`, "Andamento").
+- [ ] As paradas seguem a ordem em que eu acrescento; para mudar a ordem, eu tiro e acrescento de
+  novo. A busca mostra até 5 lugares (`spec/desafio-horas.md`, "Jornada").
 - [ ] As setas do ranking comparam com 24 horas atrás; o log mostra as 4 atividades mais recentes e
   "Ver tudo" abre o resto (`spec/desafio-horas.md`, "Andamento").
 

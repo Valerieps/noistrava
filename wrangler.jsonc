@@ -25,6 +25,9 @@
     // Public: the Strava app's client ID (ADR-008). STRAVA_CLIENT_SECRET, STRAVA_TOKEN_KEY and
     // STRAVA_WEBHOOK_SECRET are secrets.
     "STRAVA_CLIENT_ID": "291174"
+    // OSM_CONTACT (optional, ADR-009): an e-mail or page for OpenStreetMap's operators, sent in the
+    // User-Agent of the journey's place search and routing. Set it here, or as a secret to keep the
+    // e-mail out of the repository.
   },
   // Branch previews (`wrangler preview`, ADR-004) refuse to deploy without this block. Each preview
   // gets its own empty Group namespace, never production's data; it has no secrets and no cron, and

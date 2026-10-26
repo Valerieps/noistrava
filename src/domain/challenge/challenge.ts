@@ -11,7 +11,7 @@ export const TOLERANCE_HOURS = 24;
 export const PERCENT_MILESTONES = [25, 50, 75] as const;
 
 const PLACE_NAME_MAX_LENGTH = 120;
-const MAX_STOPS = 20;
+export const MAX_STOPS = 20;
 const MAX_ROUTE_POINTS = 2_000;
 
 export type ChallengeState = 'open' | 'succeeded' | 'failed' | 'cancelled';

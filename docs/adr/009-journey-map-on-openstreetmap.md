@@ -11,7 +11,11 @@
 - **Stored once:** the challenge keeps the route's geometry (simplified), its total distance and the
   named stops, so showing progress never calls these services again.
 - **Showing the map:** Leaflet, bundled (exact version), draws OpenStreetMap tiles from
-  `https://tile.openstreetmap.org`, listed in `IMAGE_ORIGINS`, with the required attribution.
+  `https://tile.openstreetmap.org`, listed in `IMAGE_ORIGINS`, with the required attribution. The
+  app's `Referrer-Policy` is `no-referrer`, but the tile servers refuse requests without a Referer,
+  so the tile layer alone uses `strict-origin-when-cross-origin`: only the app's origin is sent.
+- **Identifying the app:** the User-Agent names the app and its origin, plus `OSM_CONTACT` (an
+  e-mail or page, optional) so the operators can reach the group.
 - **Conversion:** fixed at 5 km per hour of activity.
 
 **Why:** The owner chose OpenStreetMap over Google Maps. Google Maps needs a billing account, an API

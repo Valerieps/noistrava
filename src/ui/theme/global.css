@@ -657,26 +657,117 @@ svg text {
   background: var(--color-land);
 }
 
-.map svg {
-  display: block;
-  width: 100%;
-  height: auto;
+.map .map-canvas {
+  height: 420px;
+  background: var(--color-land);
+  font: inherit;
 }
 
-.map-here {
-  position: absolute;
+/* Leaflet draws on SVG; these override its default stroke and fill attributes. */
+.map .route-left {
+  stroke: var(--color-ghost-strong);
+  stroke-width: 5;
+  stroke-dasharray: 1 9;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.map .route-walked,
+.map [class*='route-tone-'] {
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-opacity: 1;
+  fill: none;
+}
+
+.map .route-walked,
+.map .route-tone-0 {
+  stroke: var(--color-brand);
+}
+.map .route-tone-1 {
+  stroke: var(--color-accent);
+}
+.map .route-tone-2 {
+  stroke: var(--color-text);
+}
+.map .route-tone-3 {
+  stroke: var(--color-brand-ink);
+}
+.map .route-tone-4 {
+  stroke: var(--color-ghost-strong);
+}
+.map .route-tone-5 {
+  stroke: var(--color-text-muted);
+}
+
+.map .map-place {
+  stroke: var(--color-text);
+  stroke-width: 2;
+  fill: var(--color-surface);
+  fill-opacity: 1;
+}
+
+.map .map-place.reached {
+  fill: var(--color-brand);
+}
+
+.map .map-ghost {
+  stroke: var(--color-text);
+  stroke-width: 2;
+  stroke-dasharray: 3 3;
+  fill: none;
+}
+
+.map .map-here-halo {
+  stroke: none;
+  fill: var(--color-accent);
+  fill-opacity: 0.25;
+}
+
+.map .map-here-dot {
+  stroke: var(--color-surface);
+  stroke-width: 3;
+  fill: var(--color-accent);
+  fill-opacity: 1;
+}
+
+.map .leaflet-tooltip.map-label {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 0;
+  box-shadow: none;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 1px 6px;
+}
+
+.map .leaflet-tooltip.map-here {
   background: var(--color-text);
   color: var(--color-bg);
+  border: 0;
   font-size: 12px;
   font-weight: 700;
   padding: 5px 10px;
   border-radius: var(--radius-pill);
-  white-space: nowrap;
-  transform: translate(0, -50%);
+}
+
+.map .leaflet-tooltip.map-label::before,
+.map .leaflet-tooltip.map-here::before {
+  display: none;
+}
+
+.map .leaflet-control-attribution {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: var(--color-surface);
 }
 
 .map-toggle {
   position: absolute;
+  /* Above Leaflet's panes and controls. */
+  z-index: 1000;
   top: var(--space-3);
   right: var(--space-3);
   font-size: 12px;
@@ -694,17 +785,40 @@ svg text {
   color: var(--color-bg);
 }
 
-.map-credit {
-  position: absolute;
-  bottom: var(--space-2);
-  right: 10px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--color-text-muted);
+
+.place-row,
+.place-search {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.place-search input {
+  flex: 1;
+  min-width: 0;
+}
+
+.place-results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.place-results button {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  text-align: left;
+  border-radius: 14px;
+  border-color: var(--color-border);
   background: var(--color-surface);
-  padding: 2px 6px;
-  border-radius: 6px;
+  color: var(--color-text);
 }
 
 .stop-card {
