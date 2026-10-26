@@ -31,6 +31,8 @@ O grupo soma horas de atividade para bater uma meta num período, com ou sem jor
 - O desafio é do tipo "Horas colaborativas" e tem um nome dado por quem cria. *(1)*
 - Eu escolho o início, o término e a meta em horas. Com jornada, a meta é a distância da rota (ver
   "Jornada"). *(1)*
+- A meta é um número inteiro de horas, de 1 a 10.000. *(1)*
+- O início pode ser uma data que já passou; o término não. *(1)*
 - Ao criar, todas as integrantes recebem o convite para o desafio. *(1)*
 
 ## Responder ao convite
@@ -42,6 +44,10 @@ O grupo soma horas de atividade para bater uma meta num período, com ou sem jor
 - Quem está na torcida pode virar Senhora enquanto o desafio não terminou, com a mesma regra. *(1)*
 - Uma Senhora pode sair do desafio. As horas dela até ali continuam contando; as atividades
   seguintes não contam mais. *(1)*
+- Se eu saio e depois volto, contam as minhas atividades de antes da saída e as de depois da volta;
+  as do tempo em que fiquei fora, não. *(1)*
+- Quem entra no grupo durante um desafio vê tudo como a torcida e pode aceitar, com a mesma regra. *(1)*
+- Depois do término, ninguém muda mais a resposta. *(1)*
 
 ## Período e fusos
 
@@ -52,6 +58,7 @@ O grupo soma horas de atividade para bater uma meta num período, com ou sem jor
 - Ao escolher as datas, eu vejo os fusos das integrantes e a hora exata de início e de término em
   cada um, antes de confirmar. *(1)*
 - Conta a atividade que começa dentro do período. *(1)*
+- Enquanto nenhuma integrante tem fuso, o período vale em UTC. *(1)*
 
 ## Meta e término
 
@@ -61,6 +68,11 @@ O grupo soma horas de atividade para bater uma meta num período, com ou sem jor
 - Depois do término, as Senhoras ainda têm 24 horas para atividades atrasadas ou editadas que
   começaram dentro do período (por exemplo, um Strava que sincronizou tarde). Ao fim dessas 24
   horas, o resultado fica fechado. *(1)*
+- Nessas 24 horas, o resultado acompanha o total: se atividades atrasadas fizerem o total chegar à
+  meta, o desafio passa a ter sucesso; se uma edição ou exclusão deixar o total abaixo da meta, ele
+  volta a ficar sem sucesso. *(1)*
+- Quando a meta é batida antes do fim do período, contam só as atividades que começaram antes desse
+  momento. *(1)*
 - Os marcos são 25%, 50% e 75% da meta. *(1)*
 
 ## Jornada
@@ -79,7 +91,10 @@ O grupo soma horas de atividade para bater uma meta num período, com ou sem jor
   término. Depois do término, nada muda. *(1)*
 - Marcos já atingidos continuam atingidos, mesmo que a meta ou a rota mude. *(1)*
   Por quê: uma meta ou rota nova não deve apagar um marco que o grupo já celebrou.
-- O criador pode cancelar o desafio. Um desafio cancelado fica no histórico como cancelado. *(1)*
+- O criador pode cancelar o desafio antes do término. Um desafio cancelado fica no histórico como
+  cancelado. *(1)*
+- Ao cancelar, o resultado fecha na hora, com os totais de cada Senhora até ali, sem as 24 horas de
+  tolerância. *(1)*
 - Só o admin apaga um desafio, depois de confirmar. *(1)*
 
 ## Log de atividades e reações

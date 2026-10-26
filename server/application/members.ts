@@ -3,6 +3,9 @@ import type { MemberListItem, MemberView, MeView } from '../../src/application/a
 import { normalizeEmail } from '../../src/domain/group/email';
 import { normalizeName } from '../../src/domain/group/profile';
 import { isAdmin, keepsAnAdmin, normalizeRoles, type Role } from '../../src/domain/group/roles';
+import { isValidTimezone } from '../../src/domain/time/zones';
+import { eraseMemberActivities } from './activities';
+import { settleAll } from './challenges';
 import { failure, nowIso, type CommandResult, type Context } from './context';
 
 export const SESSION_DAYS = 180;
@@ -15,6 +18,7 @@ export interface MemberRow {
   photo_url: string | null;
   roles: string;
   active: number;
+  timezone: string | null;
 }
 
 export interface Member {
@@ -24,6 +28,7 @@ export interface Member {
   readonly photoUrl: string | null;
   readonly roles: readonly Role[];
   readonly active: boolean;
+  readonly timezone: string | null;
 }
 
 export interface GoogleProfile {
@@ -41,11 +46,12 @@ export function toMember(row: MemberRow): Member {
     photoUrl: row.photo_url,
     roles: normalizeRoles(JSON.parse(row.roles) as string[]),
     active: row.active === 1,
+    timezone: row.timezone,
   };
 }
 
 export function memberView(member: Member): MemberView {
-  return { id: member.id, name: member.name, photoUrl: member.photoUrl, roles: member.roles };
+  return { id: member.id, name: member.name, photoUrl: member.photoUrl, roles: member.roles, timezone: member.timezone };
 }
 
 export function findMember(ctx: Context, id: string): Member | null {
@@ -157,6 +163,14 @@ export function rename(ctx: Context, actor: Member, input: { name?: unknown }): 
   return { ok: true, value: me({ ...actor, name }), changed: ['me', 'members'] };
 }
 
+/** The member's app sends her device's time zone whenever it opens. */
+export function setTimezone(ctx: Context, actor: Member, input: { timezone?: unknown }): CommandResult<MeView> {
+  if (typeof input.timezone !== 'string' || !isValidTimezone(input.timezone)) return failure('invalid');
+  if (input.timezone === actor.timezone) return { ok: true, value: me(actor), changed: [] };
+  ctx.sql.run('UPDATE members SET timezone = ? WHERE id = ?', input.timezone, actor.id);
+  return { ok: true, value: me({ ...actor, timezone: input.timezone }), changed: ['me', 'members'] };
+}
+
 /** Only admins give and take roles, and the last admin keeps theirs. */
 export function setRoles(ctx: Context, actor: Member, input: { memberId?: unknown; roles?: unknown }): CommandResult<MemberView> {
   if (!isAdmin(actor)) return failure('forbidden');
@@ -174,7 +188,8 @@ export function setRoles(ctx: Context, actor: Member, input: { memberId?: unknow
 /**
  * Admins only; nobody removes themself, so the last admin always stays. Access ends at once: the
  * sessions go, and the command asks the Durable Object to close the member's live connections.
- * The row stays (inactive), so a new invite brings the same member back.
+ * The row stays (inactive), so a new invite brings the same member back. Her activities and her
+ * Strava connection are erased (health data); closed challenges keep her totals in their results.
  */
 export function removeMember(ctx: Context, actor: Member, input: { memberId?: unknown }): CommandResult<null> {
   if (!isAdmin(actor)) return failure('forbidden');
@@ -186,5 +201,8 @@ export function removeMember(ctx: Context, actor: Member, input: { memberId?: un
 
   ctx.sql.run('UPDATE members SET active = 0, removed_at = ? WHERE id = ?', nowIso(ctx), target.id);
   ctx.sql.run('DELETE FROM sessions WHERE member_id = ?', target.id);
-  return { ok: true, value: null, changed: ['members'], disconnect: [target.id] };
+  eraseMemberActivities(ctx, target.id);
+  ctx.sql.run('DELETE FROM strava_connections WHERE member_id = ?', target.id);
+  settleAll(ctx);
+  return { ok: true, value: null, changed: ['members', 'activities', 'challenge'], disconnect: [target.id] };
 }
