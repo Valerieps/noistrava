@@ -130,7 +130,6 @@ export interface PlaceSuggestion {
 export interface RouteInput {
   start: Place;
   end: Place;
-  stops: Place[];
 }
 
 export interface ActivityInput {

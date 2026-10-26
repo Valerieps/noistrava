@@ -1,11 +1,14 @@
-// The journey's place search and walking route (ADR-009): Nominatim and the FOSSGIS OSRM server,
-// called only by the Worker, once per creator action, with an identifying User-Agent as their
-// usage policies require. Nothing here is called again while a challenge runs.
+// The journey's place search, walking route and automatic stops (ADR-009, ADR-011): Nominatim, the
+// FOSSGIS OSRM server and Overpass, called only by the Worker when the creator asks, with an
+// identifying User-Agent as their usage policies require. Nothing here is called again while a
+// challenge runs.
 import type { PlaceSuggestion } from '../../src/application/api-contract';
-import { MAX_STOPS, parseJourney, type Journey, type Place } from '../../src/domain/challenge/challenge';
+import { parseJourney, type Journey, type Place } from '../../src/domain/challenge/challenge';
+import { NEAR_ROUTE_METERS, autoStopCount, chooseStops, type StopCandidate } from '../../src/domain/challenge/journey-stops';
 
 const SEARCH = 'https://nominatim.openstreetmap.org/search';
 const ROUTE = 'https://routing.openstreetmap.de/routed-foot/route/v1/foot';
+const OVERPASS = 'https://overpass-api.de/api/interpreter';
 
 export const SEARCH_QUERY_MAX_LENGTH = 120;
 const SEARCH_RESULTS = 5;
@@ -59,23 +62,21 @@ export async function searchPlaces(query: string, agent: string): Promise<PlaceS
   return suggestionsFromResponse(await response.json().catch(() => null));
 }
 
-/** What the creator sends: the start, the end, and the stops in the order she walks them. */
+/** What the creator sends: the start and the end. The app chooses the stops (ADR-011). */
 export interface RouteRequest {
   readonly start: Place;
   readonly end: Place;
-  readonly stops: readonly Place[];
 }
 
 export function parseRouteRequest(value: unknown): RouteRequest | null {
   if (typeof value !== 'object' || value === null) return null;
   const raw = value as Record<string, unknown>;
-  if (!Array.isArray(raw.stops) || raw.stops.length > MAX_STOPS) return null;
-  // The domain's own place rules, through a journey with placeholder distances.
+  // The domain's own place rules, through a journey with a placeholder route.
   const probe = parseJourney({
     start: raw.start,
     end: raw.end,
-    stops: (raw.stops as unknown[]).map((stop, i) => (typeof stop === 'object' && stop !== null ? { ...stop, distanceMeters: i + 1 } : stop)),
-    distanceMeters: raw.stops.length + 2,
+    stops: [],
+    distanceMeters: 1,
     route: [
       [0, 0],
       [0, 0],
@@ -83,11 +84,11 @@ export function parseRouteRequest(value: unknown): RouteRequest | null {
   });
   if (!probe) return null;
   const place = ({ name, lat, lng }: Place): Place => ({ name, lat, lng });
-  return { start: place(probe.start), end: place(probe.end), stops: probe.stops.map(place) };
+  return { start: place(probe.start), end: place(probe.end) };
 }
 
 export function routeUrl(request: RouteRequest): string {
-  const points = [request.start, ...request.stops, request.end].map((p) => `${p.lng.toFixed(6)},${p.lat.toFixed(6)}`).join(';');
+  const points = [request.start, request.end].map((p) => `${p.lng.toFixed(6)},${p.lat.toFixed(6)}`).join(';');
   const params = new URLSearchParams({ overview: 'full', geometries: 'geojson', steps: 'false' });
   return `${ROUTE}/${points}?${params}`;
 }
@@ -134,18 +135,16 @@ export function simplifyRoute(points: readonly (readonly [number, number])[], ma
 }
 
 /**
- * Reads OSRM's answer into the journey to store: the simplified route as [lat, lng], the total
- * distance, and each stop at the distance where its leg ends. Null when there is no walking route
- * or a stop does not fall strictly inside it.
+ * Reads OSRM's answer into the journey to store, still without stops: the simplified route as
+ * [lat, lng] and the total distance. Null when there is no walking route.
  */
 export function journeyFromRoute(request: RouteRequest, body: unknown): Journey | null {
   if (typeof body !== 'object' || body === null) return null;
   const { code, routes } = body as { code?: unknown; routes?: unknown };
   if (code !== 'Ok' || !Array.isArray(routes) || routes.length === 0) return null;
-  const route = routes[0] as { distance?: unknown; legs?: unknown; geometry?: { coordinates?: unknown } };
+  const route = routes[0] as { distance?: unknown; geometry?: { coordinates?: unknown } };
   const coordinates = route.geometry?.coordinates;
-  if (typeof route.distance !== 'number' || !Array.isArray(route.legs) || !Array.isArray(coordinates)) return null;
-  if (route.legs.length !== request.stops.length + 1) return null;
+  if (typeof route.distance !== 'number' || !Array.isArray(coordinates)) return null;
 
   const points: [number, number][] = [];
   for (const c of coordinates as unknown[]) {
@@ -153,23 +152,72 @@ export function journeyFromRoute(request: RouteRequest, body: unknown): Journey 
     points.push([c[1], c[0]]);
   }
   if (points.length < 2) return null;
-
-  let along = 0;
-  const stops = request.stops.map((stop, i) => {
-    const leg = (route.legs as { distance?: unknown }[])[i];
-    along += typeof leg?.distance === 'number' ? leg.distance : NaN;
-    return { ...stop, distanceMeters: Math.round(along) };
-  });
-  return parseJourney({
-    start: request.start,
-    end: request.end,
-    stops,
-    distanceMeters: Math.round(route.distance),
-    route: simplifyRoute(points),
-  });
+  return parseJourney({ start: request.start, end: request.end, stops: [], distanceMeters: Math.round(route.distance), route: simplifyRoute(points) });
 }
 
-/** `invalid` when OSRM answers but finds no usable walking route; `unavailable` when it is down. */
+/** Enough points for Overpass to follow the route within a few hundred meters. */
+const OVERPASS_LINE_POINTS = 150;
+
+/**
+ * The Overpass query for the places within `NEAR_ROUTE_METERS` of the route: cities and towns, and
+ * attractions famous enough to have a Wikidata entry.
+ */
+export function stopsQuery(route: readonly (readonly [number, number])[]): string {
+  const line = simplifyRoute(route, OVERPASS_LINE_POINTS)
+    .map(([lat, lng]) => `${lat.toFixed(5)},${lng.toFixed(5)}`)
+    .join(',');
+  const near = `(around:${NEAR_ROUTE_METERS},${line})`;
+  return [
+    '[out:json][timeout:25];',
+    '(',
+    `node["place"~"^(city|town)$"]["name"]${near};`,
+    `nwr["tourism"~"^(attraction|museum|viewpoint)$"]["wikidata"]["name"]${near};`,
+    `nwr["historic"~"^(castle|monument|ruins|archaeological_site)$"]["wikidata"]["name"]${near};`,
+    ');',
+    'out tags center;',
+  ].join('\n');
+}
+
+function population(value: unknown): number | null {
+  if (typeof value !== 'string') return null;
+  const digits = value.replace(/[\s.,]/g, '');
+  return /^\d+$/.test(digits) ? Number(digits) : null;
+}
+
+/** Reads Overpass's answer: each place's name (in Portuguese when there is one), kind and size. */
+export function candidatesFromOverpass(body: unknown): StopCandidate[] {
+  const elements = typeof body === 'object' && body !== null ? (body as { elements?: unknown }).elements : null;
+  if (!Array.isArray(elements)) return [];
+  const candidates: StopCandidate[] = [];
+  for (const item of elements as unknown[]) {
+    if (typeof item !== 'object' || item === null) continue;
+    const { lat, lon, center, tags } = item as { lat?: unknown; lon?: unknown; center?: { lat?: unknown; lon?: unknown }; tags?: Record<string, unknown> };
+    const latitude = typeof lat === 'number' ? lat : center?.lat;
+    const longitude = typeof lon === 'number' ? lon : center?.lon;
+    if (typeof latitude !== 'number' || typeof longitude !== 'number' || !tags) continue;
+    const name = [tags['name:pt'], tags.name].find((n): n is string => typeof n === 'string' && n.trim() !== '');
+    if (!name) continue;
+    const kind = tags.place === 'city' || tags.place === 'town' ? tags.place : 'attraction';
+    candidates.push({ name: shorten(name), lat: latitude, lng: longitude, kind, population: kind === 'attraction' ? null : population(tags.population) });
+  }
+  return candidates;
+}
+
+/** The places near the route, or null when Overpass does not answer. */
+async function findCandidates(journey: Journey, agent: string): Promise<StopCandidate[] | null> {
+  const response = await fetch(OVERPASS, {
+    method: 'POST',
+    headers: { 'User-Agent': agent, Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ data: stopsQuery(journey.route) }),
+  });
+  if (!response.ok) return null;
+  return candidatesFromOverpass(await response.json().catch(() => null));
+}
+
+/**
+ * The walking route, then its stops. `invalid` when OSRM answers but finds no usable walking route;
+ * `unavailable` when it is down. When Overpass fails, the journey goes on without stops.
+ */
 export async function planRoute(
   request: RouteRequest,
   agent: string,
@@ -179,5 +227,12 @@ export async function planRoute(
   // OSRM answers 400 with a code such as NoRoute when the places cannot be joined on foot.
   if (!response.ok && !(response.status === 400 && typeof body?.code === 'string')) return { ok: false, error: 'unavailable' };
   const journey = journeyFromRoute(request, body);
-  return journey ? { ok: true, journey } : { ok: false, error: 'invalid' };
+  if (!journey) return { ok: false, error: 'invalid' };
+  if (autoStopCount(journey.distanceMeters) === 0) return { ok: true, journey };
+
+  const candidates = await findCandidates(journey, agent).catch((error: unknown) => {
+    console.error('Overpass request failed', error instanceof Error ? error.message : 'unknown error');
+    return null;
+  });
+  return { ok: true, journey: candidates ? { ...journey, stops: chooseStops(journey, candidates) } : journey };
 }

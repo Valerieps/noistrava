@@ -1,9 +1,9 @@
-// Choosing the journey (docs/spec/desafio-horas.md, "Jornada"): the start, the stops and the end,
-// each found by searching places, then the walking route the server computes between them. Each
-// search and each route is one call, only when the creator asks (ADR-009).
+// Choosing the journey (docs/spec/desafio-horas.md, "Jornada"): the start and the end, each found
+// by searching places, then the walking route the server computes between them, with the stops it
+// chooses. Each search and each route happens only when the creator asks (ADR-009, ADR-011).
 import { useState, type KeyboardEvent } from 'react';
 import type { PlaceSuggestion } from '../../application/api-contract';
-import { MAX_STOPS, journeyGoalMinutes, type Journey, type Place } from '../../domain/challenge/challenge';
+import { journeyGoalMinutes, type Journey, type Place } from '../../domain/challenge/challenge';
 import { measureRoute, pointAt } from '../../domain/challenge/journey-map';
 import { formatGoal } from '../../domain/challenge/progress';
 import { strings } from '../../domain/strings';
@@ -18,7 +18,6 @@ export function JourneyBuilder({ initial, onChange }: { initial: Journey | null;
   const f = strings.challengeForm;
   const [start, setStart] = useState<Place | null>(initial ? place(initial.start) : null);
   const [end, setEnd] = useState<Place | null>(initial ? place(initial.end) : null);
-  const [stops, setStops] = useState<Place[]>(initial ? initial.stops.map(place) : []);
   const [planned, setPlanned] = useState<Journey | null>(initial);
   const [planning, setPlanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +34,7 @@ export function JourneyBuilder({ initial, onChange }: { initial: Journey | null;
     if (!start || !end) return;
     setPlanning(true);
     setError(null);
-    const result = await backend.planRoute({ start, end, stops });
+    const result = await backend.planRoute({ start, end });
     setPlanning(false);
     if (!result.ok) {
       setError(result.error === 'invalid' ? f.noRoute : f.routeFailed);
@@ -45,29 +44,11 @@ export function JourneyBuilder({ initial, onChange }: { initial: Journey | null;
     onChange(result.value);
   }
 
-  const names = new Set([start?.name, end?.name, ...stops.map((s) => s.name)]);
-
   return (
     <div className="stack">
       <PlacePicker label={f.journeyStart} value={start} onPick={(p) => changed(() => setStart(p))} />
-
-      <div className="stack" style={{ gap: 'var(--space-2)' }}>
-        <span className="field-label">{f.journeyStops}</span>
-        {stops.map((stop) => (
-          <div key={stop.name} className="place-row">
-            <span>{stop.name}</span>
-            <button type="button" className="link-button" onClick={() => changed(() => setStops(stops.filter((s) => s !== stop)))}>
-              {f.remove(stop.name)}
-            </button>
-          </div>
-        ))}
-        {stops.length < MAX_STOPS && (
-          <PlacePicker label={f.addStop} value={null} onPick={(p) => p && !names.has(p.name) && changed(() => setStops([...stops, p]))} />
-        )}
-        <span className="tiny muted">{f.stopsHint}</span>
-      </div>
-
       <PlacePicker label={f.journeyEnd} value={end} onPick={(p) => changed(() => setEnd(p))} />
+      <span className="tiny muted">{f.stopsHint}</span>
 
       {!planned && (
         <button type="button" className="big-button" disabled={!start || !end || planning} onClick={plan}>
@@ -98,6 +79,9 @@ function PlannedRoute({ journey }: { journey: Journey }) {
       />
       <p className="small" style={{ margin: 0 }}>
         {f.journeyRoute(journey.start.name, journey.end.name, formatKm(journey.distanceMeters / 1000))}
+      </p>
+      <p className="small" style={{ margin: 0 }}>
+        {journey.stops.length > 0 ? f.journeyStops(journey.stops.map((s) => s.name).join(' → ')) : f.noStops}
       </p>
       <div className="equivalent">
         <span>{f.equivalent}</span>
