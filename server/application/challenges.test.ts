@@ -256,3 +256,154 @@ describe('activities from Strava', () => {
     expect(mine()).toEqual([]);
   });
 });
+
+describe('edge cases of the rules', () => {
+  const at = (hash: string, startedAt: string, durationSeconds: number) =>
+    service.command(hash, 'activity.create', { startedAt, timezone: 'UTC', durationSeconds, sport: 'Run' });
+  const memberTotal = (name: string) => current()?.members.find((m) => m.name === name)?.totalSeconds;
+
+  it('counts only what started before the goal was hit', () => {
+    create();
+    log(ANA, '2026-11-02T08:00:00Z', 10);
+    expect(current()).toMatchObject({ state: 'succeeded', endedAt: '2026-11-03T12:00:00.000Z' });
+    clock.set('2026-11-03T15:00:00Z');
+    log(ANA, '2026-11-03T13:00:00Z', 1);
+    expect(current()?.totalSeconds).toBe(36_000);
+    log(ANA, '2026-11-03T09:00:00Z', 1);
+    expect(current()?.totalSeconds).toBe(39_600);
+  });
+
+  it('keeps the milestones reached when the goal goes up', () => {
+    const { id } = create();
+    log(ANA, '2026-11-02T08:00:00Z', 3);
+    ok(service.command(ANA, 'challenge.edit', { challengeId: id, name: 'Semana', startDate: '2026-11-02', endDate: '2026-11-08', goalHours: 100 }));
+    expect(current()).toMatchObject({ state: 'open', percent: 3, milestones: [{ milestone: '25%', reachedAt: '2026-11-03T12:00:00.000Z' }] });
+  });
+
+  it('lets the torcida become Senhora, counted from the start', () => {
+    const { id } = create();
+    ok(service.command(BIA, 'challenge.respond', { challengeId: id, accept: false }));
+    log(BIA, '2026-11-02T08:00:00Z', 1);
+    expect(memberTotal('Bia')).toBe(0);
+    ok(service.command(BIA, 'challenge.respond', { challengeId: id, accept: true }));
+    expect(memberTotal('Bia')).toBe(3600);
+    // Answering the same again changes nothing.
+    expect(service.command(BIA, 'challenge.respond', { challengeId: id, accept: true })).toMatchObject({ ok: true, changed: [] });
+  });
+
+  it('shows a challenge to whoever joins the group during it, as torcida, and lets her accept', () => {
+    const { id } = create();
+    service.command(ANA, 'invite.create', { email: 'carla@example.com' });
+    service.signIn(profile('carla@example.com', 'Carla'), 'h-carla', []);
+    expect(current('h-carla')).toMatchObject({ id, myResponse: 'pending' });
+    log('h-carla', '2026-11-02T08:00:00Z', 2);
+    ok(service.command('h-carla', 'challenge.respond', { challengeId: id, accept: true }));
+    expect(memberTotal('Carla')).toBe(7200);
+  });
+
+  it('does not count a creator who is not a Senhora', () => {
+    expect(create({ creatorIsSenhora: false }).myResponse).toBe('declined');
+    log(ANA, '2026-11-02T08:00:00Z', 2);
+    expect(current()?.totalSeconds).toBe(0);
+    expect(service.command(ANA, 'challenge.create', { name: 'X', startDate: '2026-11-10', endDate: '2026-11-11', goalHours: 1 })).toEqual({ ok: false, error: 'invalid' });
+  });
+
+  it('counts from the first instant of the period, not from the instant it ends', () => {
+    create();
+    clock.set('2026-11-09T00:30:00Z');
+    expect(at(ANA, '2026-11-01T23:59:59Z', 3600)).toMatchObject({ ok: true });
+    expect(at(ANA, '2026-11-02T00:00:00Z', 60)).toMatchObject({ ok: true });
+    expect(at(ANA, '2026-11-09T00:00:00Z', 3600)).toMatchObject({ ok: true });
+    expect(current()).toMatchObject({ state: 'failed', totalSeconds: 60, endedAt: '2026-11-09T00:00:00.000Z' });
+  });
+
+  it('lets a Senhora fix her activities during the 24 hours after the end', () => {
+    create();
+    const activity = log(ANA, '2026-11-02T08:00:00Z', 2);
+    clock.set('2026-11-09T12:00:00Z');
+    service.tick();
+    expect(ok(service.command(ANA, 'activity.update', { activityId: activity, durationSeconds: 3 * 3600 }))).toMatchObject({ durationSeconds: 10_800, editedByMember: true });
+    expect(current()).toMatchObject({ state: 'failed', totalSeconds: 10_800 });
+  });
+
+  it('closes a cancelled challenge with no tolerance', () => {
+    const { id } = create();
+    log(ANA, '2026-11-02T08:00:00Z', 1);
+    ok(service.command(ANA, 'challenge.cancel', { challengeId: id }));
+    expect(at(ANA, '2026-11-02T10:00:00Z', 3600)).toEqual({ ok: false, error: 'conflict' });
+    for (const name of ['challenge.cancel', 'challenge.respond']) {
+      expect(service.command(ANA, name, { challengeId: id, accept: true })).toEqual({ ok: false, error: 'conflict' });
+    }
+    expect(service.command(ANA, 'challenge.edit', { challengeId: id, name: 'X', startDate: '2026-11-02', endDate: '2026-11-08', goalHours: 5 })).toEqual({
+      ok: false,
+      error: 'conflict',
+    });
+  });
+
+  it('cannot be cancelled once the goal is hit', () => {
+    const { id } = create();
+    log(ANA, '2026-11-02T08:00:00Z', 10);
+    expect(service.command(ANA, 'challenge.cancel', { challengeId: id })).toEqual({ ok: false, error: 'conflict' });
+  });
+
+  it('answers unknown challenges and bad input', () => {
+    const { id } = create();
+    const activity = log(ANA, '2026-11-02T08:00:00Z', 1);
+    const notFound = { ok: false, error: 'not_found' };
+    expect(service.command(BIA, 'challenge.respond', { challengeId: 'nope', accept: true })).toEqual(notFound);
+    expect(service.command(ANA, 'challenge.cancel', { challengeId: 'nope' })).toEqual(notFound);
+    expect(service.command(ANA, 'challenge.delete', { challengeId: 'nope' })).toEqual(notFound);
+    expect(service.command(ANA, 'challenge.edit', { challengeId: 42 })).toEqual(notFound);
+    expect(service.command(BIA, 'reaction.set', { challengeId: 'nope', activityId: activity, heart: true })).toEqual(notFound);
+    expect(service.query(BIA, 'challengeLog', {})).toEqual(notFound);
+    expect(service.command(BIA, 'challenge.respond', { challengeId: id, accept: 'sim' })).toEqual({ ok: false, error: 'invalid' });
+    expect(service.command(BIA, 'reaction.set', { challengeId: id, activityId: activity, heart: 1 })).toEqual({ ok: false, error: 'invalid' });
+    expect(service.command(ANA, 'challenge.edit', { challengeId: id, name: 'X', startDate: '2026-11-02', endDate: '2026-11-08', goalHours: 0 })).toEqual({
+      ok: false,
+      error: 'invalid',
+    });
+  });
+
+  it('takes the hearts away with the activity', () => {
+    const { id } = create();
+    const activity = log(ANA, '2026-11-02T08:00:00Z', 1);
+    ok(service.command(BIA, 'reaction.set', { challengeId: id, activityId: activity, heart: true }));
+    ok(service.command(ANA, 'activity.delete', { activityId: activity }));
+    log(ANA, '2026-11-02T09:00:00Z', 1);
+    expect(ok(service.query(BIA, 'challengeLog', { challengeId: id }))).toEqual([expect.objectContaining({ hearts: 0, heartedByMe: false })]);
+  });
+
+  it('walks a journey: the stops are milestones and the goal comes from the distance', () => {
+    const journey = {
+      start: { name: 'Lisboa', lat: 38.7, lng: -9.1 },
+      end: { name: 'Sintra', lat: 38.8, lng: -9.4 },
+      stops: [{ name: 'Queluz', lat: 38.75, lng: -9.25, distanceMeters: 20_000 }],
+      distanceMeters: 50_000,
+      route: [
+        [38.7, -9.1],
+        [38.8, -9.4],
+      ],
+    };
+    expect(create({ goalHours: undefined, journey })).toMatchObject({ goalMinutes: 600, journey: { progressMeters: 0 } });
+    log(ANA, '2026-11-02T08:00:00Z', 5);
+    expect(current()).toMatchObject({ journey: { progressMeters: 25_000, distanceMeters: 50_000 }, percent: 50 });
+    expect(current()?.milestones.map((m) => m.milestone).sort()).toEqual(['25%', '50%', 'parada:Queluz']);
+  });
+
+  it('lets an admin delete a closed challenge from the history; the activities stay', () => {
+    const { id } = create();
+    log(ANA, '2026-11-02T08:00:00Z', 1);
+    ok(service.command(ANA, 'challenge.cancel', { challengeId: id }));
+    ok(service.command(ANA, 'challenge.delete', { challengeId: id }));
+    expect(ok(service.query(ANA, 'history', {}))).toEqual([]);
+    expect(ok<unknown[]>(service.query(ANA, 'activities', {}))).toHaveLength(1);
+  });
+
+  it('does not count Strava activities from before the period, nor broken ones', () => {
+    create();
+    service.connectStrava(ANA, { athleteId: 'a1', accessToken: 'x', refreshToken: 'y', expiresAt: '2026-12-01T00:00:00Z', includePrivate: false });
+    service.importStravaActivity('a1', { stravaId: 's1', startedAt: '2026-11-01T08:00:00Z', timezone: 'UTC', durationSeconds: 3600, sport: 'Run' });
+    expect(current()?.totalSeconds).toBe(0);
+    expect(service.importStravaActivity('a1', { stravaId: 's2', startedAt: 'garbage', timezone: 'UTC', durationSeconds: 3600, sport: 'Run' })).toEqual([]);
+  });
+});

@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { fixedClock, memorySql, sequentialIds } from '../testing/node-sql';
 import { GroupService } from './group-service';
 import type { GoogleProfile } from './members';
+import type { Sql } from './ports';
+import { MIGRATIONS } from './schema';
 
 const profile = (email: string, name = email.split('@')[0]): GoogleProfile => ({ sub: `sub:${email}`, email, name, picture: null });
 const ADMIN = 'ana@example.com';
@@ -161,5 +163,53 @@ describe('strava', () => {
     expect(service.connectStrava(admin, connection('1'))).toEqual({ ok: true });
     expect(service.connectStrava('h-bia', connection('1'))).toEqual({ ok: false, error: 'conflict' });
     expect(service.query('h-bia', 'strava', {})).toMatchObject({ ok: true, value: { connected: false } });
+  });
+});
+
+describe('storage', () => {
+  it('migrates once, and keeps everything for the next instance over the same database', () => {
+    const sql = memorySql();
+    const first = new GroupService(sql, clock, sequentialIds());
+    first.migrate();
+    first.signIn(profile(ADMIN, 'Ana'), 'h-ana', [ADMIN]);
+    first.migrate();
+
+    const next = new GroupService(sql, clock, sequentialIds());
+    next.migrate();
+    expect(next.query('h-ana', 'me', {})).toMatchObject({ ok: true, value: { name: 'Ana' } });
+    expect(sql.all('SELECT version FROM schema_migrations')).toHaveLength(MIGRATIONS.length);
+  });
+
+  it('runs each command in one transaction: a failure halfway leaves nothing behind', () => {
+    const sql = memorySql();
+    let failOn: RegExp | null = null;
+    const flaky: Sql = {
+      ...sql,
+      run: (query, ...bindings) => {
+        if (failOn?.test(query)) throw new Error('disk full');
+        sql.run(query, ...bindings);
+      },
+    };
+    service = new GroupService(flaky, clock, sequentialIds());
+    service.migrate();
+    const admin = signInAdmin();
+    const setup = { name: 'Semana', startDate: '2026-10-19', endDate: '2026-10-25', goalHours: 10, creatorIsSenhora: true };
+
+    // The challenge row goes in, then the members' invites fail.
+    failOn = /INSERT INTO challenge_members/;
+    expect(() => service.command(admin, 'challenge.create', setup)).toThrow('disk full');
+    failOn = null;
+    expect(sql.all('SELECT id FROM challenges')).toEqual([]);
+    expect(service.command(admin, 'challenge.create', setup)).toMatchObject({ ok: true });
+  });
+
+  it('drops expired sessions on the cron', () => {
+    const sql = memorySql();
+    service = new GroupService(sql, clock, sequentialIds());
+    service.migrate();
+    signInAdmin();
+    clock.set('2027-10-21T12:00:00Z');
+    service.tick();
+    expect(sql.all('SELECT * FROM sessions')).toEqual([]);
   });
 });
