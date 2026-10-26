@@ -4,7 +4,7 @@ import type { ApiError, ApiResult } from '../../src/application/api-contract';
 import { SESSION_DAYS, type GoogleProfile } from '../application/members';
 import { grantedAccess } from '../../src/domain/strava';
 import { clearCookie, LOGIN_COOKIE, readCookie, SESSION_COOKIE, setCookie, STRAVA_COOKIE } from '../infrastructure/cookies';
-import { constantTimeEqual, encryptText, randomToken, sha256 } from '../infrastructure/crypto';
+import { constantTimeEqual, encryptText, isValidTokenKey, randomToken, sha256 } from '../infrastructure/crypto';
 import { devProfile, devSignInAllowed } from '../infrastructure/dev-sign-in';
 import {
   authorizationUrl,
@@ -110,14 +110,27 @@ async function callback(request: Request, env: Env, url: URL): Promise<Response>
 async function stravaConnect(request: Request, env: Env, url: URL, hash: string): Promise<Response> {
   const body = (await request.json().catch(() => null)) as { consent?: unknown; includePrivate?: unknown } | null;
   if (body?.consent !== true || typeof body.includePrivate !== 'boolean') return json({ error: 'invalid' }, 400);
-  if (!env.STRAVA_CLIENT_ID || !env.STRAVA_CLIENT_SECRET || !env.STRAVA_TOKEN_KEY) return json({ error: 'unavailable' }, 503);
+  if (!env.STRAVA_CLIENT_ID || !env.STRAVA_CLIENT_SECRET || !isValidTokenKey(env.STRAVA_TOKEN_KEY)) {
+    console.error('Strava is not set up: STRAVA_CLIENT_SECRET missing or STRAVA_TOKEN_KEY not 32 bytes in base64');
+    return json({ error: 'unavailable' }, 503);
+  }
   if (!(await group(env).query(hash, 'me', {})).ok) return json({ error: 'unauthenticated' }, 401);
   const state = randomToken();
   const target = stravaAuthorizationUrl(env.STRAVA_CLIENT_ID, `${url.origin}/api/strava/callback`, state, body.includePrivate);
   return json({ value: target }, 200, { 'Set-Cookie': setCookie(STRAVA_COOKIE, state, 600) });
 }
 
+/** The redirect back from Strava. Any failure, even a thrown one, ends on the app with a message. */
 async function stravaCallback(request: Request, env: Env, url: URL): Promise<Response> {
+  try {
+    return await finishStravaConnection(request, env, url);
+  } catch (error) {
+    console.error('Strava callback failed', error instanceof Error ? error.message : 'unknown error');
+    return redirect('/?strava=erro', [clearCookie(STRAVA_COOKIE)]);
+  }
+}
+
+async function finishStravaConnection(request: Request, env: Env, url: URL): Promise<Response> {
   const done = (result: string) => redirect(`/?strava=${result}`, [clearCookie(STRAVA_COOKIE)]);
   const cookies = request.headers.get('Cookie');
   const state = readCookie(cookies, STRAVA_COOKIE);
