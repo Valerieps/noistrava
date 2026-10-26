@@ -2,7 +2,7 @@
 
 O grupo soma horas de atividade para bater uma meta num período, com ou sem jornada num mapa.
 
-- **Entra aqui:** criar, responder, editar, cancelar e apagar um desafio; os papéis no desafio; o
+- **Entra aqui:** criar, guardar como rascunho, ativar, responder, editar, cancelar e apagar um desafio; os papéis no desafio; o
   período e os fusos; a meta, a jornada e os marcos; o log de atividades e as reações; o histórico.
 - **Não entra aqui:** o que é uma atividade e como ela chega ([atividades.md](atividades.md) e
   [strava.md](strava.md)); os papéis do grupo ([acesso-e-membros.md](acesso-e-membros.md)).
@@ -25,14 +25,35 @@ O grupo soma horas de atividade para bater uma meta num período, com ou sem jor
 
 ## Criar
 
-- Só existe um desafio ativo por vez. Enquanto houver um criado e não terminado, não dá para criar
-  outro. *(1)*
+- Só existe um desafio ativo por vez no grupo. Enquanto houver um ativo e não terminado, o que eu
+  crio fica como rascunho (ver "Rascunhos"). *(1)*
+- Ao criar, eu escolho entre salvar como rascunho e criar já ativo. Criar já ativo só aparece
+  quando não há desafio ativo. *(1)*
 - O desafio é do tipo "Horas colaborativas" e tem um nome dado por quem cria. *(1)*
 - Eu escolho o início, o término e a meta em horas. Com jornada, a meta é a distância da rota (ver
   "Jornada"). *(1)*
 - A meta é um número inteiro de horas, de 1 a 10.000. *(1)*
 - O início pode ser uma data que já passou; o término não. *(1)*
-- Ao criar, todas as integrantes recebem o convite para o desafio. *(1)*
+- Ao criar já ativo, todas as integrantes recebem o convite para o desafio. *(1)*
+
+## Rascunhos
+
+- Cada integrante pode ter quantos rascunhos quiser. *(1)*
+- Só quem criou vê o rascunho; para as outras ele não existe até ser ativado. *(1)*
+- Salvar um rascunho confere só o formato do nome, das datas e da meta; o término pode já ter
+  passado. *(1)*
+- Num rascunho com jornada, eu posso salvar sem a rota (por exemplo, se o mapa não responder) e
+  calcular depois. *(1)*
+- Digo se sou Senhora ao criar o rascunho, e posso mudar enquanto ele for rascunho. *(1)*
+- Eu edito o rascunho à vontade e posso apagá-lo sem o admin. *(1)*
+  Por quê: ninguém mais viu o rascunho.
+- O rascunho vira desafio quando eu toco em "Ativar". Só dá para ativar quando não há desafio
+  ativo, e valem todas as regras de "Criar": o término não pode ter passado e a jornada precisa da
+  rota. *(1)*
+- Um desafio deixa de estar ativo assim que termina (meta batida, fim do período ou cancelamento).
+  As 24 horas de tolerância só recebem as atividades atrasadas e não impedem ativar outro. *(1)*
+- O convite vai para todas as integrantes na hora em que eu ativo, e o período é calculado com os
+  fusos de quem está no grupo nesse momento. *(1)*
 
 ## Responder ao convite
 
@@ -121,7 +142,7 @@ O grupo soma horas de atividade para bater uma meta num período, com ou sem jor
   cancelado. *(1)*
 - Ao cancelar, o resultado fecha na hora, com os totais de cada Senhora até ali, sem as 24 horas de
   tolerância. *(1)*
-- Só o admin apaga um desafio, depois de confirmar. *(1)*
+- Só o admin apaga um desafio, depois de confirmar. O rascunho, quem criou apaga. *(1)*
 
 ## Log de atividades e reações
 

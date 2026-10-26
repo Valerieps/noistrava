@@ -14,7 +14,8 @@ const PLACE_NAME_MAX_LENGTH = 120;
 export const MAX_STOPS = 20;
 const MAX_ROUTE_POINTS = 2_000;
 
-export type ChallengeState = 'open' | 'succeeded' | 'failed' | 'cancelled';
+/** A `draft` is seen only by its creator until she activates it (one `open` at a time). */
+export type ChallengeState = 'draft' | 'open' | 'succeeded' | 'failed' | 'cancelled';
 export type ChallengeResponse = 'pending' | 'accepted' | 'declined';
 
 export interface Place {
@@ -44,6 +45,8 @@ export interface ChallengeConfig {
   readonly endDate: CalendarDate;
   readonly goalMinutes: number;
   readonly journey: Journey | null;
+  /** Only in a draft: the journey is chosen but its route is not computed yet, so there is no goal. */
+  readonly journeyPending?: true;
 }
 
 export interface ChallengeSetup extends ChallengeConfig {
@@ -81,6 +84,7 @@ export function goalReached(totalSeconds: number, goalMinutes: number): boolean 
 
 /** Percent of the goal, rounded down, never above 100. */
 export function percentOfGoal(totalSeconds: number, goalMinutes: number): number {
+  if (goalMinutes <= 0) return 0;
   return Math.min(100, Math.floor((totalSeconds / (goalMinutes * 60)) * 100));
 }
 
@@ -143,6 +147,16 @@ export function parseChallengeSetup(input: {
   const hours = input.goalHours;
   if (typeof hours !== 'number' || !Number.isInteger(hours) || hours < 1 || hours > GOAL_HOURS_MAX) return null;
   return { name, startDate: input.startDate, endDate: input.endDate, goalMinutes: hours * 60, journey: null };
+}
+
+/**
+ * Validates a draft: the same format as a challenge, except that a journey may wait for its route
+ * (`journeyPending`), with no goal until then.
+ */
+export function parseDraftSetup(input: Parameters<typeof parseChallengeSetup>[0] & { journeyPending?: unknown }): ChallengeSetup | null {
+  if (input.journeyPending !== true) return parseChallengeSetup(input);
+  const setup = parseChallengeSetup({ ...input, journey: null, goalHours: 1 });
+  return setup && { ...setup, goalMinutes: 0, journeyPending: true };
 }
 
 function parsePlace(value: unknown): Place | null {

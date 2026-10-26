@@ -69,10 +69,23 @@ function NoChallenge() {
       <Link to="/desafio/novo" className="button big-button" style={{ lineHeight: '40px' }}>
         {strings.challenge.create}
       </Link>
+      <DraftsLink />
       <Link to="/historico" className="button secondary big-button" style={{ lineHeight: '40px' }}>
         {strings.challenge.seeHistory}
       </Link>
     </div>
+  );
+}
+
+/** My drafts, when I have any; on the challenge screen, also the way to prepare the next one. */
+function DraftsLink({ next = false }: { next?: boolean }) {
+  const drafts = useQuery('drafts', {}, ['challenge']);
+  const count = drafts.data?.length ?? 0;
+  if (count === 0 && !next) return null;
+  return (
+    <Link to={count > 0 ? '/rascunhos' : '/desafio/novo'} className="button secondary big-button" style={{ lineHeight: '40px' }}>
+      {count > 0 ? strings.drafts.link(count) : strings.drafts.next}
+    </Link>
   );
 }
 
@@ -231,6 +244,7 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
         <ActivityLog challengeId={challenge.id} entries={entries} journey={!!journey} now={now} onChanged={log.reload} />
 
         <Options me={me} challenge={challenge} busy={busy} onLeave={leave} onCancel={cancel} onDelete={remove} />
+        <DraftsLink next />
         {challenge.myResponse === 'accepted' && !challenge.closed && <div className="spacer-fab" />}
       </div>
 

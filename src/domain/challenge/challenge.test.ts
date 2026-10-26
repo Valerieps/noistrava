@@ -9,6 +9,7 @@ import {
   journeyGoalMinutes,
   journeyProgressMeters,
   parseChallengeSetup,
+  parseDraftSetup,
   parseJourney,
   percentOfGoal,
   reachedMilestones,
@@ -82,6 +83,13 @@ describe('challenge setup', () => {
     expect(parseChallengeSetup({ ...base, journey })?.goalMinutes).toBe(3600);
     expect(journeyGoalMinutes(1)).toBe(1);
     expect(parseChallengeSetup({ ...base, journey: { ...journey, stops: [{ ...journey.stops[0], distanceMeters: 400_000 }] } })).toBeNull();
+  });
+
+  it('lets a draft wait for its route, with no goal until then', () => {
+    expect(parseDraftSetup({ ...base, journeyPending: true })).toMatchObject({ goalMinutes: 0, journey: null, journeyPending: true });
+    expect(parseDraftSetup({ ...base, journeyPending: true, name: '' })).toBeNull();
+    expect(parseDraftSetup({ ...base, goalHours: 10 })).toEqual(parseChallengeSetup({ ...base, goalHours: 10 }));
+    expect(percentOfGoal(3600, 0)).toBe(0);
   });
 });
 

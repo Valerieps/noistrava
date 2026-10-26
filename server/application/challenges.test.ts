@@ -407,3 +407,76 @@ describe('edge cases of the rules', () => {
     expect(service.importStravaActivity('a1', { stravaId: 's2', startedAt: 'garbage', timezone: 'UTC', durationSeconds: 3600, sport: 'Run' })).toEqual([]);
   });
 });
+
+describe('drafts', () => {
+  const setup = { name: 'Próximo', startDate: '2026-11-10', endDate: '2026-11-20', goalHours: 20, creatorIsSenhora: false };
+  const draft = (hash = BIA, extra: Record<string, unknown> = {}) => ok<ChallengeView>(service.command(hash, 'challenge.create', { ...setup, draft: true, ...extra }));
+  const drafts = (hash: string) => ok<ChallengeView[]>(service.query(hash, 'drafts', {}));
+
+  it('saves any number while a challenge is open, seen only by the creator', () => {
+    const open = create();
+    const first = draft();
+    draft(BIA, { name: 'Outro' });
+    expect(first).toMatchObject({ state: 'draft', members: [{ response: 'pending' }, { response: 'pending' }] });
+    expect(drafts(BIA).map((d) => d.name)).toEqual(['Outro', 'Próximo']);
+    expect(drafts(ANA)).toEqual([]);
+    expect(current(BIA)?.id).toBe(open.id);
+    expect(service.query(ANA, 'challenge', { challengeId: first.id })).toEqual({ ok: false, error: 'not_found' });
+    expect(service.command(ANA, 'challenge.edit', { ...setup, challengeId: first.id })).toEqual({ ok: false, error: 'not_found' });
+    // Even an admin does not see someone else's draft.
+    expect(service.command(ANA, 'challenge.delete', { challengeId: first.id })).toEqual({ ok: false, error: 'not_found' });
+  });
+
+  it('checks only the format, and a journey may wait for its route', () => {
+    expect(draft(BIA, { startDate: '2026-10-01', endDate: '2026-10-02' })).toMatchObject({ state: 'draft' });
+    expect(service.command(BIA, 'challenge.create', { ...setup, draft: true, goalHours: 0 })).toEqual({ ok: false, error: 'invalid' });
+    const pending = draft(BIA, { goalHours: undefined, journeyPending: true });
+    expect(pending).toMatchObject({ journeyPending: true, goalMinutes: 0, percent: 0, journey: null });
+    expect(service.command(BIA, 'challenge.activate', { challengeId: pending.id })).toEqual({ ok: false, error: 'invalid' });
+    // An open challenge never waits for its route.
+    expect(service.command(BIA, 'challenge.create', { ...setup, goalHours: undefined, journeyPending: true })).toEqual({ ok: false, error: 'invalid' });
+  });
+
+  it('activates only while no challenge is open, and then invites everyone', () => {
+    create();
+    const { id } = draft(BIA, { creatorIsSenhora: true });
+    expect(service.command(BIA, 'challenge.activate', { challengeId: id })).toEqual({ ok: false, error: 'conflict' });
+    // The open one ends with its period; its tolerance does not hold the next one back.
+    clock.set('2026-11-09T01:00:00Z');
+    service.tick();
+    expect(service.command(ANA, 'challenge.activate', { challengeId: id })).toEqual({ ok: false, error: 'not_found' });
+    const active = ok<ChallengeView>(service.command(BIA, 'challenge.activate', { challengeId: id }));
+    expect(active).toMatchObject({ state: 'open', startsAt: '2026-11-10T00:00:00.000Z' });
+    expect(active.members.map((m) => [m.name, m.response])).toEqual([
+      ['Ana', 'pending'],
+      ['Bia', 'accepted'],
+    ]);
+    expect(current(ANA)?.id).toBe(id);
+    expect(drafts(BIA)).toEqual([]);
+    expect(service.command(BIA, 'challenge.activate', { challengeId: id })).toEqual({ ok: false, error: 'conflict' });
+  });
+
+  it('refuses to activate once the end has passed, until the dates are edited', () => {
+    const { id } = draft(BIA, { startDate: '2026-10-01', endDate: '2026-10-02' });
+    expect(service.command(BIA, 'challenge.activate', { challengeId: id })).toEqual({ ok: false, error: 'invalid' });
+    ok(service.command(BIA, 'challenge.edit', { ...setup, challengeId: id, creatorIsSenhora: true }));
+    expect(ok<ChallengeView>(service.command(BIA, 'challenge.activate', { challengeId: id })).myResponse).toBe('accepted');
+  });
+
+  it('lets the creator delete her draft without the admin, but not an open challenge', () => {
+    const { id } = draft();
+    expect(service.command(BIA, 'challenge.cancel', { challengeId: id })).toEqual({ ok: false, error: 'conflict' });
+    expect(service.command(BIA, 'challenge.delete', { challengeId: id })).toMatchObject({ ok: true });
+    expect(drafts(BIA)).toEqual([]);
+    const open = ok<ChallengeView>(service.command(BIA, 'challenge.create', { ...setup, creatorIsSenhora: true }));
+    expect(service.command(BIA, 'challenge.delete', { challengeId: open.id })).toEqual({ ok: false, error: 'forbidden' });
+  });
+
+  it('counts no activity and takes no answer while it is a draft', () => {
+    const { id } = draft(BIA, { startDate: '2026-11-01', creatorIsSenhora: true });
+    log(BIA, '2026-11-02T08:00:00Z', 2);
+    expect(service.command(ANA, 'challenge.respond', { challengeId: id, accept: true })).toEqual({ ok: false, error: 'not_found' });
+    expect(ok<ChallengeView>(service.query(BIA, 'challenge', { challengeId: id }))).toBeDefined();
+    expect(drafts(BIA)[0]).toMatchObject({ state: 'draft', totalSeconds: 0 });
+  });
+});
