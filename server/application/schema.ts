@@ -113,6 +113,8 @@ export const MIGRATIONS: readonly (readonly string[])[] = [
       PRIMARY KEY (challenge_id, member_id)
     )`,
   ],
+  // 4: drafts keep the creator's answer until she activates them.
+  [`ALTER TABLE challenges ADD COLUMN creator_is_senhora INTEGER`],
 ];
 
 export function migrate(sql: Sql): void {

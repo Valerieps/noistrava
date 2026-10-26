@@ -3,10 +3,12 @@
 import type { ApiResult, CommandName, Commands, QueryName, Queries, Topic } from '../../src/application/api-contract';
 import { createActivity, deleteActivity, listMyActivities, updateActivity } from './activities';
 import {
+  activateChallenge,
   cancelChallenge,
   challengeLog,
   createChallenge,
   deleteChallenge,
+  drafts,
   editChallenge,
   getChallenge,
   history,
@@ -52,6 +54,7 @@ const QUERIES: { [N in QueryName]: Handler<Queries[N]['output'] | QueryError | n
   invites: (ctx, actor) => listInvites(ctx, actor),
   strava: (ctx, actor) => stravaConnection(ctx, actor),
   challenge: (ctx, actor, input) => getChallenge(ctx, actor, input),
+  drafts: (ctx, actor) => drafts(ctx, actor),
   challengeLog: (ctx, actor, input) => challengeLog(ctx, actor, input),
   history: (ctx) => history(ctx),
   activities: (ctx, actor) => listMyActivities(ctx, actor),
@@ -70,6 +73,7 @@ const COMMANDS: { [N in CommandName]: Handler<CommandResult<Commands[N]['output'
   'activity.delete': deleteActivity,
   'challenge.create': createChallenge,
   'challenge.edit': editChallenge,
+  'challenge.activate': activateChallenge,
   'challenge.respond': respond,
   'challenge.cancel': cancelChallenge,
   'challenge.delete': deleteChallenge,

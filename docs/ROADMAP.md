@@ -26,6 +26,8 @@ O que ainda não está pronto.
 
 - [ ] A meta é um número inteiro de horas, de 1 a 10.000 (`spec/desafio-horas.md`).
 - [ ] O início pode estar no passado; o término não (`spec/desafio-horas.md`).
+- [ ] No rascunho, dá para mudar se eu sou Senhora até ativar (`spec/desafio-horas.md`).
+- [ ] O admin não vê nem apaga os rascunhos das outras (`spec/desafio-horas.md`).
 - [ ] Quem entra no grupo durante um desafio pode aceitar (`spec/desafio-horas.md`).
 - [ ] Depois do término, ninguém muda a resposta (`spec/desafio-horas.md`).
 - [ ] Sem fuso de ninguém, o período vale em UTC (`spec/desafio-horas.md`).

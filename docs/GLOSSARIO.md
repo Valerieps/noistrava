@@ -17,6 +17,7 @@ Um termo, um sentido. Estes nomes valem para os textos da interface e para as do
 - **Jornada:** variante das horas colaborativas em que o tempo vira distância num mapa, de um ponto de partida a um ponto de chegada. (`spec/desafio-horas.md`)
 - **Marco:** ponto de celebração do desafio: 25%, 50% e 75% da meta, e as paradas da jornada. (`spec/desafio-horas.md`)
 - **Meta:** o que o grupo precisa atingir no período: horas, ou a distância da jornada. (`spec/desafio-horas.md`)
+- **Rascunho:** desafio guardado que só quem criou vê; vira desafio ativo quando ela ativa, se não houver outro ativo. (`spec/desafio-horas.md`)
 - **Reação:** um coração numa atividade do log do desafio. (`spec/desafio-horas.md`)
 - **Senhora:** integrante que aceitou participar de um desafio; o plural é Senhoras. Em alguns lugares aparece antes do nome, como "Senhora Renato". (`spec/desafio-horas.md`)
 - **Torcida:** integrantes que não participam de um desafio: veem tudo e reagem, mas não registram nem editam nada nele. (`spec/desafio-horas.md`)

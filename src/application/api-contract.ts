@@ -81,6 +81,10 @@ export interface ChallengeView {
   readonly members: readonly ChallengeMemberView[];
   readonly milestones: readonly { readonly milestone: string; readonly reachedAt: string }[];
   readonly myResponse: ChallengeResponse;
+  /** In a draft, what the creator chose; the answer itself is written on activation. */
+  readonly creatorIsSenhora: boolean;
+  /** Only in a draft: a journey whose route is still to be computed. */
+  readonly journeyPending: boolean;
 }
 
 /** A row of the challenge's activity log. */
@@ -116,6 +120,8 @@ export interface ChallengeSetupInput {
   endDate: string;
   goalHours?: number;
   journey?: Journey | null;
+  /** Drafts only: with a journey whose route is not computed yet. */
+  journeyPending?: boolean;
 }
 
 /** A place found by the journey's search (ADR-009): a short name, and the full address to tell apart. */
@@ -149,6 +155,8 @@ export interface Queries {
   strava: { input: Record<string, never>; output: StravaConnectionView };
   /** With an id, that challenge; without, the open one, else the latest not yet closed, else null. */
   challenge: { input: { challengeId?: string }; output: { challenge: ChallengeView | null } };
+  /** My own drafts, newest first; nobody else sees them. */
+  drafts: { input: Record<string, never>; output: ChallengeView[] };
   challengeLog: { input: { challengeId: string }; output: LogEntryView[] };
   /** Closed challenges, newest first, with each Senhora's total. */
   history: { input: Record<string, never>; output: HistoryItemView[] };
@@ -169,15 +177,17 @@ export interface Commands {
   /** Only my own; on a Strava activity only the duration changes. */
   'activity.update': { input: { activityId: string } & Partial<ActivityInput>; output: ActivityView };
   'activity.delete': { input: { activityId: string }; output: null };
-  /** Fails with `conflict` while another challenge is open. */
-  'challenge.create': { input: ChallengeSetupInput & { creatorIsSenhora: boolean }; output: ChallengeView };
-  /** The creator, before the end. */
-  'challenge.edit': { input: ChallengeSetupInput & { challengeId: string }; output: ChallengeView };
+  /** A draft any time; otherwise fails with `conflict` while another challenge is open. */
+  'challenge.create': { input: ChallengeSetupInput & { creatorIsSenhora: boolean; draft?: boolean }; output: ChallengeView };
+  /** The creator, before the end; in a draft she may also change whether she is a Senhora. */
+  'challenge.edit': { input: ChallengeSetupInput & { challengeId: string; creatorIsSenhora?: boolean }; output: ChallengeView };
+  /** The creator turns her draft into the open challenge and invites everyone; `conflict` while another is open. */
+  'challenge.activate': { input: { challengeId: string }; output: ChallengeView };
   /** Accept to become a Senhora; decline to be torcida, or to leave after accepting. */
   'challenge.respond': { input: { challengeId: string; accept: boolean }; output: ChallengeView };
   /** The creator, before the end. */
   'challenge.cancel': { input: { challengeId: string }; output: null };
-  /** Admins only. */
+  /** Admins; a draft, its creator. */
   'challenge.delete': { input: { challengeId: string }; output: null };
   'reaction.set': { input: { challengeId: string; activityId: string; heart: boolean }; output: null };
 }

@@ -9,6 +9,7 @@ import {
   goalReached,
   journeyProgressMeters,
   parseChallengeSetup,
+  parseDraftSetup,
   percentOfGoal,
   reachedMilestones,
   type ChallengeConfig,
@@ -33,6 +34,7 @@ interface ChallengeRow {
   closed_at: string | null;
   config: string;
   created_at: string;
+  creator_is_senhora: number | null;
 }
 
 interface CountedActivity {
@@ -55,6 +57,12 @@ function load(ctx: Context, id: unknown): ChallengeRow | null {
   if (typeof id !== 'string') return null;
   const [row] = ctx.sql.all<ChallengeRow>('SELECT * FROM challenges WHERE id = ?', id);
   return row ?? null;
+}
+
+/** A draft exists only for its creator; for everyone else it is not found. */
+function loadVisible(ctx: Context, actor: Member, id: unknown): ChallengeRow | null {
+  const row = load(ctx, id);
+  return row && (row.state !== 'draft' || row.creator_id === actor.id) ? row : null;
 }
 
 function participations(ctx: Context, challengeId: string): Map<string, Participation & { absences: { leftAt: string; returnedAt: string | null }[] }> {
@@ -105,7 +113,7 @@ const sum = (totals: Map<string, number>) => [...totals.values()].reduce((a, b) 
  * way. Returns whether anything changed.
  */
 export function settle(ctx: Context, row: ChallengeRow): boolean {
-  if (row.closed_at !== null || row.state === 'cancelled') return false;
+  if (row.closed_at !== null || row.state === 'cancelled' || row.state === 'draft') return false;
   const now = nowIso(ctx);
   let state = row.state;
   let endedAt = row.ended_at;
@@ -141,7 +149,7 @@ export function settle(ctx: Context, row: ChallengeRow): boolean {
 
 export function settleAll(ctx: Context): boolean {
   let changed = false;
-  for (const row of ctx.sql.all<ChallengeRow>("SELECT * FROM challenges WHERE closed_at IS NULL AND state != 'cancelled'")) {
+  for (const row of ctx.sql.all<ChallengeRow>("SELECT * FROM challenges WHERE closed_at IS NULL AND state NOT IN ('cancelled', 'draft')")) {
     changed = settle(ctx, row) || changed;
   }
   return changed;
@@ -225,6 +233,8 @@ function view(ctx: Context, actor: Member, id: string): ChallengeView {
       .all<{ milestone: string; reached_at: string }>('SELECT milestone, reached_at FROM challenge_milestones WHERE challenge_id = ? ORDER BY reached_at, milestone', row.id)
       .map((m) => ({ milestone: m.milestone, reachedAt: m.reached_at })),
     myResponse: members.find((m) => m.memberId === actor.id)?.response ?? 'pending',
+    creatorIsSenhora: row.creator_is_senhora === 1,
+    journeyPending: config.journeyPending === true,
   };
 }
 
@@ -237,16 +247,24 @@ function memberTimezones(ctx: Context): string[] {
 
 export function getChallenge(ctx: Context, actor: Member, input: { challengeId?: unknown }): { challenge: ChallengeView | null } | QueryError {
   if (input.challengeId !== undefined) {
-    const row = load(ctx, input.challengeId);
+    const row = loadVisible(ctx, actor, input.challengeId);
     return row ? { challenge: view(ctx, actor, row.id) } : new QueryError('not_found');
   }
-  const [row] = ctx.sql.all<ChallengeRow>("SELECT * FROM challenges WHERE closed_at IS NULL ORDER BY state = 'open' DESC, created_at DESC LIMIT 1");
+  const [row] = ctx.sql.all<ChallengeRow>(
+    "SELECT * FROM challenges WHERE closed_at IS NULL AND state != 'draft' ORDER BY state = 'open' DESC, created_at DESC LIMIT 1",
+  );
   return { challenge: row ? view(ctx, actor, row.id) : null };
+}
+
+export function drafts(ctx: Context, actor: Member): ChallengeView[] {
+  return ctx.sql
+    .all<{ id: string }>("SELECT id FROM challenges WHERE state = 'draft' AND creator_id = ? ORDER BY created_at DESC, id DESC", actor.id)
+    .map((row) => view(ctx, actor, row.id));
 }
 
 /** Everyone sees the log, torcida included: who, when, how long, the sport and the hearts. */
 export function challengeLog(ctx: Context, actor: Member, input: { challengeId?: unknown }): LogEntryView[] | QueryError {
-  const row = load(ctx, input.challengeId);
+  const row = loadVisible(ctx, actor, input.challengeId);
   if (!row) return new QueryError('not_found');
   const names = new Map(ctx.sql.all<{ id: string; name: string }>('SELECT id, name FROM members').map((m) => [m.id, m.name]));
   const hearts = new Map(
@@ -299,53 +317,99 @@ export function history(ctx: Context): HistoryItemView[] {
 
 // Commands
 
-/** Any member creates one, while no other is open; every member is invited. */
-export function createChallenge(ctx: Context, actor: Member, input: Record<string, unknown>): CommandResult<ChallengeView> {
-  const setup = parseChallengeSetup(input);
-  if (!setup || typeof input.creatorIsSenhora !== 'boolean') return failure('invalid');
-  if (ctx.sql.all("SELECT 1 FROM challenges WHERE state = 'open'").length > 0) return failure('conflict');
-  const period = challengePeriod(setup.startDate, setup.endDate, memberTimezones(ctx));
-  if (period.endsAt.getTime() <= ctx.clock.now().getTime()) return failure('invalid');
+const isOpen = (ctx: Context) => ctx.sql.all("SELECT 1 FROM challenges WHERE state = 'open'").length > 0;
 
-  const id = ctx.ids.next();
-  const now = nowIso(ctx);
-  const { name, ...config } = setup;
-  ctx.sql.run(
-    `INSERT INTO challenges (id, type, name, creator_id, starts_at, ends_at, state, config, created_at)
-     VALUES (?, 'horas_colaborativas', ?, ?, ?, ?, 'open', ?, ?)`,
-    id,
-    name,
-    actor.id,
-    period.startsAt.toISOString(),
-    period.endsAt.toISOString(),
-    JSON.stringify(config),
-    now,
-  );
+/** Opens the challenge: every member is invited, and the creator's own answer is the one she chose. */
+function invite(ctx: Context, id: string, creatorId: string, creatorIsSenhora: boolean): void {
   ctx.sql.run(
     "INSERT INTO challenge_members (challenge_id, member_id, response) SELECT ?, id, 'pending' FROM members WHERE active = 1",
     id,
   );
   ctx.sql.run(
     'UPDATE challenge_members SET response = ?, responded_at = ? WHERE challenge_id = ? AND member_id = ?',
-    input.creatorIsSenhora ? 'accepted' : 'declined',
-    now,
+    creatorIsSenhora ? 'accepted' : 'declined',
+    nowIso(ctx),
     id,
-    actor.id,
+    creatorId,
   );
   settle(ctx, load(ctx, id) as ChallengeRow);
+}
+
+/**
+ * Any member creates one. A draft any time, seen only by her and checked only for its format; an
+ * open one while no other is open, and then every member is invited.
+ */
+export function createChallenge(ctx: Context, actor: Member, input: Record<string, unknown>): CommandResult<ChallengeView> {
+  const draft = input.draft === true;
+  const setup = draft ? parseDraftSetup(input) : parseChallengeSetup(input);
+  if (!setup || typeof input.creatorIsSenhora !== 'boolean') return failure('invalid');
+  if (!draft && isOpen(ctx)) return failure('conflict');
+  const period = challengePeriod(setup.startDate, setup.endDate, memberTimezones(ctx));
+  if (!draft && period.endsAt.getTime() <= ctx.clock.now().getTime()) return failure('invalid');
+
+  const id = ctx.ids.next();
+  const { name, ...config } = setup;
+  ctx.sql.run(
+    `INSERT INTO challenges (id, type, name, creator_id, starts_at, ends_at, state, config, created_at, creator_is_senhora)
+     VALUES (?, 'horas_colaborativas', ?, ?, ?, ?, ?, ?, ?, ?)`,
+    id,
+    name,
+    actor.id,
+    period.startsAt.toISOString(),
+    period.endsAt.toISOString(),
+    draft ? 'draft' : 'open',
+    JSON.stringify(config),
+    nowIso(ctx),
+    input.creatorIsSenhora ? 1 : 0,
+  );
+  if (!draft) invite(ctx, id, actor.id, input.creatorIsSenhora);
   return { ok: true, value: view(ctx, actor, id), changed: ['challenge'] };
 }
 
-/** The creator changes name, dates, goal and journey until the end; the period is recomputed. */
-export function editChallenge(ctx: Context, actor: Member, input: Record<string, unknown>): CommandResult<ChallengeView> {
-  const row = load(ctx, input.challengeId);
+/**
+ * The creator activates her draft while no other challenge is open. Every rule of creating applies
+ * now: the end must not have passed, a journey needs its route, and the period follows today's zones.
+ */
+export function activateChallenge(ctx: Context, actor: Member, input: { challengeId?: unknown }): CommandResult<ChallengeView> {
+  const row = loadVisible(ctx, actor, input.challengeId);
   if (!row) return failure('not_found');
   if (row.creator_id !== actor.id) return failure('forbidden');
-  if (row.state !== 'open') return failure('conflict');
-  const setup = parseChallengeSetup(input);
-  if (!setup) return failure('invalid');
-  const period = challengePeriod(setup.startDate, setup.endDate, memberTimezones(ctx));
+  if (row.state !== 'draft') return failure('conflict');
+  const config = configOf(row);
+  if (config.journeyPending) return failure('invalid');
+  if (isOpen(ctx)) return failure('conflict');
+  const period = challengePeriod(config.startDate, config.endDate, memberTimezones(ctx));
   if (period.endsAt.getTime() <= ctx.clock.now().getTime()) return failure('invalid');
+
+  ctx.sql.run(
+    "UPDATE challenges SET state = 'open', starts_at = ?, ends_at = ?, created_at = ? WHERE id = ?",
+    period.startsAt.toISOString(),
+    period.endsAt.toISOString(),
+    nowIso(ctx),
+    row.id,
+  );
+  invite(ctx, row.id, actor.id, row.creator_is_senhora === 1);
+  return { ok: true, value: view(ctx, actor, row.id), changed: ['challenge'] };
+}
+
+/**
+ * The creator changes name, dates, goal and journey until the end; the period is recomputed. A
+ * draft is checked only for its format, and in it she may change whether she is a Senhora.
+ */
+export function editChallenge(ctx: Context, actor: Member, input: Record<string, unknown>): CommandResult<ChallengeView> {
+  const row = loadVisible(ctx, actor, input.challengeId);
+  if (!row) return failure('not_found');
+  if (row.creator_id !== actor.id) return failure('forbidden');
+  const draft = row.state === 'draft';
+  if (!draft && row.state !== 'open') return failure('conflict');
+  const setup = draft ? parseDraftSetup(input) : parseChallengeSetup(input);
+  if (!setup) return failure('invalid');
+  if (input.creatorIsSenhora !== undefined && (!draft || typeof input.creatorIsSenhora !== 'boolean')) return failure('invalid');
+  const period = challengePeriod(setup.startDate, setup.endDate, memberTimezones(ctx));
+  if (!draft && period.endsAt.getTime() <= ctx.clock.now().getTime()) return failure('invalid');
+  if (typeof input.creatorIsSenhora === 'boolean') {
+    ctx.sql.run('UPDATE challenges SET creator_is_senhora = ? WHERE id = ?', input.creatorIsSenhora ? 1 : 0, row.id);
+  }
 
   const { name, ...config } = setup;
   ctx.sql.run(
@@ -365,7 +429,7 @@ export function editChallenge(ctx: Context, actor: Member, input: Record<string,
  * or takes me out if I had accepted. Coming back, the time I was out never counts.
  */
 export function respond(ctx: Context, actor: Member, input: { challengeId?: unknown; accept?: unknown }): CommandResult<ChallengeView> {
-  const row = load(ctx, input.challengeId);
+  const row = loadVisible(ctx, actor, input.challengeId);
   if (!row) return failure('not_found');
   if (typeof input.accept !== 'boolean') return failure('invalid');
   if (row.state !== 'open') return failure('conflict');
@@ -398,7 +462,7 @@ export function respond(ctx: Context, actor: Member, input: { challengeId?: unkn
 
 /** The creator cancels before the end; the result closes at once with the totals so far. */
 export function cancelChallenge(ctx: Context, actor: Member, input: { challengeId?: unknown }): CommandResult<null> {
-  const row = load(ctx, input.challengeId);
+  const row = loadVisible(ctx, actor, input.challengeId);
   if (!row) return failure('not_found');
   if (row.creator_id !== actor.id) return failure('forbidden');
   if (row.state !== 'open') return failure('conflict');
@@ -408,11 +472,14 @@ export function cancelChallenge(ctx: Context, actor: Member, input: { challengeI
   return { ok: true, value: null, changed: ['challenge', 'history'] };
 }
 
-/** Admins only, in any state; everything about the challenge goes. Activities stay: they are the members'. */
+/**
+ * Admins, in any state; a draft, also its creator. Everything about the challenge goes. Activities
+ * stay: they are the members'.
+ */
 export function deleteChallenge(ctx: Context, actor: Member, input: { challengeId?: unknown }): CommandResult<null> {
-  if (!isAdmin(actor)) return failure('forbidden');
-  const row = load(ctx, input.challengeId);
-  if (!row) return failure('not_found');
+  const row = loadVisible(ctx, actor, input.challengeId);
+  if (!row) return failure(isAdmin(actor) ? 'not_found' : 'forbidden');
+  if (!isAdmin(actor) && row.state !== 'draft') return failure('forbidden');
   for (const table of ['reactions', 'challenge_milestones', 'challenge_results', 'challenge_absences', 'challenge_members']) {
     ctx.sql.run(`DELETE FROM ${table} WHERE challenge_id = ?`, row.id);
   }
@@ -423,7 +490,7 @@ export function deleteChallenge(ctx: Context, actor: Member, input: { challengeI
 /** Anyone, torcida included, puts or takes her own heart on an activity of the log. */
 export function setReaction(ctx: Context, actor: Member, input: { challengeId?: unknown; activityId?: unknown; heart?: unknown }): CommandResult<null> {
   if (typeof input.activityId !== 'string' || typeof input.heart !== 'boolean') return failure('invalid');
-  const row = load(ctx, input.challengeId);
+  const row = loadVisible(ctx, actor, input.challengeId);
   if (!row) return failure('not_found');
   const activityId = input.activityId;
   if (!countedActivities(ctx, row).some((a) => a.id === activityId)) return failure('not_found');

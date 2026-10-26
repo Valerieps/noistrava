@@ -1,6 +1,6 @@
 // Creating or editing a challenge (docs/spec/desafio-horas.md, "Criar" and "Editar"): the name,
-// the period with each member's zone, the goal in hours or a journey, and whether the creator is a
-// Senhora.
+// the goal in hours or a journey, the period with each member's zone, and whether the creator is a
+// Senhora. A new challenge is saved as a draft, or opened at once while no other is open.
 import { useEffect, useState, type FormEvent } from 'react';
 import type { ApiError, ChallengeSetupInput, ChallengeView } from '../../application/api-contract';
 import { CHALLENGE_NAME_MAX_LENGTH, GOAL_HOURS_MAX, challengePeriod, type Journey } from '../../domain/challenge/challenge';
@@ -47,15 +47,23 @@ export function ChallengeForm({ challengeId }: { challengeId: string | null }) {
   return <Form challenge={challenge ?? null} />;
 }
 
+/** Saving a draft, opening the challenge now (creating it, or activating the draft), or saving an open one. */
+type Mode = 'draft' | 'open' | 'save';
+
 function Form({ challenge }: { challenge: ChallengeView | null }) {
   const { backend } = useServices();
   const members = useQuery('members', {}, ['members']);
+  const current = useQuery('challenge', {}, ['challenge']);
+  const isDraft = challenge?.state === 'draft';
+  const creating = challenge === null || isDraft;
+  // Opening now is offered only while no challenge is open.
+  const canOpen = current.data !== undefined && current.data.challenge?.state !== 'open';
   const today = todayDate();
   const [name, setName] = useState(challenge?.name ?? '');
   const [startDate, setStartDate] = useState(challenge?.startDate ?? today);
   const [endDate, setEndDate] = useState(challenge?.endDate ?? endOfMonth(today));
   const [goalHours, setGoalHours] = useState(challenge ? String(Math.round(challenge.goalMinutes / 60)) : '100');
-  const [senhora, setSenhora] = useState(true);
+  const [senhora, setSenhora] = useState(isDraft ? challenge.creatorIsSenhora : true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [initialJourney] = useState<Journey | null>(() =>
@@ -63,31 +71,44 @@ function Form({ challenge }: { challenge: ChallengeView | null }) {
       ? { start: challenge.journey.start, end: challenge.journey.end, stops: challenge.journey.stops, distanceMeters: challenge.journey.distanceMeters, route: challenge.journey.route }
       : null,
   );
-  const [withJourney, setWithJourney] = useState(initialJourney !== null);
+  const [withJourney, setWithJourney] = useState(initialJourney !== null || challenge?.journeyPending === true);
   // The route computed for the chosen places; null until the creator computes it.
   const [journey, setJourney] = useState<Journey | null>(initialJourney);
 
   useEffect(() => {
-    if (challenge && challenge.state !== 'open') navigate('/', { replace: true });
+    if (challenge && challenge.state !== 'open' && challenge.state !== 'draft') navigate('/', { replace: true });
   }, [challenge]);
 
-  async function submit(event: FormEvent) {
-    event.preventDefault();
-    if (withJourney && !journey) {
+  async function submit(mode: Mode) {
+    // A draft may wait for its route; an open challenge may not.
+    if (withJourney && !journey && mode !== 'draft') {
       setError(strings.challengeForm.routeNeeded);
       return;
     }
     setBusy(true);
-    const setup: ChallengeSetupInput = withJourney && journey ? { name, startDate, endDate, journey } : { name, startDate, endDate, goalHours: Number(goalHours) };
-    const result = challenge
-      ? await backend.command('challenge.edit', { ...setup, challengeId: challenge.id })
-      : await backend.command('challenge.create', { ...setup, creatorIsSenhora: senhora });
+    const setup: ChallengeSetupInput = !withJourney
+      ? { name, startDate, endDate, goalHours: Number(goalHours) }
+      : journey
+        ? { name, startDate, endDate, journey }
+        : { name, startDate, endDate, journeyPending: true };
+    let result;
+    if (!challenge) {
+      result = await backend.command('challenge.create', { ...setup, creatorIsSenhora: senhora, draft: mode === 'draft' });
+    } else {
+      result = await backend.command('challenge.edit', { ...setup, challengeId: challenge.id, ...(isDraft ? { creatorIsSenhora: senhora } : {}) });
+      if (result.ok && isDraft && mode === 'open') result = await backend.command('challenge.activate', { challengeId: challenge.id });
+    }
     setBusy(false);
     if (result.ok) {
-      navigate('/', { replace: true });
+      navigate(mode === 'draft' ? '/rascunhos' : '/', { replace: true });
       return;
     }
-    setError(errorText(result.error, challenge !== null));
+    setError(errorText(result.error, !creating));
+  }
+
+  function onSubmit(event: FormEvent) {
+    event.preventDefault();
+    void submit(!creating ? 'save' : canOpen ? 'open' : 'draft');
   }
 
   const zones = [...new Set((members.data ?? []).map((m) => m.timezone).filter((z): z is string => z !== null))];
@@ -95,10 +116,9 @@ function Form({ challenge }: { challenge: ChallengeView | null }) {
 
   return (
     <>
-      <BackHeader title={challenge ? f.editTitle : f.newTitle} to="/" />
-      <form className="screen" onSubmit={submit}>
+      <BackHeader title={isDraft ? f.draftTitle : challenge ? f.editTitle : f.newTitle} to={isDraft ? '/rascunhos' : '/'} />
+      <form className="screen" onSubmit={onSubmit}>
         <section className="panel">
-          <div className="lbl section-label">{f.nameSection}</div>
           <label>
             <span className="field-label">{f.name}</span>
             <input required maxLength={CHALLENGE_NAME_MAX_LENGTH} value={name} onChange={(e) => setName(e.target.value)} />
@@ -106,22 +126,6 @@ function Form({ challenge }: { challenge: ChallengeView | null }) {
         </section>
 
         <section className="panel">
-          <div className="lbl section-label">{f.periodSection}</div>
-          <div className="form-grid">
-            <label>
-              <span className="field-label">{f.start}</span>
-              <input type="date" required value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-            </label>
-            <label>
-              <span className="field-label">{f.end}</span>
-              <input type="date" required min={startDate > today ? startDate : today} value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-            </label>
-          </div>
-          <ZoneTable zones={zones} startDate={startDate} endDate={endDate} />
-        </section>
-
-        <section className="panel">
-          <div className="lbl section-label">{f.goalSection}</div>
           <div role="radiogroup" aria-label={f.goalSection} className="segmented" style={{ alignSelf: 'stretch' }}>
             <button type="button" role="radio" aria-checked={!withJourney} onClick={() => setWithJourney(false)} style={{ flex: 1, width: 'auto', borderRadius: 'var(--radius-pill)', fontWeight: 600 }}>
               {f.hoursOnly}
@@ -145,27 +149,57 @@ function Form({ challenge }: { challenge: ChallengeView | null }) {
           )}
         </section>
 
-        {!challenge && (
+        <section className="panel">
+          <div className="form-grid">
+            <label>
+              <span className="field-label">{f.start}</span>
+              <input type="date" required value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+            </label>
+            <label>
+              <span className="field-label">{f.end}</span>
+              {/* A draft's end may have passed; opening it checks again. */}
+              <input type="date" required min={creating ? startDate : startDate > today ? startDate : today} value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+            </label>
+          </div>
+          <ZoneTable zones={zones} startDate={startDate} endDate={endDate} />
+        </section>
+
+        {creating && (
           <section className="panel">
             <label className="switch-row" style={{ flexDirection: 'row' }}>
-              <span className="stack" style={{ gap: 0 }}>
-                <b>{f.senhora}</b>
-                <span className="small muted">{f.senhoraNote}</span>
-              </span>
+              <b>{f.senhora}</b>
               <input type="checkbox" role="switch" className="switch" checked={senhora} onChange={(e) => setSenhora(e.target.checked)} />
             </label>
           </section>
         )}
 
-        {!challenge && <p className="small muted" style={{ margin: '0 4px' }}>{f.inviteNote}</p>}
         {error && (
           <p className="notice" role="alert">
             {error}
           </p>
         )}
-        <button type="submit" className="big-button" disabled={busy}>
-          {challenge ? f.save : f.create}
-        </button>
+        {creating && canOpen && (
+          <button type="submit" className="big-button" disabled={busy}>
+            {isDraft ? f.activate : f.create}
+          </button>
+        )}
+        {creating ? (
+          <button type={canOpen ? 'button' : 'submit'} className={canOpen ? 'secondary big-button' : 'big-button'} disabled={busy}
+            onClick={
+              canOpen
+                ? (e) => {
+                    if (e.currentTarget.form?.reportValidity()) void submit('draft');
+                  }
+                : undefined
+            }
+          >
+            {f.saveDraft}
+          </button>
+        ) : (
+          <button type="submit" className="big-button" disabled={busy}>
+            {f.save}
+          </button>
+        )}
       </form>
     </>
   );
@@ -199,7 +233,6 @@ function ZoneTable({ zones, startDate, endDate }: { zones: readonly string[]; st
           <span className="muted">{f.zoneEnds(endLabel(zone))}</span>
         </div>
       ))}
-      <div className="tiny muted">{zones.length > 0 ? f.zonesNote : f.zonesNone}</div>
     </div>
   );
 }

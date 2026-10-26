@@ -9,6 +9,7 @@ import { Link, navigate, usePath } from './router';
 import { ActivityForm } from './screens/ActivityForm';
 import { ChallengeForm } from './screens/ChallengeForm';
 import { ChallengeScreen } from './screens/ChallengeScreen';
+import { Drafts } from './screens/Drafts';
 import { History } from './screens/History';
 import { Invites } from './screens/Invites';
 import { Members } from './screens/Members';
@@ -131,6 +132,12 @@ function Screen({ me, onSignOut }: { me: MeView; onSignOut: () => void }) {
     return (
       <Sub title={strings.nav.invites} back="/perfil">
         <Invites />
+      </Sub>
+    );
+  if (path === '/rascunhos')
+    return (
+      <Sub title={strings.drafts.title} back="/">
+        <Drafts />
       </Sub>
     );
   if (path === '/desafio/novo') return <ChallengeForm challengeId={null} />;
