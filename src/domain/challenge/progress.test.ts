@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pointAt, projectRoute, stretch } from './journey-map';
+import { measureRoute, pointAt, stretch } from './journey-map';
 import {
   curvePoints,
   daysLeft,
@@ -125,10 +125,10 @@ describe('journey map', () => {
     ] as [number, number][],
   };
 
-  it('fits the route in the box and finds a distance along it', () => {
-    const route = projectRoute(journey, 100, 100, 10);
+  it('measures the route and finds a distance along it', () => {
+    const route = measureRoute(journey);
     expect(route.along[route.along.length - 1]).toBeCloseTo(2000);
-    expect(route.points.every(([x, y]) => x >= 10 && x <= 90 && y >= 10 && y <= 90)).toBe(true);
+    expect(route.points).toEqual(journey.route);
     const middle = pointAt(route, 1000);
     expect(middle[0]).toBeCloseTo(route.points[1][0]);
     expect(stretch(route, 500, 1500)).toHaveLength(3);

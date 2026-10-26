@@ -1,16 +1,18 @@
 // Creating or editing a challenge (docs/spec/desafio-horas.md, "Criar" and "Editar"): the name,
-// the period with each member's zone, the goal in hours, and whether the creator is a Senhora.
+// the period with each member's zone, the goal in hours or a journey, and whether the creator is a
+// Senhora.
 import { useEffect, useState, type FormEvent } from 'react';
 import type { ApiError, ChallengeSetupInput, ChallengeView } from '../../application/api-contract';
 import { CHALLENGE_NAME_MAX_LENGTH, GOAL_HOURS_MAX, challengePeriod, type Journey } from '../../domain/challenge/challenge';
-import { formatGoal, formatOffset, utcOffsetMinutes } from '../../domain/challenge/progress';
+import { formatOffset, utcOffsetMinutes } from '../../domain/challenge/progress';
 import { strings } from '../../domain/strings';
 import { isCalendarDate } from '../../domain/time/zones';
 import { BackHeader } from '../App';
 import { useServices } from '../backend-context';
-import { formatKm, formatWeekdayHour, todayDate } from '../format';
+import { formatWeekdayHour, todayDate } from '../format';
 import { navigate } from '../router';
 import { useQuery } from '../use-query';
+import { JourneyBuilder } from './JourneyBuilder';
 
 function errorText(error: ApiError, editing: boolean): string {
   if (error === 'conflict') return editing ? strings.challengeForm.notEditable : strings.challengeForm.conflict;
@@ -56,9 +58,14 @@ function Form({ challenge }: { challenge: ChallengeView | null }) {
   const [senhora, setSenhora] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const journey: Journey | null = challenge?.journey
-    ? { start: challenge.journey.start, end: challenge.journey.end, stops: challenge.journey.stops, distanceMeters: challenge.journey.distanceMeters, route: challenge.journey.route }
-    : null;
+  const [initialJourney] = useState<Journey | null>(() =>
+    challenge?.journey
+      ? { start: challenge.journey.start, end: challenge.journey.end, stops: challenge.journey.stops, distanceMeters: challenge.journey.distanceMeters, route: challenge.journey.route }
+      : null,
+  );
+  const [withJourney, setWithJourney] = useState(initialJourney !== null);
+  // The route computed for the chosen places; null until the creator computes it.
+  const [journey, setJourney] = useState<Journey | null>(initialJourney);
 
   useEffect(() => {
     if (challenge && challenge.state !== 'open') navigate('/', { replace: true });
@@ -66,8 +73,12 @@ function Form({ challenge }: { challenge: ChallengeView | null }) {
 
   async function submit(event: FormEvent) {
     event.preventDefault();
+    if (withJourney && !journey) {
+      setError(strings.challengeForm.routeNeeded);
+      return;
+    }
     setBusy(true);
-    const setup: ChallengeSetupInput = journey ? { name, startDate, endDate, journey } : { name, startDate, endDate, goalHours: Number(goalHours) };
+    const setup: ChallengeSetupInput = withJourney && journey ? { name, startDate, endDate, journey } : { name, startDate, endDate, goalHours: Number(goalHours) };
     const result = challenge
       ? await backend.command('challenge.edit', { ...setup, challengeId: challenge.id })
       : await backend.command('challenge.create', { ...setup, creatorIsSenhora: senhora });
@@ -112,37 +123,25 @@ function Form({ challenge }: { challenge: ChallengeView | null }) {
         <section className="panel">
           <div className="lbl section-label">{f.goalSection}</div>
           <div role="radiogroup" aria-label={f.goalSection} className="segmented" style={{ alignSelf: 'stretch' }}>
-            <button type="button" role="radio" aria-checked={!journey} style={{ flex: 1, width: 'auto', borderRadius: 'var(--radius-pill)', fontWeight: 600 }}>
+            <button type="button" role="radio" aria-checked={!withJourney} onClick={() => setWithJourney(false)} style={{ flex: 1, width: 'auto', borderRadius: 'var(--radius-pill)', fontWeight: 600 }}>
               {f.hoursOnly}
             </button>
-            <button type="button" role="radio" aria-checked={!!journey} disabled={!journey} style={{ flex: 1, width: 'auto', borderRadius: 'var(--radius-pill)', fontWeight: 600 }}>
+            <button type="button" role="radio" aria-checked={withJourney} onClick={() => {
+                setWithJourney(true);
+                // The builder starts again from the stored journey, so the form does too.
+                setJourney(initialJourney);
+              }} style={{ flex: 1, width: 'auto', borderRadius: 'var(--radius-pill)', fontWeight: 600 }}>
               {f.withJourney}
             </button>
           </div>
-          {journey ? (
-            <>
-              <p className="small" style={{ margin: 0 }}>
-                {f.journeyRoute(journey.start.name, journey.end.name, formatKm(journey.distanceMeters / 1000))}
-              </p>
-              <div className="equivalent">
-                <span>{f.equivalent}</span>
-                <span className="d" style={{ fontSize: 22 }}>
-                  {formatGoal(challenge!.goalMinutes)}
-                </span>
-              </div>
-              <p className="tiny muted" style={{ margin: 0 }}>
-                {f.perHour} {f.journeyKeeps}
-              </p>
-            </>
+          {withJourney ? (
+            <JourneyBuilder initial={initialJourney} onChange={setJourney} />
           ) : (
-            <>
-              <label>
-                <span className="field-label">{f.goalHours}</span>
-                <input type="number" inputMode="numeric" required min={1} max={GOAL_HOURS_MAX} step={1} value={goalHours} onChange={(e) => setGoalHours(e.target.value)} />
-                <span className="tiny muted">{f.goalHint}</span>
-              </label>
-              {!challenge && <p className="tiny muted" style={{ margin: 0 }}>{f.journeySoon}</p>}
-            </>
+            <label>
+              <span className="field-label">{f.goalHours}</span>
+              <input type="number" inputMode="numeric" required min={1} max={GOAL_HOURS_MAX} step={1} value={goalHours} onChange={(e) => setGoalHours(e.target.value)} />
+              <span className="tiny muted">{f.goalHint}</span>
+            </label>
           )}
         </section>
 

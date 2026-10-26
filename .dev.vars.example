@@ -10,6 +10,9 @@ STRAVA_CLIENT_SECRET=
 STRAVA_TOKEN_KEY=
 # Random string: part of the webhook path, so only Strava knows where to post events.
 STRAVA_WEBHOOK_SECRET=
+# Optional: an e-mail or page for OpenStreetMap's operators, sent in the User-Agent of the
+# journey's place search and routing (ADR-009).
+OSM_CONTACT=
 # 1 turns on the test sign-in (any invited e-mail, no Google) on localhost only (ADR-007).
 # Never in wrangler.jsonc. With it, you can try the app before Google Cloud is set up.
 DEV_SIGN_IN=1

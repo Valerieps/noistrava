@@ -276,6 +276,57 @@ describe('connecting Strava', () => {
   });
 });
 
+describe("the journey's places and route (ADR-009)", () => {
+  const lisboa = { name: 'Lisboa', lat: 38.7223, lng: -9.1393 };
+  const cascais = { name: 'Cascais', lat: 38.6979, lng: -9.4215 };
+  const search = (session: string | undefined, body: unknown) => send('/api/places/search', { session, body });
+  const route = (session: string | undefined, body: unknown) => send('/api/places/route', { session, body });
+
+  it('needs a session and valid input, without calling OpenStreetMap', async () => {
+    expect(await error(search(undefined, { query: 'Lisboa' }))).toEqual({ status: 401, body: { error: 'unauthenticated' } });
+    expect(await error(search('made-up', { query: 'Lisboa' }))).toEqual({ status: 401, body: { error: 'unauthenticated' } });
+    const ana = await signIn('ana@example.com', 'Ana');
+    expect(await error(search(ana, { query: 'L' }))).toEqual({ status: 400, body: { error: 'invalid' } });
+    expect(await error(route(ana, { start: lisboa }))).toEqual({ status: 400, body: { error: 'invalid' } });
+    expect(network).not.toHaveBeenCalled();
+  });
+
+  it('searches places with an identifying User-Agent', async () => {
+    app = testWorker({ DEV_SIGN_IN: '1', BOOTSTRAP_ADMIN_EMAILS: 'ana@example.com', OSM_CONTACT: 'grupo@example.com' });
+    const ana = await signIn('ana@example.com', 'Ana');
+    network.mockResolvedValueOnce(Response.json([{ name: 'Lisboa', display_name: 'Lisboa, Portugal', lat: '38.72', lon: '-9.14' }]));
+    expect(await value(search(ana, { query: 'Lisboa' }))).toEqual([{ name: 'Lisboa', detail: 'Lisboa, Portugal', lat: 38.72, lng: -9.14 }]);
+    const [url, init] = network.mock.calls[0] as [string, RequestInit];
+    expect(new URL(url).origin).toBe('https://nominatim.openstreetmap.org');
+    expect((init.headers as Record<string, string>)['User-Agent']).toBe(`Senhoras/1.0 (+${ORIGIN}; grupo@example.com)`);
+  });
+
+  it('computes the walking route as a journey the challenge accepts', async () => {
+    const ana = await signIn('ana@example.com', 'Ana');
+    network.mockResolvedValueOnce(
+      Response.json({ code: 'Ok', routes: [{ distance: 30_000, legs: [{ distance: 30_000 }], geometry: { coordinates: [[-9.1393, 38.7223], [-9.4215, 38.6979]] } }] }),
+    );
+    const journey = await value(route(ana, { start: lisboa, end: cascais, stops: [] }));
+    const created = await value<{ id: string }>(command(ana, 'challenge.create', { name: 'Até Cascais', startDate: '2026-11-02', endDate: '2026-11-08', journey, creatorIsSenhora: true }));
+    const view = await value<{ challenge: ChallengeView }>(query(ana, 'challenge', { challengeId: created.id }));
+    expect(view.challenge.goalMinutes).toBe(6 * 60);
+    expect(view.challenge.journey?.end.name).toBe('Cascais');
+  });
+
+  it('tells a missing walking route from a server that is down', async () => {
+    const ana = await signIn('ana@example.com', 'Ana');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    network.mockResolvedValueOnce(Response.json({ code: 'NoRoute', message: 'Impossible route' }, { status: 400 }));
+    expect(await error(route(ana, { start: lisboa, end: cascais, stops: [] }))).toEqual({ status: 400, body: { error: 'invalid' } });
+    network.mockResolvedValueOnce(new Response('busy', { status: 429 }));
+    expect(await error(route(ana, { start: lisboa, end: cascais, stops: [] }))).toEqual({ status: 503, body: { error: 'unavailable' } });
+    network.mockResolvedValueOnce(new Response('down', { status: 502 }));
+    expect(await error(search(ana, { query: 'Lisboa' }))).toEqual({ status: 503, body: { error: 'unavailable' } });
+    // The network itself failing.
+    expect(await error(search(ana, { query: 'Lisboa' }))).toEqual({ status: 503, body: { error: 'unavailable' } });
+  });
+});
+
 describe('the Group Durable Object', () => {
   it('runs a challenge end to end and tells every open app what changed', async () => {
     const { ana, bia, anaId, biaId } = await group();
