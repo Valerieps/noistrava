@@ -60,7 +60,7 @@ function Tile({ label, value, note }: { label: string; value: string; note: stri
   return (
     <div className="tile soft">
       <div className="tiny muted">{label}</div>
-      <div className="d" style={{ fontSize: 20 }}>
+      <div className="d text-lg">
         {value}
       </div>
       <div className="small">{note}</div>

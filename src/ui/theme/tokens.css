@@ -33,6 +33,15 @@
   --font-display: 'Bricolage Grotesque', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-size-base: 15px;
 
+  /* Type scale: every font size in the UI is one of these. */
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 15px;
+  --text-md: 17px;
+  --text-lg: 20px;
+  --text-xl: 24px;
+  --text-display: 44px;
+
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -46,7 +55,7 @@
   --radius-card: 24px;
   --radius-pill: 999px;
   --shadow-float: 0 8px 24px rgba(0, 0, 0, 0.18);
-  --nav-height: 80px;
+  --nav-height: 64px;
 }
 
 @media (prefers-color-scheme: dark) {

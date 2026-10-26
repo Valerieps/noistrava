@@ -122,7 +122,7 @@ function Ring({ numbers, percent }: { numbers: ProgressNumbers; percent: number 
   return (
     <div className="ring">
       <div className="ring-figure">
-        <svg width="170" height="170" viewBox="0 0 170 170" role="img" aria-label={numbers.ringLabel}>
+        <svg width="100%" height="100%" viewBox="0 0 170 170" role="img" aria-label={numbers.ringLabel}>
           <circle cx="85" cy="85" r="76" fill="none" stroke="var(--color-ghost-track)" strokeWidth="7" />
           {outer > 0 && (
             <circle cx="85" cy="85" r="76" fill="none" stroke="var(--color-ghost)" strokeWidth="7" strokeLinecap="round" strokeDasharray={`${outer.toFixed(1)} ${OUTER.toFixed(1)}`} transform="rotate(-90 85 85)" />
@@ -133,7 +133,7 @@ function Ring({ numbers, percent }: { numbers: ProgressNumbers; percent: number 
           )}
         </svg>
         <div className="ring-center">
-          <div className="d" style={{ fontSize: 26 }}>
+          <div className="d text-xl">
             {percent}%
           </div>
           <div className="tiny muted">{numbers.ofLabel}</div>

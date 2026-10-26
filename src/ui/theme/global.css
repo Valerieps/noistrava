@@ -37,7 +37,7 @@ body {
 
 .screen-title {
   margin: var(--space-2) 0 0;
-  font-size: 30px;
+  font-size: var(--text-xl);
   line-height: 1.1;
 }
 
@@ -51,7 +51,7 @@ body {
 .back-header h1 {
   margin: 0;
   color: var(--color-text);
-  font-size: 26px;
+  font-size: var(--text-xl);
 }
 
 .icon-button {
@@ -73,14 +73,16 @@ body {
 }
 
 h1 {
-  margin: 0 0 var(--space-4);
+  margin: 0 0 var(--space-3);
+  line-height: 1.15;
   color: var(--color-brand);
-  font-size: 1.5rem;
+  font-size: var(--text-xl);
 }
 
 h2 {
   margin: 0;
-  font-size: 20px;
+  line-height: 1.2;
+  font-size: var(--text-lg);
 }
 
 a {
@@ -110,11 +112,29 @@ a {
 }
 
 .small {
-  font-size: 13px;
+  font-size: var(--text-sm);
 }
 
 .tiny {
-  font-size: 12px;
+  font-size: var(--text-xs);
+}
+
+.text-md {
+  font-size: var(--text-md);
+}
+
+.text-lg {
+  font-size: var(--text-lg);
+}
+
+.text-xl {
+  font-size: var(--text-xl);
+}
+
+/* A card's own title: smaller than a section's h2 */
+.card-title {
+  font-size: var(--text-md);
+  font-weight: 700;
 }
 
 .right {
@@ -137,7 +157,7 @@ a {
 }
 
 .lbl {
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -159,10 +179,10 @@ a {
 .panel {
   background: var(--color-surface);
   border-radius: var(--radius-card);
-  padding: var(--space-5);
+  padding: var(--space-4);
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--space-3);
 }
 
 .panel-flush {
@@ -171,11 +191,11 @@ a {
 }
 
 .panel-flush > .pad {
-  padding: 0 var(--space-5);
+  padding: 0 var(--space-4);
 }
 
 .panel-foot {
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--color-text-muted);
   border-top: 1px solid var(--color-border);
   padding-top: var(--space-3);
@@ -197,7 +217,7 @@ a {
 .tile {
   background: var(--color-surface);
   border-radius: var(--radius-tile);
-  padding: 14px var(--space-3);
+  padding: var(--space-3) var(--space-3);
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
@@ -211,26 +231,26 @@ a {
 }
 
 .tile-note {
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--color-text-muted);
   line-height: 1.3;
 }
 
 .message {
   border-radius: var(--space-4);
-  padding: var(--space-3) 14px;
+  padding: var(--space-3) var(--space-3);
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
 .message strong {
-  font-size: 15px;
+  font-size: var(--text-base);
   font-weight: 800;
 }
 
 .message span {
-  font-size: 13px;
+  font-size: var(--text-sm);
   line-height: 1.4;
 }
 
@@ -255,9 +275,9 @@ a {
 }
 
 .chip {
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: 700;
-  padding: var(--space-1) 10px;
+  padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-pill);
   white-space: nowrap;
 }
@@ -285,31 +305,31 @@ a {
 
 .hero {
   position: relative;
-  min-height: 200px;
+  min-height: 168px;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: var(--space-5);
+  padding: var(--space-4);
 }
 
 .hero-card {
   background: var(--color-surface);
   border-radius: var(--space-5);
-  padding: 14px var(--space-4);
+  padding: var(--space-3) var(--space-4);
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
 }
 
 .hero-title {
-  font-size: 28px;
+  font-size: var(--text-xl);
   line-height: 1.05;
 }
 
 .journey-header {
-  padding: var(--space-5) var(--space-4) 0;
+  padding: var(--space-4) var(--space-4) 0;
   display: flex;
-  gap: 14px;
+  gap: var(--space-3);
   align-items: center;
 }
 
@@ -358,8 +378,8 @@ a {
 }
 
 .journey-badge {
-  width: 64px;
-  height: 64px;
+  width: 56px;
+  height: 56px;
   flex: none;
   border-radius: var(--radius-tile);
 }
@@ -367,7 +387,7 @@ a {
 /* Progress */
 
 .big-number {
-  font-size: 52px;
+  font-size: var(--text-display);
   line-height: 1;
 }
 
@@ -465,8 +485,8 @@ a {
 .legend {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  font-size: 13px;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
 }
 
 .legend > div,
@@ -493,14 +513,14 @@ a {
 
 .ring {
   display: flex;
-  gap: var(--space-5);
+  gap: var(--space-4);
   align-items: center;
 }
 
 .ring-figure {
   position: relative;
-  width: 170px;
-  height: 170px;
+  width: 150px;
+  height: 150px;
   flex: none;
 }
 
@@ -516,7 +536,7 @@ a {
 .axis {
   display: flex;
   justify-content: space-between;
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--color-text-muted);
 }
 
@@ -528,12 +548,12 @@ svg text {
 
 .pills {
   display: flex;
-  gap: 6px;
+  gap: var(--space-2);
   flex-wrap: wrap;
 }
 
 .pills button {
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 600;
   min-height: 36px;
   padding: var(--space-2) var(--space-3);
@@ -552,17 +572,17 @@ svg text {
 .rank-row {
   display: grid;
   grid-template-columns: 20px 36px minmax(0, 1fr) auto;
-  gap: 10px;
+  gap: var(--space-2);
   align-items: center;
 }
 
 .rank-name {
-  font-size: 15px;
+  font-size: var(--text-base);
   font-weight: 600;
 }
 
 .move {
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: 700;
   color: var(--color-text-muted);
 }
@@ -597,7 +617,7 @@ svg text {
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 14px;
+  font-size: var(--text-sm);
   overflow: hidden;
   flex: none;
 }
@@ -610,7 +630,7 @@ svg text {
 .initial.large {
   width: 40px;
   height: 40px;
-  font-size: 15px;
+  font-size: var(--text-base);
 }
 
 .initial img {
@@ -632,8 +652,8 @@ svg text {
 .share-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 14px;
-  font-size: 12px;
+  gap: var(--space-2) var(--space-3);
+  font-size: var(--text-xs);
 }
 
 .share-legend .swatch {
@@ -657,7 +677,7 @@ svg text {
   padding: 0;
   background: transparent;
   color: var(--color-brand-ink);
-  font-size: 14px;
+  font-size: var(--text-sm);
   font-weight: 600;
   text-decoration: underline;
 }
@@ -665,7 +685,7 @@ svg text {
 .log-row {
   background: var(--color-surface);
   border-radius: var(--radius-tile);
-  padding: 14px;
+  padding: var(--space-3);
   display: grid;
   grid-template-columns: 40px minmax(0, 1fr) auto;
   gap: var(--space-3);
@@ -683,9 +703,9 @@ svg text {
   align-items: center;
   justify-content: center;
   gap: var(--space-1);
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 700;
-  padding: 0 10px;
+  padding: 0 var(--space-2);
 }
 
 .heart[aria-pressed='true'] {
@@ -788,7 +808,7 @@ svg text {
   color: var(--color-text);
   border: 0;
   box-shadow: none;
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: 700;
   padding: 1px 6px;
 }
@@ -797,9 +817,9 @@ svg text {
   background: var(--color-text);
   color: var(--color-bg);
   border: 0;
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: 700;
-  padding: 5px 10px;
+  padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-pill);
 }
 
@@ -809,7 +829,7 @@ svg text {
 }
 
 .map .leaflet-control-attribution {
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: 600;
   color: var(--color-text-muted);
   background: var(--color-surface);
@@ -821,7 +841,7 @@ svg text {
   z-index: 1000;
   top: var(--space-3);
   right: var(--space-3);
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: 600;
   min-height: 36px;
   padding: 0 var(--space-3);
@@ -875,7 +895,7 @@ svg text {
 .timeline {
   display: flex;
   overflow-x: auto;
-  padding: var(--space-1) var(--space-5) 6px;
+  padding: var(--space-1) var(--space-4) var(--space-2);
   scroll-snap-type: x mandatory;
 }
 
@@ -884,7 +904,7 @@ svg text {
   width: 136px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-2);
   scroll-snap-align: start;
 }
 
@@ -934,11 +954,11 @@ svg text {
 }
 
 .timeline-card {
-  margin-right: 10px;
+  margin-right: var(--space-2);
   border: 2px solid var(--color-border);
   background: var(--color-surface);
   border-radius: var(--space-4);
-  padding: var(--space-2) 10px 10px;
+  padding: var(--space-2) var(--space-2) var(--space-2);
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -958,7 +978,7 @@ svg text {
 }
 
 .timeline-tag {
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: 800;
   color: var(--color-brand-ink);
   text-transform: uppercase;
@@ -989,7 +1009,7 @@ svg text {
   gap: var(--space-1);
   text-decoration: none;
   color: var(--color-text-muted);
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: 600;
 }
 
@@ -1002,13 +1022,13 @@ svg text {
   position: fixed;
   right: max(var(--space-4), calc(50vw - 280px + var(--space-4)));
   bottom: calc(var(--nav-height) + var(--space-4) + env(safe-area-inset-bottom));
-  min-height: 56px;
-  padding: 0 22px;
+  min-height: 52px;
+  padding: 0 var(--space-5);
   border-radius: var(--radius-pill);
   border: 0;
   background: var(--color-brand);
   color: var(--color-on-brand);
-  font-size: 16px;
+  font-size: var(--text-base);
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -1027,7 +1047,7 @@ svg text {
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: var(--space-2);
 }
 
 .switch-row {
@@ -1077,7 +1097,7 @@ svg text {
   background: var(--color-brand-soft);
   color: var(--color-brand-ink);
   border-radius: var(--space-4);
-  padding: var(--space-3) 14px;
+  padding: var(--space-3) var(--space-3);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1086,9 +1106,9 @@ svg text {
 
 .big-button {
   width: 100%;
-  min-height: 56px;
+  min-height: 48px;
   border-radius: var(--radius-pill);
-  font-size: 16px;
+  font-size: var(--text-base);
   font-weight: 700;
 }
 
@@ -1119,7 +1139,7 @@ label {
 }
 
 .field-label {
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 600;
 }
 
@@ -1127,7 +1147,7 @@ input,
 select {
   font: inherit;
   min-height: 48px;
-  padding: var(--space-2) 14px;
+  padding: var(--space-2) var(--space-3);
   border: 1px solid var(--color-border);
   border-radius: 14px;
   background: var(--color-bg);
@@ -1207,8 +1227,8 @@ button:disabled {
 }
 
 .menu-list > * {
-  min-height: 56px;
-  padding: var(--space-4) var(--space-5);
+  min-height: 48px;
+  padding: var(--space-3) var(--space-4);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1235,7 +1255,7 @@ button:disabled {
 .profile-band {
   background: var(--color-brand);
   color: var(--color-on-brand);
-  padding: var(--space-5) var(--space-5) 56px;
+  padding: var(--space-4) var(--space-4) 48px;
 }
 
 .profile-card {
@@ -1243,8 +1263,8 @@ button:disabled {
 }
 
 .profile-photo {
-  width: 84px;
-  height: 84px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   border: 3px solid var(--color-accent);
   background: var(--color-brand-soft);
@@ -1252,11 +1272,11 @@ button:disabled {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
+  font-size: var(--text-xl);
   font-weight: 800;
   overflow: hidden;
   flex: none;
-  margin-top: -44px;
+  margin-top: -36px;
 }
 
 .profile-photo img {
@@ -1270,7 +1290,7 @@ button:disabled {
   grid-template-columns: minmax(0, 1fr) 140px 44px;
   gap: var(--space-3);
   align-items: center;
-  font-size: 14px;
+  font-size: var(--text-sm);
 }
 
 /* History */
@@ -1285,8 +1305,8 @@ button:disabled {
 }
 
 .history-thumb {
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   flex: none;
   border-radius: var(--space-4);
 }
@@ -1304,7 +1324,7 @@ button:disabled {
   display: flex;
   flex-wrap: wrap;
   gap: 2px var(--space-3);
-  font-size: 12px;
+  font-size: var(--text-xs);
 }
 
 .dev-sign-in {

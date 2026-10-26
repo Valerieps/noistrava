@@ -29,13 +29,13 @@ export function History() {
       {items.length > 0 && (
         <section className="tiles tiles-2">
           <div className="tile">
-            <div className="d" style={{ fontSize: 26 }}>
+            <div className="d text-xl">
               {Math.floor(totalSeconds / 3600)}h
             </div>
             <div className="tile-note">{strings.history.totalHours}</div>
           </div>
           <div className="tile">
-            <div className="d" style={{ fontSize: 26 }}>
+            <div className="d text-xl">
               {strings.history.goalsMet(met, items.length)}
             </div>
             <div className="tile-note">{strings.history.goalsMetLabel}</div>
@@ -69,7 +69,7 @@ function HistoryCard({ item }: { item: HistoryItemView }) {
       <div className="row" style={{ margin: 0, alignItems: 'flex-start' }}>
         <div className="history-thumb striped" aria-hidden="true" />
         <div className="grow">
-          <h2 className="ellipsis" style={{ fontSize: 16, fontWeight: 700 }}>
+          <h2 className="ellipsis card-title">
             {item.name}
           </h2>
           <div className="small muted">{formatMonthYear(item.startsAt)}</div>
@@ -77,7 +77,7 @@ function HistoryCard({ item }: { item: HistoryItemView }) {
         <span className={`chip ${chip.tone}`}>{chip.text}</span>
       </div>
       <div className="split" style={{ alignItems: 'baseline' }}>
-        <div className="d" style={{ fontSize: 24 }}>
+        <div className="d text-xl">
           {item.state === 'succeeded' ? formatDuration(item.totalSeconds) : strings.history.totalOfGoal(formatDuration(item.totalSeconds), formatGoal(item.goalMinutes))}
         </div>
         <div className="small muted">{cancelledDay ? strings.history.cancelledOn(cancelledDay) : strings.history.senhoras(item.results.length)}</div>

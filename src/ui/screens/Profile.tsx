@@ -57,7 +57,7 @@ export function Profile({ me, onSignOut }: { me: MeView; onSignOut: () => void }
               {me.photoUrl ? <img src={me.photoUrl} alt="" referrerPolicy="no-referrer" /> : initial(me.name)}
             </div>
             <div className="grow">
-              <h1 className="d" style={{ margin: 0, color: 'var(--color-text)', fontSize: 26 }}>
+              <h1 className="d text-xl" style={{ margin: 0, color: 'var(--color-text)' }}>
                 {me.name}
               </h1>
               <div className="small muted">{isAdmin(me) ? p.admin : p.member}</div>
@@ -84,7 +84,7 @@ export function Profile({ me, onSignOut }: { me: MeView; onSignOut: () => void }
               <div style={{ fontWeight: 600 }}>{p.timezone}</div>
               <div className="tiny muted">{p.timezoneNote}</div>
             </div>
-            <div className="d" style={{ fontSize: 18 }}>
+            <div className="d text-md">
               {me.timezone ? formatOffset(utcOffsetMinutes(me.timezone, new Date())) : p.timezoneUnknown}
             </div>
           </div>
@@ -143,7 +143,7 @@ export function Profile({ me, onSignOut }: { me: MeView; onSignOut: () => void }
                       {a.editedByMember && ` · ${p.edited}`}
                     </span>
                   </span>
-                  <span className="d" style={{ fontSize: 17 }}>
+                  <span className="d text-md">
                     {formatDuration(a.durationSeconds)}
                   </span>
                   <ChevronIcon />
@@ -170,10 +170,10 @@ export function Profile({ me, onSignOut }: { me: MeView; onSignOut: () => void }
 function Tile({ value, note }: { value: string; note: string }) {
   return (
     <div className="tile" style={{ padding: 'var(--space-4)' }}>
-      <div className="d" style={{ fontSize: 28, lineHeight: 1.1 }}>
+      <div className="d text-xl" style={{ lineHeight: 1.1 }}>
         {value}
       </div>
-      <div className="tile-note" style={{ fontSize: 13 }}>
+      <div className="tile-note">
         {note}
       </div>
     </div>

@@ -69,7 +69,7 @@ export function ActivityLog({
           </div>
           <div className="row" style={{ margin: 0, gap: 8 }}>
             {!journey && (
-              <div className="d" style={{ fontSize: 17 }}>
+              <div className="d text-md">
                 {formatDuration(entry.durationSeconds)}
               </div>
             )}
