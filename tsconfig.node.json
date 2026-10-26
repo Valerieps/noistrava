@@ -11,5 +11,9 @@
     "vite.config.ts",
     "network-policy.ts"
   ],
-  "exclude": []
+  "exclude": [
+    "server/entry/*.test.ts",
+    "server/testing/worker.ts",
+    "server/testing/cloudflare-workers.ts"
+  ]
 }
