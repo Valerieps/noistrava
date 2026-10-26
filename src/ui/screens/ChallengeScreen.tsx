@@ -187,7 +187,6 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
         <header className="journey-header">
           <div className="journey-badge striped" aria-hidden="true" />
           <div className="stack" style={{ gap: 2, minWidth: 0 }}>
-            <div className="lbl brand-ink">{strings.challenge.typeJourney}</div>
             <h1 className="d hero-title" style={{ margin: 0, color: 'var(--color-text)', fontSize: 24 }}>
               {challenge.name}
             </h1>
@@ -199,7 +198,6 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
       ) : (
         <header className="hero striped">
           <div className="hero-card">
-            <div className="lbl brand-ink">{strings.challenge.type}</div>
             <h1 className="d hero-title" style={{ margin: 0, color: 'var(--color-text)' }}>
               {challenge.name}
             </h1>
@@ -234,7 +232,6 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
 
         {open && started && !journey && <PaceTiles p={p} goalMinutes={challenge.goalMinutes} />}
 
-        {journey && <JourneyStops challenge={challenge} />}
         {journey && <Timeline challenge={challenge} />}
 
         {journey ? <JourneyRanking members={challenge.members} log={entries} now={now} /> : <Ranking members={challenge.members} log={entries} period={period} now={now} />}
@@ -267,7 +264,7 @@ function journeyNumbers(challenge: ChallengeView, p: Pace, progressMeters: numbe
   const places = [{ name: journey.start.name, distanceMeters: 0 }, ...journey.stops, { name: journey.end.name, distanceMeters: journey.distanceMeters }];
   return {
     headline: formatKm(doneKm),
-    subline: strings.journey.of(formatKm(totalKm), formatDuration(challenge.totalSeconds), formatGoal(challenge.goalMinutes), challenge.percent),
+    subline: strings.journey.of(formatKm(doneKm), formatKm(totalKm),formatDuration(challenge.totalSeconds), formatGoal(challenge.goalMinutes), challenge.percent),
     effective: doneKm / totalKm,
     programmed: open ? programmedKm / totalKm : 0,
     effectiveLabel: strings.journey.walked(formatKm(doneKm)),
@@ -386,48 +383,6 @@ function Result({ challenge }: { challenge: ChallengeView }) {
   );
 }
 
-function JourneyStops({ challenge }: { challenge: ChallengeView }) {
-  const journey = challenge.journey!;
-  const done = journey.progressMeters;
-  const places = [{ ...journey.start, distanceMeters: 0 }, ...journey.stops, { ...journey.end, distanceMeters: journey.distanceMeters }];
-  const last = [...places].reverse().find((p) => p.distanceMeters <= done) ?? places[0];
-  const next = places.find((p) => p.distanceMeters > done);
-  const reached = challenge.milestones.find((m) => m.milestone === `parada:${last.name}`);
-  return (
-    <section className="tiles tiles-2" style={{ gap: 10 }}>
-      <div className="stop-card">
-        <div className="lbl muted" style={{ fontSize: 11 }}>
-          {strings.journey.lastStop}
-        </div>
-        <div className="d" style={{ fontSize: 21 }}>
-          {last.name}
-        </div>
-        <div className="tiny muted">
-          {reached ? strings.journey.atKmOn(Math.round(last.distanceMeters / 1000), formatDate(reached.reachedAt)) : strings.journey.atKm(Math.round(last.distanceMeters / 1000))}
-        </div>
-      </div>
-      <div className="stop-card inverse">
-        <div className="lbl" style={{ opacity: 0.75, fontSize: 11 }}>
-          {strings.journey.nextStop}
-        </div>
-        <div className="d" style={{ fontSize: 28, lineHeight: 1 }}>
-          {next ? next.name : strings.journey.arrived}
-        </div>
-        {next && (
-          <div style={{ marginTop: 'auto' }}>
-            <div className="d" style={{ fontSize: 26 }}>
-              {formatKm((next.distanceMeters - done) / 1000)}
-            </div>
-            <div className="tiny" style={{ opacity: 0.85 }}>
-              {strings.journey.nextIn(formatDuration(((next.distanceMeters - done) / 1000 / 5) * 3600))}
-            </div>
-          </div>
-        )}
-      </div>
-    </section>
-  );
-}
-
 interface TimelineItem {
   readonly km: number;
   readonly kind: 'mark' | 'here';
@@ -451,10 +406,7 @@ function Timeline({ challenge }: { challenge: ChallengeView }) {
   items.sort((a, b) => a.km - b.km || (a.kind === 'here' ? 1 : -1));
 
   return (
-    <section className="panel panel-flush">
-      <div className="pad section-head">
-        <h2 className="d">{strings.journey.along}</h2>
-      </div>
+    <section className="panel panel-flush" aria-label={strings.journey.along}>
       <ol className="timeline list">
         {items.map((t, i) => {
           const done = t.km <= doneKm;

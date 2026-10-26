@@ -35,6 +35,8 @@ interface Props {
   /** Where the programmed pace would put it. */
   readonly ghost?: MapMarker;
   readonly label: string;
+  /** A shorter map, for the challenge screen. */
+  readonly compact?: boolean;
   readonly children?: ReactNode;
 }
 
@@ -44,7 +46,7 @@ function text(content: string): HTMLElement {
   return span;
 }
 
-export function RouteMap({ route, lines, places, here, ghost, label, children }: Props) {
+export function RouteMap({ route, lines, places, here, ghost, label, compact = false, children }: Props) {
   const element = useRef<HTMLDivElement>(null);
   const map = useRef<{ map: L.Map; layers: L.LayerGroup } | null>(null);
 
@@ -100,7 +102,7 @@ export function RouteMap({ route, lines, places, here, ghost, label, children }:
   }, [lines, places, here, ghost]);
 
   return (
-    <section className="map">
+    <section className={compact ? 'map compact' : 'map'}>
       <div ref={element} className="map-canvas" role="img" aria-label={label} />
       {children}
     </section>

@@ -663,6 +663,10 @@ svg text {
   font: inherit;
 }
 
+.map.compact .map-canvas {
+  height: 320px;
+}
+
 /* Leaflet draws on SVG; these override its default stroke and fill attributes. */
 .map .route-left {
   stroke: var(--color-ghost-strong);
@@ -819,20 +823,6 @@ svg text {
   border-color: var(--color-border);
   background: var(--color-surface);
   color: var(--color-text);
-}
-
-.stop-card {
-  border-radius: 22px;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  background: var(--color-surface);
-}
-
-.stop-card.inverse {
-  background: var(--color-text);
-  color: var(--color-bg);
 }
 
 .timeline {
