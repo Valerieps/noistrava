@@ -103,6 +103,17 @@ input {
   color: var(--color-text);
 }
 
+label.check {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+label.check input {
+  margin-top: 0.2em;
+  padding: 0;
+}
+
 button,
 .button {
   font: inherit;

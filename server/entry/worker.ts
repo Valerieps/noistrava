@@ -2,8 +2,9 @@
 // (ADR-004). Everything about the group is delegated to the Group Durable Object.
 import type { ApiError, ApiResult } from '../../src/application/api-contract';
 import { SESSION_DAYS, type GoogleProfile } from '../application/members';
-import { clearCookie, LOGIN_COOKIE, readCookie, SESSION_COOKIE, setCookie } from '../infrastructure/cookies';
-import { randomToken, sha256 } from '../infrastructure/crypto';
+import { grantedAccess } from '../../src/domain/strava';
+import { clearCookie, LOGIN_COOKIE, readCookie, SESSION_COOKIE, setCookie, STRAVA_COOKIE } from '../infrastructure/cookies';
+import { constantTimeEqual, encryptText, randomToken, sha256 } from '../infrastructure/crypto';
 import { devProfile, devSignInAllowed } from '../infrastructure/dev-sign-in';
 import {
   authorizationUrl,
@@ -13,6 +14,7 @@ import {
   newPendingLogin,
   profileFromIdToken,
 } from '../infrastructure/google-oauth';
+import { exchangeStravaCode, stravaAuthorizationUrl } from '../infrastructure/strava-oauth';
 import type { Env } from './env';
 import { Group, SESSION_HASH_HEADER } from './group-object';
 
@@ -101,11 +103,51 @@ async function callback(request: Request, env: Env, url: URL): Promise<Response>
   return redirect('/', [clearCookie(LOGIN_COOKIE), cookie]);
 }
 
+/**
+ * "Conectar com Strava": only after the member accepted sharing (docs/spec/strava.md). Answers
+ * with Strava's address; the app navigates there and Strava comes back to the callback below.
+ */
+async function stravaConnect(request: Request, env: Env, url: URL, hash: string): Promise<Response> {
+  const body = (await request.json().catch(() => null)) as { consent?: unknown; includePrivate?: unknown } | null;
+  if (body?.consent !== true || typeof body.includePrivate !== 'boolean') return json({ error: 'invalid' }, 400);
+  if (!env.STRAVA_CLIENT_ID || !env.STRAVA_CLIENT_SECRET || !env.STRAVA_TOKEN_KEY) return json({ error: 'unavailable' }, 503);
+  if (!(await group(env).query(hash, 'me', {})).ok) return json({ error: 'unauthenticated' }, 401);
+  const state = randomToken();
+  const target = stravaAuthorizationUrl(env.STRAVA_CLIENT_ID, `${url.origin}/api/strava/callback`, state, body.includePrivate);
+  return json({ value: target }, 200, { 'Set-Cookie': setCookie(STRAVA_COOKIE, state, 600) });
+}
+
+async function stravaCallback(request: Request, env: Env, url: URL): Promise<Response> {
+  const done = (result: string) => redirect(`/?strava=${result}`, [clearCookie(STRAVA_COOKIE)]);
+  const cookies = request.headers.get('Cookie');
+  const state = readCookie(cookies, STRAVA_COOKIE);
+  const hash = await sessionHash(request);
+  if (!state || !hash || !constantTimeEqual(url.searchParams.get('state') ?? '', state)) return done('erro');
+  if (url.searchParams.get('error')) return done('cancelado');
+  const access = grantedAccess(url.searchParams.get('scope'));
+  if (!access) return done('sem-permissao');
+  const code = url.searchParams.get('code');
+  if (!code || !env.STRAVA_CLIENT_SECRET || !env.STRAVA_TOKEN_KEY) return done('erro');
+
+  const tokens = await exchangeStravaCode({ code, clientId: env.STRAVA_CLIENT_ID, clientSecret: env.STRAVA_CLIENT_SECRET });
+  if (!tokens) return done('erro');
+  const result = await group(env).connectStrava(hash, {
+    athleteId: tokens.athleteId,
+    accessToken: await encryptText(env.STRAVA_TOKEN_KEY, tokens.accessToken),
+    refreshToken: await encryptText(env.STRAVA_TOKEN_KEY, tokens.refreshToken),
+    expiresAt: tokens.expiresAt,
+    includePrivate: access.includePrivate,
+  });
+  if (result.ok) return done('conectado');
+  return done(result.error === 'conflict' ? 'outra-conta' : 'erro');
+}
+
 async function api(request: Request, env: Env, url: URL): Promise<Response> {
   const path = url.pathname;
 
   if (path === '/api/auth/login' && request.method === 'GET') return login(env, url);
   if (path === '/api/auth/callback' && request.method === 'GET') return callback(request, env, url);
+  if (path === '/api/strava/callback' && request.method === 'GET') return stravaCallback(request, env, url);
 
   if (!sameOrigin(request, url)) return json({ error: 'forbidden' }, 403);
   const hash = await sessionHash(request);
@@ -126,6 +168,11 @@ async function api(request: Request, env: Env, url: URL): Promise<Response> {
   }
 
   if (path === '/api/auth/dev' && devSignInAllowed(env.DEV_SIGN_IN, url)) return devSignIn(request, env);
+
+  if (path === '/api/strava/connect') {
+    if (!hash) return json({ error: 'unauthenticated' }, 401);
+    return stravaConnect(request, env, url, hash);
+  }
 
   const match = /^\/api\/(query|command)\/([a-zA-Z.]+)$/.exec(path);
   if (!match) return json({ error: 'not_found' }, 404);

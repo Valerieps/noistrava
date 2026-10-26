@@ -28,6 +28,7 @@ export function httpBackend(): Backend {
       await post('/api/auth/logout', {});
     },
     devSignIn: (email, name) => post('/api/auth/dev', { email, name }),
+    stravaConnect: (includePrivate) => post('/api/strava/connect', { consent: true, includePrivate }),
     signInUrl: '/api/auth/login',
   };
 }

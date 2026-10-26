@@ -32,6 +32,20 @@ export const MIGRATIONS: readonly (readonly string[])[] = [
       revoked_at TEXT
     )`,
   ],
+  // 2: each member's Strava connection (ADR-008). Tokens are encrypted before they get here.
+  [
+    `CREATE TABLE strava_connections (
+      member_id TEXT PRIMARY KEY REFERENCES members(id),
+      athlete_id TEXT NOT NULL,
+      access_token TEXT,
+      refresh_token TEXT,
+      expires_at TEXT,
+      include_private INTEGER NOT NULL,
+      consented_at TEXT NOT NULL,
+      active INTEGER NOT NULL DEFAULT 1
+    )`,
+    `CREATE INDEX strava_connections_athlete ON strava_connections(athlete_id)`,
+  ],
 ];
 
 export function migrate(sql: Sql): void {

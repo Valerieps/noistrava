@@ -34,6 +34,25 @@ export const strings = {
     save: 'Salvar',
   },
 
+  strava: {
+    title: 'Strava',
+    intro: 'Conecte o Strava e as suas atividades chegam sozinhas, sem precisar registrar.',
+    consent: 'Aceito que o grupo veja o início (data e hora), o tempo total e a modalidade das minhas atividades do Strava.',
+    consentNote: 'O app guarda só isso. Nunca título, mapa, distância nem fotos. Sem o aceite, você registra à mão.',
+    includePrivate: 'Incluir também as minhas atividades privadas do Strava',
+    connect: 'Conectar com Strava',
+    connected: 'Strava conectado. As suas atividades vão chegar sozinhas.',
+    connectedPrivate: 'As atividades privadas também entram.',
+    unavailable: 'A conexão com o Strava ainda não está configurada aqui.',
+    results: {
+      conectado: 'Pronto, o Strava está conectado!',
+      cancelado: 'A conexão com o Strava foi cancelada.',
+      'sem-permissao': 'Para conectar, deixe marcada a permissão de ver as suas atividades no Strava.',
+      'outra-conta': 'Essa conta do Strava já está conectada por outra integrante.',
+      erro: 'A conexão com o Strava não deu certo. Tenta de novo?',
+    } as Record<string, string>,
+  },
+
   invites: {
     title: 'Convites',
     emailLabel: 'E-mail da conta Google',

@@ -18,6 +18,7 @@ import {
 } from './members';
 import type { Clock, IdGenerator, Sql } from './ports';
 import { migrate } from './schema';
+import { connectStrava, stravaConnection, type ConnectStravaResult, type NewStravaConnection } from './strava';
 
 type Input = Record<string, unknown>;
 
@@ -28,6 +29,7 @@ const QUERIES: { [N in QueryName]: Handler<Queries[N]['output'] | QueryError | n
   me: (_ctx, actor) => me(actor),
   members: (ctx, actor) => listMembers(ctx, actor),
   invites: (ctx, actor) => listInvites(ctx, actor),
+  strava: (ctx, actor) => stravaConnection(ctx, actor),
 };
 
 /** Every command the API runs; each checks the actor's role itself. */
@@ -60,6 +62,12 @@ export class GroupService {
 
   memberForSession(sessionHash: string): Member | null {
     return memberForSession(this.ctx, sessionHash);
+  }
+
+  /** Called by the Worker after the Strava redirect, for the member signed in on that browser. */
+  connectStrava(sessionHash: string, connection: NewStravaConnection): ConnectStravaResult | { ok: false; error: 'unauthenticated' } {
+    const actor = this.memberForSession(sessionHash);
+    return actor ? connectStrava(this.ctx, actor, connection) : { ok: false, error: 'unauthenticated' };
   }
 
   query(sessionHash: string, name: string, input: unknown): ApiResult<unknown> {
