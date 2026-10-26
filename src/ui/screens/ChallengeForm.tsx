@@ -1,15 +1,13 @@
 // Creating or editing a challenge (docs/spec/desafio-horas.md, "Criar" and "Editar"): the name,
-// the goal in hours or a journey, the period with each member's zone, and whether the creator is a
+// the goal in hours or a journey, the period, and whether the creator is a
 // Senhora. A new challenge is saved as a draft, or opened at once while no other is open.
 import { useEffect, useState, type FormEvent } from 'react';
 import type { ApiError, ChallengeSetupInput, ChallengeView } from '../../application/api-contract';
-import { CHALLENGE_NAME_MAX_LENGTH, GOAL_HOURS_MAX, challengePeriod, type Journey } from '../../domain/challenge/challenge';
-import { formatOffset, utcOffsetMinutes } from '../../domain/challenge/progress';
+import { CHALLENGE_NAME_MAX_LENGTH, GOAL_HOURS_MAX, type Journey } from '../../domain/challenge/challenge';
 import { strings } from '../../domain/strings';
-import { isCalendarDate } from '../../domain/time/zones';
 import { BackHeader } from '../App';
 import { useServices } from '../backend-context';
-import { formatWeekdayHour, todayDate } from '../format';
+import { todayDate } from '../format';
 import { navigate } from '../router';
 import { useQuery } from '../use-query';
 import { JourneyBuilder } from './JourneyBuilder';
@@ -52,7 +50,6 @@ type Mode = 'draft' | 'open' | 'save';
 
 function Form({ challenge }: { challenge: ChallengeView | null }) {
   const { backend } = useServices();
-  const members = useQuery('members', {}, ['members']);
   const current = useQuery('challenge', {}, ['challenge']);
   const isDraft = challenge?.state === 'draft';
   const creating = challenge === null || isDraft;
@@ -111,7 +108,6 @@ function Form({ challenge }: { challenge: ChallengeView | null }) {
     void submit(!creating ? 'save' : canOpen ? 'open' : 'draft');
   }
 
-  const zones = [...new Set((members.data ?? []).map((m) => m.timezone).filter((z): z is string => z !== null))];
   const f = strings.challengeForm;
 
   return (
@@ -161,7 +157,6 @@ function Form({ challenge }: { challenge: ChallengeView | null }) {
               <input type="date" required min={creating ? startDate : startDate > today ? startDate : today} value={endDate} onChange={(e) => setEndDate(e.target.value)} />
             </label>
           </div>
-          <ZoneTable zones={zones} startDate={startDate} endDate={endDate} />
         </section>
 
         {creating && (
@@ -202,37 +197,5 @@ function Form({ challenge }: { challenge: ChallengeView | null }) {
         )}
       </form>
     </>
-  );
-}
-
-/** Each zone's start and end, so the creator sees the exact hours before confirming. */
-function ZoneTable({ zones, startDate, endDate }: { zones: readonly string[]; startDate: string; endDate: string }) {
-  const f = strings.challengeForm;
-  if (!isCalendarDate(startDate) || !isCalendarDate(endDate) || endDate < startDate) return null;
-  const { startsAt, endsAt } = challengePeriod(startDate, endDate, zones);
-  const byOffset = new Map<number, string>();
-  for (const zone of zones.length > 0 ? zones : ['UTC']) {
-    const offset = utcOffsetMinutes(zone, startsAt);
-    if (!byOffset.has(offset)) byOffset.set(offset, zone);
-  }
-  const rows = [...byOffset.entries()].sort((a, b) => b[0] - a[0]);
-  // The end hour shows 24h of the last day rather than 0h of the next.
-  const endLabel = (zone: string) => {
-    const label = formatWeekdayHour(endsAt, zone);
-    if (!label.endsWith(' 0h')) return label;
-    const lastDay = new Date(endsAt.getTime() - 1);
-    return `${formatWeekdayHour(lastDay, zone).split(' ')[0]} 24h`;
-  };
-  return (
-    <div className="zones">
-      <div style={{ fontWeight: 600 }}>{f.zonesTitle}</div>
-      {rows.map(([offset, zone]) => (
-        <div key={offset} className="zones-row">
-          <b>{formatOffset(offset)}</b>
-          <span className="muted">{f.zoneStarts(formatWeekdayHour(startsAt, zone))}</span>
-          <span className="muted">{f.zoneEnds(endLabel(zone))}</span>
-        </div>
-      ))}
-    </div>
   );
 }
