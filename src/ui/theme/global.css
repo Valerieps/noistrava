@@ -284,6 +284,7 @@ a {
 /* Challenge hero */
 
 .hero {
+  position: relative;
   min-height: 200px;
   display: flex;
   flex-direction: column;
@@ -310,6 +311,50 @@ a {
   display: flex;
   gap: 14px;
   align-items: center;
+}
+
+/* The challenge's options, behind three dots on the right of the header */
+.header-menu {
+  position: relative;
+  flex: none;
+  margin-left: auto;
+  align-self: flex-start;
+}
+
+.hero > .header-menu {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+}
+
+.header-menu > button {
+  min-height: 44px;
+  width: 44px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-color: transparent;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.header-menu > .menu-list {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  right: 0;
+  z-index: 10;
+  min-width: 220px;
+  border-radius: var(--radius-tile);
+  box-shadow: var(--shadow-float);
+}
+
+.header-menu > .menu-list > * {
+  min-height: 48px;
+  padding: var(--space-3) var(--space-4);
+}
+
+.menu-list > .danger-strong {
+  color: var(--color-danger);
 }
 
 .journey-badge {
