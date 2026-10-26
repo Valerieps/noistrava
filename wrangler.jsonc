@@ -20,10 +20,11 @@
   // One cron for every time-based job; each job decides whether it is due (GroupService.tick).
   "triggers": { "crons": ["*/5 * * * *"] },
   "vars": {
-    // Public: the OAuth client ID from Google Cloud (BOOTSTRAP.md). The secret is a secret.
-    "GOOGLE_CLIENT_ID": "REPLACE_ME.apps.googleusercontent.com"
-    "STRAVA_CLIENT_TOKEN": "60189dd912281d807cfbb2b070e636b21626b986",
-    "STRAVA_REFRESH_TOKEN": "1ffe54ff8b5929f49f30ed41cf43e344a2e05ad9"
+    // Public: the OAuth client ID from Google Cloud. The secret is a secret.
+    "GOOGLE_CLIENT_ID": "REPLACE_ME.apps.googleusercontent.com",
+    // Public: the Strava app's client ID (ADR-008). STRAVA_CLIENT_SECRET, STRAVA_TOKEN_KEY and
+    // STRAVA_WEBHOOK_SECRET are secrets.
+    "STRAVA_CLIENT_ID": "REPLACE_ME"
   },
   // Branch previews (`wrangler preview`, ADR-004) refuse to deploy without this block. Each preview
   // gets its own empty Group namespace, never production's data; it has no secrets and no cron, and

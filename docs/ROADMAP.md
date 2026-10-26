@@ -11,16 +11,38 @@ O que ainda não está pronto.
 
 | Feature | Fase | Spec | Observação |
 | --- | --- | --- | --- |
-| <feature> | 1 | `spec/<arquivo>.md` | |
+| Fuso da integrante, vindo do aparelho | 1 | `spec/acesso-e-membros.md` | O início e o término do desafio dependem dele |
+| Sair do grupo apaga as atividades e o Strava | 1 | `spec/acesso-e-membros.md` | Depende de atividades e Strava |
+| Atividades: registro manual, editar, excluir | 1 | `spec/atividades.md` | |
+| Conexão com o Strava, aceite, webhook | 1 | `spec/strava.md` | ADR-008; precisa do app no Strava (issue da dona) |
+| Criar desafio, responder ao convite, papéis no desafio | 1 | `spec/desafio-horas.md` | |
+| Período com os fusos mais adiantado e mais atrasado | 1 | `spec/desafio-horas.md` | |
+| Meta, término, 24 horas de tolerância, marcos | 1 | `spec/desafio-horas.md` | |
+| Jornada no mapa | 1 | `spec/desafio-horas.md` | ADR-009 |
+| Editar, cancelar e apagar desafio | 1 | `spec/desafio-horas.md` | |
+| Log de atividades com coração | 1 | `spec/desafio-horas.md` | |
+| Histórico de desafios | 1 | `spec/desafio-horas.md` | |
+| Primeira tela de verdade no lugar da `Home` de exemplo | 1 | — | Sai `src/domain/greeting.ts` junto |
+| Notificações | 2 | `spec/desafio-horas.md` | Regras em aberto |
 
 ## O código ainda não segue o spec
 
-- <regra do spec> — <o que o código faz hoje>.
+- Nada por enquanto: o que já existe (acesso e integrantes) segue o spec.
 
 ## Adiado
 
-- <o que foi adiado> — <por quê e até quando>.
+- Identidade visual (cores e ícones) — continuam as do template até a dona escolher entre opções.
 
 ## Revisar as lacunas que o agente decidiu
 
-- [ ] <regra que o agente escreveu em `spec/` sem perguntar, com o arquivo>.
+- [ ] Quem ainda não respondeu ao convite do desafio vê tudo como a torcida (`spec/desafio-horas.md`).
+- [ ] A torcida pode virar Senhora enquanto o desafio não terminou (`spec/desafio-horas.md`).
+- [ ] Quem sai de um desafio tem as horas até ali mantidas, e as seguintes não contam (`spec/desafio-horas.md`).
+- [ ] Um desafio cancelado fica no histórico como cancelado (`spec/desafio-horas.md`).
+- [ ] Marcos já atingidos continuam atingidos se a meta ou a rota mudar (`spec/desafio-horas.md`).
+- [ ] A jornada pode ter paradas no caminho, que viram marcos (`spec/desafio-horas.md`).
+- [ ] A rota da jornada é calculada a pé (`spec/desafio-horas.md`, ADR-009).
+- [ ] As 24 horas de tolerância depois do término fecham o resultado; só nelas dá para editar atividades do desafio terminado (`spec/desafio-horas.md`, `spec/atividades.md`).
+- [ ] Toda integrante, não só a torcida, pode reagir com coração (`spec/desafio-horas.md`).
+- [ ] Uma atividade do Strava excluída no app não volta (`spec/atividades.md`).
+- [ ] Desconectar o Strava mantém as atividades que já vieram (`spec/strava.md`).

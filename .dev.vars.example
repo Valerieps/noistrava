@@ -3,6 +3,13 @@ GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 # Comma-separated e-mails that may enter as admin while the group has no admin.
 BOOTSTRAP_ADMIN_EMAILS=
+# Strava (ADR-008). The client ID is public and also goes in wrangler.jsonc; the rest are secrets.
+STRAVA_CLIENT_ID=
+STRAVA_CLIENT_SECRET=
+# 32 random bytes in base64: encrypts the Strava tokens at rest.
+STRAVA_TOKEN_KEY=
+# Random string: part of the webhook path, so only Strava knows where to post events.
+STRAVA_WEBHOOK_SECRET=
 # 1 turns on the test sign-in (any invited e-mail, no Google) on localhost only (ADR-007).
 # Never in wrangler.jsonc. With it, you can try the app before Google Cloud is set up.
 DEV_SIGN_IN=1

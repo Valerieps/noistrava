@@ -1,7 +1,6 @@
-# <Nome do app> - Claude Code Context & Instructions
+# Senhoras - Claude Code Context & Instructions
 
-<!-- BOOTSTRAP.md fills this paragraph: what the app is, for whom, and its core loop. -->
-<One paragraph: what the app does, who uses it, the loop a member repeats every day.>
+Senhoras runs collective exercise challenges for a small closed group of friends in different countries. In each challenge one member (integrante) is the creator; the others accept and become Senhoras, or decline and become the torcida. The MVP has one challenge type, collective hours ("horas colaborativas"), with or without a journey on a map. The daily loop: a Senhora exercises, the activity arrives from Strava (or she logs it by hand), the group total moves toward the goal, and everyone, torcida included, follows the activity log and reacts with a heart.
 
 ## Docs
 

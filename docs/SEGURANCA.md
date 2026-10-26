@@ -17,7 +17,15 @@ conferidas pelo `src/security.test.ts`, que roda em todo build.
   `send_metrics: false`.
 - Segredos nunca vão para o código do cliente: tudo que está no bundle é público. O segredo do login
   Google, e qualquer chave de API, ficam só no Worker (`wrangler secret put`; localmente no `.dev.vars`).
-- <O `BOOTSTRAP.md` escreve aqui quais dados pessoais o app guarda e se algum é sensível.>
+- O app guarda, de cada integrante: nome, e-mail, foto e fuso horário; as atividades físicas
+  (início, tempo total, modalidade), que são **dado de saúde**; e, de quem conecta o Strava, o
+  aceite de compartilhar com o grupo e os tokens, cifrados (ADR-008). Do Strava, só esses três
+  campos de cada atividade: nunca título, mapa, distância nem fotos. Não há exportação.
+- Quem sai do grupo tem as atividades apagadas e os tokens do Strava apagados; os desafios
+  terminados guardam só os totais dela. Quando a pessoa desconecta o app no Strava, os tokens são
+  apagados na hora.
+- O webhook do Strava não é assinado: o evento só avisa que algo mudou, e o servidor busca a
+  atividade na API com o token da própria pessoa (ADR-008).
 
 ## 2. Acesso e dados
 

@@ -10,7 +10,7 @@ import { Members } from './screens/Members';
 import { SignIn } from './screens/SignIn';
 import { useQuery } from './use-query';
 
-/** The app's screens. Replace Home with the app's first real screen (BOOTSTRAP.md). */
+/** The app's screens. Home is the template's example; the first real screen replaces it (docs/ROADMAP.md). */
 export function App() {
   const { backend, live } = useServices();
   const me = useQuery('me', {}, ['me']);
@@ -56,7 +56,7 @@ function Navigation({ me, onSignOut }: { me: MeView; onSignOut: () => void }) {
   const path = usePath();
   const tabs = [
     { path: '/', label: strings.nav.home },
-    { path: '/membros', label: strings.nav.members },
+    { path: '/integrantes', label: strings.nav.members },
     ...(canManageGroup(me) ? [{ path: '/convites', label: strings.nav.invites }] : []),
   ];
   return (
@@ -86,7 +86,7 @@ function OfflineNotice() {
 
 function Screen({ me }: { me: MeView }) {
   const path = usePath();
-  if (path === '/membros') return <Members me={me} />;
+  if (path === '/integrantes') return <Members me={me} />;
   if (path === '/convites' && canManageGroup(me)) return <Invites />;
   return <Home me={me} />;
 }

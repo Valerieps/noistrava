@@ -48,6 +48,17 @@ app (celular) ──POST /api/query|command──► Worker ──RPC──► G
   WebSockets abertos (o comando devolve `disconnect`), então o acesso acaba na hora.
 - Um comando devolve os tópicos (`Topic`) que mudou; o `Group` avisa todos os apps abertos, que
   refazem as consultas desses tópicos.
+- Uma atividade é da integrante, nunca de um desafio. O progresso de um desafio é calculado a cada
+  leitura a partir das atividades das Senhoras no período e da configuração; não há total acumulado
+  para manter em dia. Editar ou apagar uma atividade se reflete sozinho.
+- Há no máximo um desafio que não terminou.
+- O início e o término de um desafio são gravados como instantes UTC, calculados na criação (e a
+  cada edição) a partir dos fusos das integrantes: o início no fuso mais adiantado, o término no
+  mais atrasado.
+- Ao fechar (24 horas depois do término), o desafio grava os totais de cada Senhora em
+  `challenge_results`. Depois disso o histórico lê só dali, e apagar as atividades de quem saiu do
+  grupo não o altera.
+- Do Strava, o servidor guarda só início, fuso, tempo total e modalidade (ADR-008).
 
 ## Modelo de dados
 
@@ -57,10 +68,28 @@ app (celular) ──POST /api/query|command──► Worker ──RPC──► G
 | `sessions` | `token_hash`, `member_id`, `expires_at` | Só o SHA-256 do token; o cron apaga as vencidas |
 | `invites` | `email`, `invited_by`, `state` (`pending`, `accepted`, `revoked`) | Um por e-mail |
 
+Desenho das tabelas da fase 1, ainda sem migração (cada uma vem com a sua feature):
+
+| Tabela | Campos principais | Observação |
+| --- | --- | --- |
+| `members` (nova coluna) | `timezone` | IANA, vinda do aparelho |
+| `strava_connections` | `member_id`, `athlete_id`, `access_token`, `refresh_token`, `expires_at`, `include_private`, `consented_at`, `active` | Tokens cifrados com AES-GCM (ADR-008) |
+| `activities` | `id`, `member_id`, `source` (`manual`, `strava`), `strava_id`, `started_at` (UTC), `timezone`, `duration_seconds`, `sport`, `edited_by_member`, `deleted` | `edited_by_member` faz a edição valer sobre o Strava; `deleted` impede que uma atividade do Strava volte |
+| `challenges` | `id`, `type` (`horas_colaborativas`), `name`, `creator_id`, `starts_at`, `ends_at`, `state` (`open`, `succeeded`, `failed`, `cancelled`), `ended_at`, `closes_at`, `config` (JSON) | `config`: `goal_minutes`, ou `journey` com a rota simplificada, a distância e as paradas (ADR-009) |
+| `challenge_members` | `challenge_id`, `member_id`, `response` (`pending`, `accepted`, `declined`), `joined_at`, `left_at` | Conta a atividade de uma Senhora que começou no período e antes do `left_at` |
+| `reactions` | `activity_id`, `challenge_id`, `member_id` | Um coração por pessoa por atividade |
+| `challenge_milestones` | `challenge_id`, `milestone`, `reached_at` | Marco atingido não volta atrás |
+| `challenge_results` | `challenge_id`, `member_id`, `name`, `total_seconds` | Gravado ao fechar o desafio |
+
 ## Fluxo de eventos
 
-<Se o app tem histórico de eventos (um feed, transições de estado): quais tipos existem, quem grava,
-quem lê. Todo evento é gravado na mesma transação do comando que o causa.>
+- **Atividade registrada, editada ou apagada** (pelo app ou pelo webhook do Strava): grava em
+  `activities`, confere se algum marco foi atingido ou se a meta foi batida, e grava o marco ou o
+  término na mesma transação. Avisa os tópicos `activities` e `challenge`.
+- **Cron (`tick`, a cada 5 minutos):** termina sem sucesso o desafio cujo `ends_at` passou e fecha o
+  que passou do `closes_at`, gravando `challenge_results`.
+- **Webhook do Strava:** o Worker responde na hora e busca a atividade na API depois
+  (`ctx.waitUntil`); o resultado entra no `Group` como um comando, igual ao registro manual.
 
 ## Migrações
 

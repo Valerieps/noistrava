@@ -7,8 +7,20 @@
  */
 export const ALLOWED_ORIGINS: readonly string[] = [];
 
-/** Where images may load from (CSP `img-src`): Google profile photos (ADR-006). */
-export const IMAGE_ORIGINS: readonly string[] = ['https://lh3.googleusercontent.com'];
+/**
+ * Where images may load from (CSP `img-src`): Google profile photos (ADR-006) and the
+ * OpenStreetMap tiles of the journey map (ADR-009).
+ */
+export const IMAGE_ORIGINS: readonly string[] = ['https://lh3.googleusercontent.com', 'https://tile.openstreetmap.org'];
 
-/** The only servers the Worker (server/) calls: Google sign-in. Add an API here with an ADR. */
-export const SERVER_ORIGINS: readonly string[] = ['https://accounts.google.com', 'https://oauth2.googleapis.com'];
+/**
+ * The only servers the Worker (server/) calls: Google sign-in, Strava (ADR-008), and OpenStreetMap
+ * place search and walking routes for the journey (ADR-009). Add an API here with an ADR.
+ */
+export const SERVER_ORIGINS: readonly string[] = [
+  'https://accounts.google.com',
+  'https://oauth2.googleapis.com',
+  'https://www.strava.com',
+  'https://nominatim.openstreetmap.org',
+  'https://routing.openstreetmap.de',
+];

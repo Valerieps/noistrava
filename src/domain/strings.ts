@@ -1,14 +1,14 @@
 // Every user-facing text, in Brazilian Portuguese, in the app's voice (docs/GLOSSARIO.md has the
 // terms). The UI imports from here; it never writes its own text.
 export const strings = {
-  appName: 'Nome do app',
+  appName: 'Senhoras',
   genericError: 'Algo deu errado. Tenta de novo?',
   retry: 'Tentar de novo',
   forbidden: 'Você não tem permissão para isso.',
   offline: 'Sem conexão. Mostrando o último estado carregado.',
 
   signIn: {
-    tagline: 'Uma frase sobre o que o app faz.',
+    tagline: 'Desafios coletivos de horas de exercício. Cada minuto de cada Senhora soma.',
     button: 'Entrar com Google',
     noInvite: 'Não há convite para esse e-mail. Peça a um admin para te convidar.',
     failed: 'O login não deu certo. Tenta de novo?',
@@ -23,7 +23,7 @@ export const strings = {
   nav: {
     main: 'Navegação principal',
     home: 'Início',
-    members: 'Membros',
+    members: 'Integrantes',
     invites: 'Convites',
     signOut: 'Sair',
   },
@@ -43,15 +43,15 @@ export const strings = {
     accepted: 'Aceito',
     revoked: 'Revogado',
     invalidEmail: 'Esse e-mail não parece certo.',
-    alreadyMember: 'Essa pessoa já está no grupo.',
+    alreadyMember: 'Essa pessoa já é integrante do grupo.',
     empty: 'Nenhum convite ainda.',
   },
 
   members: {
-    title: 'Membros',
+    title: 'Integrantes',
     you: '(você)',
     admin: 'Admin',
-    member: 'Membro',
+    member: 'Integrante',
     makeAdmin: 'Admin',
     rolesOf: (name: string) => `Papéis de ${name}`,
     lastAdmin: 'O grupo precisa de pelo menos um admin. Dê o papel a outra pessoa antes.',
