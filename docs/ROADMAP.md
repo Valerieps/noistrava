@@ -11,17 +11,17 @@ O que ainda não está pronto.
 
 | Feature | Fase | Spec | Observação |
 | --- | --- | --- | --- |
-| App envia o fuso do aparelho ao abrir | 1 | `spec/acesso-e-membros.md` | O servidor já guarda (`member.setTimezone`) |
-| Telas de atividades: registro manual, editar, excluir | 1 | `spec/atividades.md` | Os comandos e a consulta `activities` já existem; falta o nome de cada modalidade em `strings.ts` |
 | Strava no Worker: webhook, trazer as atividades desde o início do desafio, renovar os tokens, desconectar | 1 | `spec/strava.md` | ADR-008. O `Group` já recebe a atividade (`importStravaActivity`) |
-| Telas do desafio: criar (com os fusos e as horas em cada um), responder, andamento, editar, cancelar, apagar, log com coração, histórico | 1 | `spec/desafio-horas.md` | Os comandos e as consultas já existem |
-| Jornada: busca de lugares e rota no Worker, mapa | 1 | `spec/desafio-horas.md` | ADR-009. Hoje o comando aceita a rota pronta do app; o Worker precisa calculá-la |
-| Primeira tela de verdade no lugar da `Home` de exemplo | 1 | — | Sai `src/domain/greeting.ts` junto |
+| Jornada: busca de lugares e rota no Worker; escolher partida, chegada e paradas na tela de criar | 1 | `spec/desafio-horas.md` | ADR-009. Hoje o comando aceita a rota pronta do app; o Worker precisa calculá-la. Até lá, "Com jornada" fica desligado na tela de criar |
+| Jornada: postal de cada marco (foto e resumo do lugar), "Onde estamos" e números do caminho (países, rios) | 1 | `spec/desafio-horas.md` | Estão nos rascunhos; precisam de dados que o servidor não tem |
 | Notificações | 2 | `spec/desafio-horas.md` | Regras em aberto |
 
 ## O código ainda não segue o spec
 
-- Nada por enquanto: o que já existe (acesso e integrantes) segue o spec.
+- O mapa da jornada desenha a rota guardada em SVG, sem os tiles do OpenStreetMap nem o Leaflet que o
+  ADR-009 prevê. Funciona sem dependência nova; os tiles entram junto com a busca de lugares.
+- A imagem ilustrativa do desafio, que os rascunhos mostram, não existe no servidor: a tela mostra
+  só o fundo listrado.
 
 ## Revisar as lacunas que o agente decidiu
 
@@ -34,9 +34,15 @@ O que ainda não está pronto.
   (`spec/desafio-horas.md`).
 - [ ] Uma atividade dura no máximo 24 horas; no registro manual, a modalidade vem de uma lista e o
   início não pode estar no futuro (`spec/atividades.md`).
+- [ ] "No ritmo" é estar a até 1% da meta do programado; a reta final são os 5 últimos dias do
+  período (`spec/desafio-horas.md`, "Andamento").
+- [ ] As setas do ranking comparam com 24 horas atrás; o log mostra as 4 atividades mais recentes e
+  "Ver tudo" abre o resto (`spec/desafio-horas.md`, "Andamento").
 
 ## Adiado
 
-- Identidade visual (cores e ícones) — continuam as do template até a dona escolher entre opções.
+- Identidade visual: as cores são a paleta "framboesa" dos rascunhos (e "noite" no tema escuro); o
+  ícone só trocou de cor. As fontes dos rascunhos (Figtree e Bricolage Grotesque) ainda não estão
+  no bundle: o app usa a fonte do sistema até elas entrarem como arquivos próprios.
 - [ ] Uma atividade do Strava excluída no app não volta (`spec/atividades.md`).
 - [ ] Desconectar o Strava mantém as atividades que já vieram (`spec/strava.md`).

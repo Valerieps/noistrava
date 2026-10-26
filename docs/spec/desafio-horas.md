@@ -9,7 +9,6 @@ O grupo soma horas de atividade para bater uma meta num período, com ou sem jor
 
 ## Em aberto
 
-- [ ] Como é a tela de andamento do desafio (o total, a contribuição de cada Senhora, ranking ou não)?
 - [ ] Quais notificações existem e quando chegam (marcos, novas atividades, lembretes, fim)?
 
 ## Papéis no desafio
@@ -84,6 +83,22 @@ O grupo soma horas de atividade para bater uma meta num período, com ou sem jor
 - Cada hora de atividade vale 5 km na jornada, para todas as modalidades. O app mostra também a
   meta equivalente em horas. *(1)*
 - O mapa mostra a rota e onde o grupo está nela. *(1)*
+
+## Andamento
+
+- Eu vejo o total do grupo e o percentual da meta, comparados com o programado: onde a gente
+  estaria hoje dividindo a meta igualmente pelo período. *(1)*
+- Eu escolho ver o andamento como barra, anel ou curva acumulada; o meu aparelho lembra a escolha. *(1)*
+- Embaixo vem sempre uma frase que chama para a ação, nunca uma cobrança: à frente do ritmo, no
+  ritmo, atrás do ritmo ou na reta final. *(1)*
+- Sem jornada, eu vejo quanto o grupo precisa por dia para bater a meta, a média por dia até aqui e
+  a diferença entre as duas. *(1)*
+- Há um ranking das Senhoras, por horas, por número de atividades ou por dias ativos, com quem
+  subiu ou desceu nas últimas 24 horas e quem está na torcida. *(1)*
+- Sem jornada, há destaques: a maior atividade, o dia mais forte, a sequência de dias em que alguém
+  se mexeu, os fusos em ação e a parte de cada modalidade. *(1)*
+- Com jornada, eu vejo a última e a próxima parada e a linha do caminho com os marcos, e o ranking
+  mostra quem levou o grupo mais longe, em km. *(1)*
 
 ## Editar, cancelar e apagar
 

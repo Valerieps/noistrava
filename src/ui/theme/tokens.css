@@ -1,44 +1,77 @@
 /*
  * Design tokens: every color, font and spacing value used by the UI lives here.
  * Change the look of the app by editing this file only. The dark theme, below, redefines every color.
+ * The palette is "framboesa" from the screen drafts; the dark theme is their "noite".
  */
 :root {
   color-scheme: light;
 
-  --color-bg: #f4f2ed;
+  --color-bg: #f4eef5;
   --color-surface: #ffffff;
-  --color-text: #1f1f1f;
-  /* 5:1 on --color-bg, above WCAG AA's 4.5:1 for small text */
-  --color-text-muted: #6b675f;
-  --color-border: #e4e0d8;
-  --color-brand: #4b3fb3;
+  --color-text: #231942;
+  /* 6.6:1 on --color-bg, above WCAG AA's 4.5:1 for small text */
+  --color-text-muted: #5e5670;
+  --color-border: #e6ddea;
+  --color-brand: #c2185b;
+  --color-brand-ink: #a3144c;
+  --color-brand-soft: #fbe4ee;
   --color-on-brand: #ffffff;
+  --color-accent: #f57c00;
+  --color-accent-soft: #ffe9d2;
+  --color-accent-ink: #9a4d00;
+  /* The programmed total and empty tracks */
+  --color-ghost: #d9cbe0;
+  --color-ghost-strong: #bfaecb;
+  --color-ghost-track: #eee6f2;
+  --color-ok-soft: #e3f1e6;
+  --color-ok-ink: #24613a;
+  --color-land: #f7f2f8;
   --color-danger: #b3261e;
+  --color-scrim: rgba(20, 12, 28, 0.45);
 
-  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: Figtree, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Bricolage Grotesque', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-size-base: 15px;
 
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
+  --space-5: 20px;
   --space-6: 24px;
   --space-8: 32px;
 
-  --radius: 8px;
+  --radius: 12px;
+  --radius-tile: 18px;
+  --radius-card: 24px;
+  --radius-pill: 999px;
+  --shadow-float: 0 8px 24px rgba(0, 0, 0, 0.18);
+  --nav-height: 80px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
 
-    --color-bg: #17161a;
-    --color-surface: #211f25;
-    --color-text: #ecebef;
-    --color-text-muted: #a3a0aa;
-    --color-border: #34313a;
-    --color-brand: #a59cf0;
-    --color-on-brand: #17161a;
+    --color-bg: #16111d;
+    --color-surface: #221a2c;
+    --color-text: #f4eef7;
+    --color-text-muted: #b3a9bf;
+    --color-border: #352b41;
+    --color-brand: #ff5c8f;
+    --color-brand-ink: #ff8ab0;
+    --color-brand-soft: #3d1f33;
+    --color-on-brand: #16111d;
+    --color-accent: #ffb23f;
+    --color-accent-soft: #3b2d17;
+    --color-accent-ink: #ffc870;
+    --color-ghost: #4a3e57;
+    --color-ghost-strong: #5e5070;
+    --color-ghost-track: #2c2337;
+    --color-ok-soft: #1f3326;
+    --color-ok-ink: #9be0b0;
+    --color-land: #1d1726;
     --color-danger: #f2b8b5;
+    --color-scrim: rgba(0, 0, 0, 0.6);
   }
 }
