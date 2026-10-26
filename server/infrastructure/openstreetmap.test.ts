@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
+  candidatesFromOverpass,
   journeyFromRoute,
   normalizeSearchQuery,
   parseRouteRequest,
   routeUrl,
   searchUrl,
   simplifyRoute,
+  stopsQuery,
   suggestionsFromResponse,
   userAgent,
 } from './openstreetmap';
@@ -52,18 +54,17 @@ describe('place search', () => {
 });
 
 describe('walking route', () => {
-  it('accepts the places with the domain rules, keeping the stops in order', () => {
-    expect(parseRouteRequest({ start: lisboa, end: cascais, stops: [sintra] })).toEqual({ start: lisboa, end: cascais, stops: [sintra] });
-    expect(parseRouteRequest({ start: lisboa, end: cascais, stops: [sintra, sintra] })).toBeNull();
-    expect(parseRouteRequest({ start: lisboa, end: { name: '', lat: 0, lng: 0 }, stops: [] })).toBeNull();
-    expect(parseRouteRequest({ start: lisboa, end: cascais })).toBeNull();
-    expect(parseRouteRequest({ start: lisboa, end: cascais, stops: Array.from({ length: 21 }, (_, i) => ({ ...sintra, name: `P${i}` })) })).toBeNull();
+  it('accepts the start and the end with the domain rules, ignoring stops sent by an old app', () => {
+    expect(parseRouteRequest({ start: lisboa, end: cascais })).toEqual({ start: lisboa, end: cascais });
+    expect(parseRouteRequest({ start: lisboa, end: cascais, stops: [sintra] })).toEqual({ start: lisboa, end: cascais });
+    expect(parseRouteRequest({ start: lisboa, end: { name: '', lat: 0, lng: 0 } })).toBeNull();
+    expect(parseRouteRequest({ start: lisboa })).toBeNull();
   });
 
   it('asks the FOSSGIS foot router for the whole geometry, in lng,lat order', () => {
-    const url = new URL(routeUrl({ start: lisboa, end: cascais, stops: [sintra] }));
+    const url = new URL(routeUrl({ start: lisboa, end: cascais }));
     expect(url.origin).toBe('https://routing.openstreetmap.de');
-    expect(url.pathname).toBe('/routed-foot/route/v1/foot/-9.139300,38.722300;-9.381700,38.802900;-9.421500,38.697900');
+    expect(url.pathname).toBe('/routed-foot/route/v1/foot/-9.139300,38.722300;-9.421500,38.697900');
     expect(url.searchParams.get('overview')).toBe('full');
     expect(url.searchParams.get('geometries')).toBe('geojson');
   });
@@ -78,32 +79,52 @@ describe('walking route', () => {
     expect(simplifyRoute([[0, 0], [0, 1], [0, 2]])).toEqual([[0, 0], [0, 2]]);
   });
 
-  it('turns the answer into the journey, each stop where its leg ends', () => {
-    const request = { start: lisboa, end: cascais, stops: [sintra] };
+  it('turns the answer into the journey, still without stops', () => {
     const body = {
       code: 'Ok',
-      routes: [
-        {
-          distance: 45_300.4,
-          legs: [{ distance: 28_100.2 }, { distance: 17_200.2 }],
-          geometry: { coordinates: [[-9.1393, 38.7223], [-9.3817, 38.8029], [-9.4215, 38.6979]] },
-        },
-      ],
+      routes: [{ distance: 45_300.4, geometry: { coordinates: [[-9.1393, 38.7223], [-9.3817, 38.8029], [-9.4215, 38.6979]] } }],
     };
-    expect(journeyFromRoute(request, body)).toEqual({
+    expect(journeyFromRoute({ start: lisboa, end: cascais }, body)).toEqual({
       start: lisboa,
       end: cascais,
-      stops: [{ ...sintra, distanceMeters: 28_100 }],
+      stops: [],
       distanceMeters: 45_300,
       route: [[38.7223, -9.1393], [38.8029, -9.3817], [38.6979, -9.4215]],
     });
   });
 
   it('refuses an answer without a walking route', () => {
-    const request = { start: lisboa, end: cascais, stops: [] };
+    const request = { start: lisboa, end: cascais };
     expect(journeyFromRoute(request, { code: 'NoRoute', routes: [] })).toBeNull();
-    expect(journeyFromRoute(request, { code: 'Ok', routes: [{ distance: 10, legs: [{ distance: 10 }, { distance: 0 }], geometry: { coordinates: [[0, 0], [1, 1]] } }] })).toBeNull();
-    expect(journeyFromRoute(request, { code: 'Ok', routes: [{ distance: 0, legs: [{ distance: 0 }], geometry: { coordinates: [[0, 0], [1, 1]] } }] })).toBeNull();
+    expect(journeyFromRoute(request, { code: 'Ok', routes: [{ distance: 10, geometry: { coordinates: [[0, 0]] } }] })).toBeNull();
+    expect(journeyFromRoute(request, { code: 'Ok', routes: [{ distance: 0, geometry: { coordinates: [[0, 0], [1, 1]] } }] })).toBeNull();
     expect(journeyFromRoute(request, null)).toBeNull();
+  });
+});
+
+describe('automatic stops (ADR-011)', () => {
+  it('asks Overpass for cities, towns and famous attractions within 10 km of the route', () => {
+    const query = stopsQuery([[38.7223, -9.1393], [38.6979, -9.4215]]);
+    expect(query).toContain('node["place"~"^(city|town)$"]["name"](around:10000,38.72230,-9.13930,38.69790,-9.42150);');
+    expect(query).toContain('["wikidata"]');
+    expect(query).toContain('out tags center;');
+  });
+
+  it('reads each place with its Portuguese name, kind and population, skipping broken items', () => {
+    const body = {
+      elements: [
+        { type: 'node', lat: 38.8, lon: -9.38, tags: { place: 'town', name: 'Sintra', population: '30 000' } },
+        { type: 'node', lat: 48.85, lon: 2.35, tags: { place: 'city', name: 'Paris', 'name:pt': 'Paris' } },
+        { type: 'way', center: { lat: 38.79, lon: -9.39 }, tags: { historic: 'castle', name: 'Castelo dos Mouros', population: '9' } },
+        { type: 'node', lat: 1, lon: 1, tags: { tourism: 'museum' } },
+        { type: 'way', tags: { tourism: 'museum', name: 'Sem centro' } },
+      ],
+    };
+    expect(candidatesFromOverpass(body)).toEqual([
+      { name: 'Sintra', lat: 38.8, lng: -9.38, kind: 'town', population: 30_000 },
+      { name: 'Paris', lat: 48.85, lng: 2.35, kind: 'city', population: null },
+      { name: 'Castelo dos Mouros', lat: 38.79, lng: -9.39, kind: 'attraction', population: null },
+    ]);
+    expect(candidatesFromOverpass({ remark: 'timeout' })).toEqual([]);
   });
 });

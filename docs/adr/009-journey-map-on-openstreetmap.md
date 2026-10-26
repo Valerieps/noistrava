@@ -7,7 +7,8 @@
   with Nominatim (`https://nominatim.openstreetmap.org`) and computes a walking route between the
   start and the end with the FOSSGIS OSRM server (`https://routing.openstreetmap.de`, foot
   profile). Both go in `SERVER_ORIGINS`; the Worker sends an identifying `User-Agent` and makes
-  at most one call per creator action, as their usage policies require.
+  at most one call per creator action, as their usage policies require. ADR-011 adds one Overpass
+  call per route, for the stops.
 - **Stored once:** the challenge keeps the route's geometry (simplified), its total distance and the
   named stops, so showing progress never calls these services again.
 - **Showing the map:** Leaflet, bundled (exact version), draws OpenStreetMap tiles from
