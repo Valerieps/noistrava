@@ -5,6 +5,7 @@ import { DurableObject } from 'cloudflare:workers';
 import type { LiveMessage, Topic } from '../../src/application/api-contract';
 import { GroupService } from '../application/group-service';
 import type { GoogleProfile, SignInResult } from '../application/members';
+import type { NewStravaConnection } from '../application/strava';
 import { durableObjectSql } from '../infrastructure/durable-object-sql';
 import type { Env } from './env';
 
@@ -25,6 +26,12 @@ export class Group extends DurableObject<Env> {
 
   signOut(sessionHash: string): void {
     this.service.signOut(sessionHash);
+  }
+
+  connectStrava(sessionHash: string, connection: NewStravaConnection) {
+    const result = this.service.connectStrava(sessionHash, connection);
+    if (result.ok) this.broadcast(['strava']);
+    return result;
   }
 
   query(sessionHash: string, name: string, input: unknown) {

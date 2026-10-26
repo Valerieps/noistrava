@@ -4,6 +4,7 @@ import { greetingFor } from '../../domain/greeting';
 import { NAME_MAX_LENGTH } from '../../domain/group/profile';
 import { strings } from '../../domain/strings';
 import { useServices } from '../backend-context';
+import { StravaConnect } from './StravaConnect';
 
 // Placeholder screen: a greeting and the member's name. Replace it with the app's first screen.
 export function Home({ me }: { me: MeView }) {
@@ -32,6 +33,7 @@ export function Home({ me }: { me: MeView }) {
           {error}
         </p>
       )}
+      <StravaConnect />
     </section>
   );
 }

@@ -14,7 +14,7 @@ O que ainda não está pronto.
 | Fuso da integrante, vindo do aparelho | 1 | `spec/acesso-e-membros.md` | O início e o término do desafio dependem dele |
 | Sair do grupo apaga as atividades e o Strava | 1 | `spec/acesso-e-membros.md` | Depende de atividades e Strava |
 | Atividades: registro manual, editar, excluir | 1 | `spec/atividades.md` | |
-| Conexão com o Strava, aceite, webhook | 1 | `spec/strava.md` | ADR-008; precisa do app no Strava (issue da dona) |
+| Strava: webhook, trazer as atividades desde o início do desafio, renovar os tokens, desconectar | 1 | `spec/strava.md` | ADR-008. O botão "Conectar com Strava" com o aceite já existe |
 | Criar desafio, responder ao convite, papéis no desafio | 1 | `spec/desafio-horas.md` | |
 | Período com os fusos mais adiantado e mais atrasado | 1 | `spec/desafio-horas.md` | |
 | Meta, término, 24 horas de tolerância, marcos | 1 | `spec/desafio-horas.md` | |

@@ -28,12 +28,19 @@ export interface InviteView {
   readonly acceptedAt: string | null;
 }
 
+/** My own Strava connection; nobody else's is ever shown. */
+export interface StravaConnectionView {
+  readonly connected: boolean;
+  readonly includePrivate: boolean;
+}
+
 /** Reads: `POST /api/query/<name>`. They never change anything. */
 export interface Queries {
   me: { input: Record<string, never>; output: MeView };
   members: { input: Record<string, never>; output: MemberListItem[] };
   /** Admins only. */
   invites: { input: Record<string, never>; output: InviteView[] };
+  strava: { input: Record<string, never>; output: StravaConnectionView };
 }
 
 /** Writes: `POST /api/command/<name>`. Each runs alone, in one transaction. */
@@ -50,7 +57,7 @@ export type QueryName = keyof Queries;
 export type CommandName = keyof Commands;
 
 /** What a live message says changed; the screens that show it refetch. */
-export type Topic = 'me' | 'members' | 'invites';
+export type Topic = 'me' | 'members' | 'invites' | 'strava';
 
 export interface LiveMessage {
   readonly type: 'changed';

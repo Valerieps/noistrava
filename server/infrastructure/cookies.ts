@@ -1,7 +1,8 @@
 // Cookies the Worker sets. `__Host-` pins them to this origin, HTTPS and path /;
-// HttpOnly keeps them away from scripts. Lax lets the Google redirect bring them back.
+// HttpOnly keeps them away from scripts. Lax lets the Google and Strava redirects bring them back.
 export const SESSION_COOKIE = '__Host-sessao';
 export const LOGIN_COOKIE = '__Host-login';
+export const STRAVA_COOKIE = '__Host-strava';
 
 export function readCookie(header: string | null, name: string): string | null {
   if (!header) return null;
