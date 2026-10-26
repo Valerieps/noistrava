@@ -3,6 +3,8 @@ import type { ApiError, MeView, MemberListItem } from '../../application/api-con
 import { canManageGroup, isAdmin } from '../../domain/group/roles';
 import { strings } from '../../domain/strings';
 import { useServices } from '../backend-context';
+import { ChevronIcon } from '../icons';
+import { Link } from '../router';
 import { useQuery } from '../use-query';
 
 function errorText(error: ApiError): string {
@@ -35,7 +37,14 @@ export function Members({ me }: { me: MeView }) {
 
   return (
     <section>
-      <h1>{strings.members.title}</h1>
+      {manages && (
+        <nav className="menu-list" style={{ marginBottom: 'var(--space-4)' }}>
+          <Link to="/convites">
+            {strings.nav.invites}
+            <ChevronIcon />
+          </Link>
+        </nav>
+      )}
       {members.error && !members.data && <p className="notice">{strings.genericError}</p>}
       {error && (
         <p className="notice" role="alert">

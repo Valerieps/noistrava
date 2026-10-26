@@ -44,7 +44,6 @@ export function Invites() {
 
   return (
     <section>
-      <h1>{strings.invites.title}</h1>
       <form className="row" onSubmit={submit}>
         <label className="grow">
           <span className="muted">{strings.invites.emailLabel}</span>
