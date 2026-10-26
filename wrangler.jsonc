@@ -24,7 +24,7 @@
     "GOOGLE_CLIENT_ID": "REPLACE_ME.apps.googleusercontent.com",
     // Public: the Strava app's client ID (ADR-008). STRAVA_CLIENT_SECRET, STRAVA_TOKEN_KEY and
     // STRAVA_WEBHOOK_SECRET are secrets.
-    "STRAVA_CLIENT_ID": "REPLACE_ME"
+    "STRAVA_CLIENT_ID": "291174"
   },
   // Branch previews (`wrangler preview`, ADR-004) refuse to deploy without this block. Each preview
   // gets its own empty Group namespace, never production's data; it has no secrets and no cron, and
