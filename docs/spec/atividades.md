@@ -17,13 +17,14 @@ O que é uma atividade, como eu registro à mão e como edito as que vieram do S
 - Uma atividade é minha, não de um desafio: ela conta em qualquer desafio de que eu sou Senhora,
   se começou dentro do período dele. *(1)*
 - Uma atividade tem o início (data e hora, no meu fuso), o tempo total e a modalidade. *(1)*
-- Toda modalidade conta, e não há duração mínima. *(1)*
+- Toda modalidade conta, e não há duração mínima. Uma atividade dura no máximo 24 horas. *(1)*
 
 ## Registro manual
 
 - Eu sempre posso registrar uma atividade à mão, com ou sem Strava. *(1)*
 - O registro pede só o que o tipo de desafio precisa: no de horas colaborativas, início, tempo total
   e modalidade. *(1)*
+- No registro manual, eu escolho a modalidade numa lista, e o início não pode estar no futuro. *(1)*
 
 ## Editar e excluir
 

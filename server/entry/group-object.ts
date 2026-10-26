@@ -5,7 +5,7 @@ import { DurableObject } from 'cloudflare:workers';
 import type { LiveMessage, Topic } from '../../src/application/api-contract';
 import { GroupService } from '../application/group-service';
 import type { GoogleProfile, SignInResult } from '../application/members';
-import type { NewStravaConnection } from '../application/strava';
+import type { NewStravaConnection, StravaActivityEvent } from '../application/strava';
 import { durableObjectSql } from '../infrastructure/durable-object-sql';
 import type { Env } from './env';
 
@@ -32,6 +32,12 @@ export class Group extends DurableObject<Env> {
     const result = this.service.connectStrava(sessionHash, connection);
     if (result.ok) this.broadcast(['strava']);
     return result;
+  }
+
+  /** The Strava webhook's activity, already fetched by the Worker (ADR-008). */
+  importStravaActivity(athleteId: string, event: StravaActivityEvent): void {
+    const changed = this.service.importStravaActivity(athleteId, event);
+    if (changed.length > 0) this.broadcast(changed);
   }
 
   query(sessionHash: string, name: string, input: unknown) {

@@ -4,7 +4,7 @@
 import type { LiveMessage, Topic } from '../application/api-contract';
 import type { LiveStatus, LiveUpdates } from '../application/ports';
 
-const ALL_TOPICS: readonly Topic[] = ['me', 'members', 'invites'];
+const ALL_TOPICS: readonly Topic[] = ['me', 'members', 'invites', 'strava', 'activities', 'challenge', 'history'];
 const MAX_BACKOFF_MS = 30_000;
 
 export function liveSocket(): LiveUpdates {

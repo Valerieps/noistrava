@@ -55,6 +55,9 @@ app (celular) ──POST /api/query|command──► Worker ──RPC──► G
 - O início e o término de um desafio são gravados como instantes UTC, calculados na criação (e a
   cada edição) a partir dos fusos das integrantes: o início no fuso mais adiantado, o término no
   mais atrasado.
+- A janela de contagem vai do `starts_at` ao `ended_at` (meta batida antes, cancelamento) ou, sem
+  ele, ao `ends_at`. `settle` (em `server/application/challenges.ts`) recalcula o total a cada
+  mudança e grava marcos e estado; nas 24 horas de tolerância o estado segue o total.
 - Ao fechar (24 horas depois do término), o desafio grava os totais de cada Senhora em
   `challenge_results`. Depois disso o histórico lê só dali, e apagar as atividades de quem saiu do
   grupo não o altera.
@@ -67,16 +70,12 @@ app (celular) ──POST /api/query|command──► Worker ──RPC──► G
 | `members` | `id`, `google_sub`, `email`, `name`, `photo_url`, `roles` (JSON), `active` | Removido fica com `active = 0`; um convite novo traz o mesmo membro de volta |
 | `sessions` | `token_hash`, `member_id`, `expires_at` | Só o SHA-256 do token; o cron apaga as vencidas |
 | `invites` | `email`, `invited_by`, `state` (`pending`, `accepted`, `revoked`) | Um por e-mail |
-
-Desenho das tabelas da fase 1, ainda sem migração (cada uma vem com a sua feature):
-
-| Tabela | Campos principais | Observação |
-| --- | --- | --- |
-| `members` (nova coluna) | `timezone` | IANA, vinda do aparelho |
+| `members` (coluna da migração 3) | `timezone` | IANA, vinda do aparelho |
 | `strava_connections` | `member_id`, `athlete_id`, `access_token`, `refresh_token`, `expires_at`, `include_private`, `consented_at`, `active` | Tokens cifrados com AES-GCM (ADR-008) |
 | `activities` | `id`, `member_id`, `source` (`manual`, `strava`), `strava_id`, `started_at` (UTC), `timezone`, `duration_seconds`, `sport`, `edited_by_member`, `deleted` | `edited_by_member` faz a edição valer sobre o Strava; `deleted` impede que uma atividade do Strava volte |
-| `challenges` | `id`, `type` (`horas_colaborativas`), `name`, `creator_id`, `starts_at`, `ends_at`, `state` (`open`, `succeeded`, `failed`, `cancelled`), `ended_at`, `closes_at`, `config` (JSON) | `config`: `goal_minutes`, ou `journey` com a rota simplificada, a distância e as paradas (ADR-009) |
-| `challenge_members` | `challenge_id`, `member_id`, `response` (`pending`, `accepted`, `declined`), `joined_at`, `left_at` | Conta a atividade de uma Senhora que começou no período e antes do `left_at` |
+| `challenges` | `id`, `type` (`horas_colaborativas`), `name`, `creator_id`, `starts_at`, `ends_at`, `state` (`open`, `succeeded`, `failed`, `cancelled`), `ended_at`, `closes_at`, `closed_at`, `config` (JSON) | `config`: as datas escolhidas, `goalMinutes` e, com jornada, `journey` com a rota simplificada, a distância e as paradas (ADR-009). `closed_at` marca o resultado fechado |
+| `challenge_members` | `challenge_id`, `member_id`, `response` (`pending`, `accepted`, `declined`), `responded_at` | Todas as integrantes ativas na criação; quem entra depois não tem linha e conta como `pending` |
+| `challenge_absences` | `challenge_id`, `member_id`, `left_at`, `returned_at` | Cada vez que uma Senhora sai (e volta). Conta a atividade de quem é ou foi Senhora, que começou na janela e fora de uma ausência |
 | `reactions` | `activity_id`, `challenge_id`, `member_id` | Um coração por pessoa por atividade |
 | `challenge_milestones` | `challenge_id`, `milestone`, `reached_at` | Marco atingido não volta atrás |
 | `challenge_results` | `challenge_id`, `member_id`, `name`, `total_seconds` | Gravado ao fechar o desafio |
@@ -85,11 +84,17 @@ Desenho das tabelas da fase 1, ainda sem migração (cada uma vem com a sua feat
 
 - **Atividade registrada, editada ou apagada** (pelo app ou pelo webhook do Strava): grava em
   `activities`, confere se algum marco foi atingido ou se a meta foi batida, e grava o marco ou o
-  término na mesma transação. Avisa os tópicos `activities` e `challenge`.
+  término na mesma transação. Avisa os tópicos `activities` e `challenge`. Uma Senhora não edita uma atividade que contou num
+  desafio já fechado.
+- **Resposta ao convite, edição do desafio:** recalculam o total na mesma transação, então aceitar
+  tarde ou baixar a meta pode terminar o desafio com sucesso na hora.
 - **Cron (`tick`, a cada 5 minutos):** termina sem sucesso o desafio cujo `ends_at` passou e fecha o
-  que passou do `closes_at`, gravando `challenge_results`.
+  que passou do `closes_at`, gravando `challenge_results`. Cancelar fecha na hora.
+- **Integrante removida:** apaga as atividades dela, os corações e a conexão com o Strava, e
+  recalcula os desafios abertos.
 - **Webhook do Strava:** o Worker responde na hora e busca a atividade na API depois
-  (`ctx.waitUntil`); o resultado entra no `Group` como um comando, igual ao registro manual.
+  (`ctx.waitUntil`); o resultado entra no `Group` por `importStravaActivity`, com as mesmas regras do
+  registro manual.
 
 ## Migrações
 
