@@ -1,14 +1,11 @@
-# Acesso e membros
+# Acesso e integrantes
 
-Quem entra no app, como entra e o que cada papel pode fazer. Já vem construído no template; o
-`BOOTSTRAP.md` ajusta as regras às respostas da dona.
+Quem entra no app, como entra e o que cada papel do grupo pode fazer.
 
-- **Entra aqui:** login, convites, papéis, a lista de membros, remover membro e o nome no perfil.
-- **Não entra aqui:** as features do app em si (cada uma no seu arquivo de `spec/`).
-
-## Em aberto
-
-- [ ] Que papéis o app tem além de admin e membro, e o que cada um pode?
+- **Entra aqui:** login, convites, os papéis do grupo (admin e integrante), a lista de integrantes,
+  remover integrante, o perfil e o fuso de cada integrante.
+- **Não entra aqui:** os papéis dentro de um desafio (criador, Senhora, torcida), que ficam em
+  [desafio-horas.md](desafio-horas.md), e a conexão com o Strava ([strava.md](strava.md)).
 
 ## Entrar
 
@@ -18,29 +15,39 @@ Quem entra no app, como entra e o que cada papel pode fazer. Já vem construído
 - Os primeiros admins entram sem convite, pelos e-mails configurados no servidor, só enquanto o
   grupo não tem nenhum admin. *(1)*
 - Eu continuo conectada por 180 dias, até sair. *(1)*
+- Eu uso o app no celular, instalado na tela de início, e no computador. A interface é só em
+  português. *(1)*
 
 ## Papéis
 
+Todo mundo no grupo é integrante. Os papéis de criador, Senhora e torcida existem só dentro de cada
+desafio.
+
 | Papel | O que pode |
 | --- | --- |
-| Membro | Usar o app e ver a lista de membros |
-| Admin | Tudo do membro; convidar e remover membros; dar e tirar o papel de admin |
+| Integrante | Usar o app, criar desafios e ver a lista de integrantes |
+| Admin | Tudo da integrante; convidar e remover integrantes; dar e tirar o papel de admin; apagar desafios |
 
 - Pode haver mais de um admin. O app não deixa tirar o papel do último. *(1)*
 
-## Membros
+## Integrantes
 
-- Todos os membros veem a lista do grupo, com nome, foto e papéis. O e-mail de cada um só o admin
-  vê. *(1)*
-- O admin remove um membro depois de confirmar. Ele não remove a si mesmo: outro admin faz isso.
-  Assim sempre sobra um admin. *(1)*
-- Quem é removido perde o acesso na hora, inclusive no app aberto. Um convite novo traz a pessoa de
-  volta, com o mesmo histórico. *(1)*
+- Todas as integrantes veem a lista do grupo, com nome, foto e papéis. O e-mail de cada uma só o
+  admin vê. *(1)*
+- O admin remove uma integrante depois de confirmar. Ele não remove a si mesmo: outro admin faz
+  isso. Assim sempre sobra um admin. *(1)*
+- Quem é removida perde o acesso na hora, inclusive no app aberto. Um convite novo traz a pessoa de
+  volta. *(1)*
+- Quando alguém sai do grupo, as atividades dela são apagadas e a conexão com o Strava é desfeita.
+  Os desafios já terminados guardam os totais dela, sem as atividades. *(1)*
+  Por quê: atividade física é dado de saúde; o histórico do grupo não precisa do detalhe.
 
 ## Perfil
 
 - Meu nome começa como o da conta Google, e eu posso mudar. Ele tem de 1 a 40 caracteres. *(1)*
 - A foto é a da conta Google e se atualiza a cada login. *(1)*
+- Meu fuso horário vem do aparelho e se atualiza sozinho quando eu abro o app. *(1)*
+  Por quê: o início e o fim de cada desafio dependem dos fusos das integrantes.
 
 ## Convites
 

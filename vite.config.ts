@@ -41,7 +41,7 @@ export default defineConfig({
   // In development the API runs apart (`npm run dev:api`, wrangler on 8787); Vite forwards /api
   // to it, the live WebSocket included, and keeps the Host so cookies and origins match.
   server: { port, proxy: { '/api': { target: 'http://localhost:8787', ws: true } } },
-  // Absolute base: the Worker serves the app at the root and deep links like /membros need it.
+  // Absolute base: the Worker serves the app at the root and deep links like /integrantes need it.
   base: '/',
   plugins: [react(), contentSecurityPolicy()],
   build: {

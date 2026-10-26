@@ -3,7 +3,7 @@
 // `npx wrangler secret put <NAME>`, and locally in .dev.vars (see .dev.vars.example).
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "app-name",
+  "name": "noistrava",
   "main": "server/entry/worker.ts",
   "compatibility_date": "2026-10-01",
   "assets": {
@@ -20,8 +20,11 @@
   // One cron for every time-based job; each job decides whether it is due (GroupService.tick).
   "triggers": { "crons": ["*/5 * * * *"] },
   "vars": {
-    // Public: the OAuth client ID from Google Cloud (BOOTSTRAP.md). The secret is a secret.
-    "GOOGLE_CLIENT_ID": "REPLACE_ME.apps.googleusercontent.com"
+    // Public: the OAuth client ID from Google Cloud. The secret is a secret.
+    "GOOGLE_CLIENT_ID": "REPLACE_ME.apps.googleusercontent.com",
+    // Public: the Strava app's client ID (ADR-008). STRAVA_CLIENT_SECRET, STRAVA_TOKEN_KEY and
+    // STRAVA_WEBHOOK_SECRET are secrets.
+    "STRAVA_CLIENT_ID": "REPLACE_ME"
   },
   // Branch previews (`wrangler preview`, ADR-004) refuse to deploy without this block. Each preview
   // gets its own empty Group namespace, never production's data; it has no secrets and no cron, and
