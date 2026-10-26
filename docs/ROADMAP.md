@@ -32,17 +32,5 @@ O que ainda não está pronto.
 ## Adiado
 
 - Identidade visual (cores e ícones) — continuam as do template até a dona escolher entre opções.
-
-## Revisar as lacunas que o agente decidiu
-
-- [ ] Quem ainda não respondeu ao convite do desafio vê tudo como a torcida (`spec/desafio-horas.md`).
-- [ ] A torcida pode virar Senhora enquanto o desafio não terminou (`spec/desafio-horas.md`).
-- [ ] Quem sai de um desafio tem as horas até ali mantidas, e as seguintes não contam (`spec/desafio-horas.md`).
-- [ ] Um desafio cancelado fica no histórico como cancelado (`spec/desafio-horas.md`).
-- [ ] Marcos já atingidos continuam atingidos se a meta ou a rota mudar (`spec/desafio-horas.md`).
-- [ ] A jornada pode ter paradas no caminho, que viram marcos (`spec/desafio-horas.md`).
-- [ ] A rota da jornada é calculada a pé (`spec/desafio-horas.md`, ADR-009).
-- [ ] As 24 horas de tolerância depois do término fecham o resultado; só nelas dá para editar atividades do desafio terminado (`spec/desafio-horas.md`, `spec/atividades.md`).
-- [ ] Toda integrante, não só a torcida, pode reagir com coração (`spec/desafio-horas.md`).
 - [ ] Uma atividade do Strava excluída no app não volta (`spec/atividades.md`).
 - [ ] Desconectar o Strava mantém as atividades que já vieram (`spec/strava.md`).
