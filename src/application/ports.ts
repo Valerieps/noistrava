@@ -8,6 +8,11 @@ export interface Backend {
   signOut(): Promise<void>;
   /** The test sign-in without Google; the server accepts it only on localhost (ADR-007). */
   devSignIn(email: string, name: string): Promise<ApiResult<null>>;
+  /**
+   * "Conectar com Strava", after the member accepted sharing: Strava's address, where the browser
+   * navigates next. The server answers `unavailable` where Strava is not set up.
+   */
+  stravaConnect(includePrivate: boolean): Promise<ApiResult<string>>;
   /** The address the browser navigates to for "Entrar com Google". */
   readonly signInUrl: string;
 }

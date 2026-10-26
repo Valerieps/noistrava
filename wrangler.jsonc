@@ -21,17 +21,17 @@
   "triggers": { "crons": ["*/5 * * * *"] },
   "vars": {
     // Public: the OAuth client ID from Google Cloud. The secret is a secret.
-    "GOOGLE_CLIENT_ID": "REPLACE_ME.apps.googleusercontent.com",
+    "GOOGLE_CLIENT_ID": "625557632408-gerfknglms3tulge4v9utgo9bn41otbu.apps.googleusercontent.com",
     // Public: the Strava app's client ID (ADR-008). STRAVA_CLIENT_SECRET, STRAVA_TOKEN_KEY and
     // STRAVA_WEBHOOK_SECRET are secrets.
-    "STRAVA_CLIENT_ID": "REPLACE_ME"
+    "STRAVA_CLIENT_ID": "291174"
   },
   // Branch previews (`wrangler preview`, ADR-004) refuse to deploy without this block. Each preview
   // gets its own empty Group namespace, never production's data; it has no secrets and no cron, and
   // Google sign-in does not work there (ADR-005), so the public client ID is enough.
   "previews": {
     "vars": {
-      "GOOGLE_CLIENT_ID": "REPLACE_ME.apps.googleusercontent.com"
+      "GOOGLE_CLIENT_ID": "625557632408-gerfknglms3tulge4v9utgo9bn41otbu.apps.googleusercontent.com"
     },
     "durable_objects": {
       "bindings": [{ "name": "GROUP", "class_name": "Group" }]

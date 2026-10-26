@@ -1,6 +1,19 @@
 // The single entry to the group's data. The Durable Object calls it; every method is synchronous,
 // so a command runs alone and inside one transaction (ADR-004).
 import type { ApiResult, CommandName, Commands, QueryName, Queries, Topic } from '../../src/application/api-contract';
+import { createActivity, deleteActivity, listMyActivities, updateActivity } from './activities';
+import {
+  cancelChallenge,
+  challengeLog,
+  createChallenge,
+  deleteChallenge,
+  editChallenge,
+  getChallenge,
+  history,
+  respond,
+  runChallengeJobs,
+  setReaction,
+} from './challenges';
 import { failure, QueryError, type CommandResult, type Context } from './context';
 import { createInvite, listInvites, revokeInvite } from './invites';
 import {
@@ -10,6 +23,7 @@ import {
   removeMember,
   rename,
   setRoles,
+  setTimezone,
   signIn,
   signOut,
   type GoogleProfile,
@@ -18,6 +32,14 @@ import {
 } from './members';
 import type { Clock, IdGenerator, Sql } from './ports';
 import { migrate } from './schema';
+import {
+  connectStrava,
+  importStravaActivity,
+  stravaConnection,
+  type ConnectStravaResult,
+  type NewStravaConnection,
+  type StravaActivityEvent,
+} from './strava';
 
 type Input = Record<string, unknown>;
 
@@ -28,6 +50,11 @@ const QUERIES: { [N in QueryName]: Handler<Queries[N]['output'] | QueryError | n
   me: (_ctx, actor) => me(actor),
   members: (ctx, actor) => listMembers(ctx, actor),
   invites: (ctx, actor) => listInvites(ctx, actor),
+  strava: (ctx, actor) => stravaConnection(ctx, actor),
+  challenge: (ctx, actor, input) => getChallenge(ctx, actor, input),
+  challengeLog: (ctx, actor, input) => challengeLog(ctx, actor, input),
+  history: (ctx) => history(ctx),
+  activities: (ctx, actor) => listMyActivities(ctx, actor),
 };
 
 /** Every command the API runs; each checks the actor's role itself. */
@@ -37,6 +64,16 @@ const COMMANDS: { [N in CommandName]: Handler<CommandResult<Commands[N]['output'
   'member.setRoles': setRoles,
   'member.remove': removeMember,
   'member.rename': rename,
+  'member.setTimezone': setTimezone,
+  'activity.create': createActivity,
+  'activity.update': updateActivity,
+  'activity.delete': deleteActivity,
+  'challenge.create': createChallenge,
+  'challenge.edit': editChallenge,
+  'challenge.respond': respond,
+  'challenge.cancel': cancelChallenge,
+  'challenge.delete': deleteChallenge,
+  'reaction.set': setReaction,
 };
 
 export class GroupService {
@@ -60,6 +97,17 @@ export class GroupService {
 
   memberForSession(sessionHash: string): Member | null {
     return memberForSession(this.ctx, sessionHash);
+  }
+
+  /** Called by the Worker after the Strava redirect, for the member signed in on that browser. */
+  connectStrava(sessionHash: string, connection: NewStravaConnection): ConnectStravaResult | { ok: false; error: 'unauthenticated' } {
+    const actor = this.memberForSession(sessionHash);
+    return actor ? connectStrava(this.ctx, actor, connection) : { ok: false, error: 'unauthenticated' };
+  }
+
+  /** Called by the Worker for each Strava webhook event; returns the topics that changed. */
+  importStravaActivity(athleteId: string, event: StravaActivityEvent): Topic[] {
+    return importStravaActivity(this.ctx, athleteId, event) ? ['activities', 'challenge'] : [];
   }
 
   query(sessionHash: string, name: string, input: unknown): ApiResult<unknown> {
@@ -86,7 +134,7 @@ export class GroupService {
    */
   tick(): Topic[] {
     this.ctx.sql.run('DELETE FROM sessions WHERE expires_at <= ?', this.ctx.clock.now().toISOString());
-    return [];
+    return runChallengeJobs(this.ctx) ? ['challenge', 'history'] : [];
   }
 }
 

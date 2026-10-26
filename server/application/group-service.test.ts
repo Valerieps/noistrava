@@ -135,3 +135,31 @@ describe('the API surface', () => {
     expect(service.command(admin, 'constructor', {})).toEqual({ ok: false, error: 'not_found' });
   });
 });
+
+describe('strava', () => {
+  const connection = (athleteId: string) => ({
+    athleteId,
+    accessToken: 'sealed-access',
+    refreshToken: 'sealed-refresh',
+    expiresAt: '2026-10-21T18:00:00Z',
+    includePrivate: false,
+  });
+
+  it('starts disconnected and stores a connection for the signed-in member only', () => {
+    const admin = signInAdmin();
+    expect(service.query(admin, 'strava', {})).toEqual({ ok: true, value: { connected: false, includePrivate: false } });
+    expect(service.connectStrava('h-nobody', connection('1'))).toEqual({ ok: false, error: 'unauthenticated' });
+    expect(service.connectStrava(admin, { ...connection('1'), includePrivate: true })).toEqual({ ok: true });
+    expect(service.query(admin, 'strava', {})).toEqual({ ok: true, value: { connected: true, includePrivate: true } });
+  });
+
+  it('replaces her own connection, but never takes a Strava account another member connected', () => {
+    const admin = signInAdmin();
+    invite(admin, 'bia@example.com');
+    service.signIn(profile('bia@example.com'), 'h-bia', []);
+    expect(service.connectStrava(admin, connection('1'))).toEqual({ ok: true });
+    expect(service.connectStrava(admin, connection('1'))).toEqual({ ok: true });
+    expect(service.connectStrava('h-bia', connection('1'))).toEqual({ ok: false, error: 'conflict' });
+    expect(service.query('h-bia', 'strava', {})).toMatchObject({ ok: true, value: { connected: false } });
+  });
+});
