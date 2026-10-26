@@ -72,10 +72,7 @@ export function ProgressPanel({
   return (
     <section className="panel" aria-label={strings.challenge.viewsLabel}>
       <div className="split">
-        <div className="stack" style={{ gap: 2 }}>
-          <div className="d big-number">{numbers.headline}</div>
-          <div className="muted">{numbers.subline}</div>
-        </div>
+        <div className="d big-number">{numbers.headline}</div>
         <div role="radiogroup" aria-label={strings.challenge.viewsLabel} className="segmented">
           {VIEWS.map((v) => (
             <button key={v} type="button" role="radio" aria-checked={view === v} aria-label={strings.challenge.views[v]} onClick={() => pick(v)}>
@@ -83,6 +80,9 @@ export function ProgressPanel({
             </button>
           ))}
         </div>
+      </div>
+      <div className="muted small" style={{ whiteSpace: 'nowrap' }}>
+        {numbers.subline}
       </div>
 
       {view === 'bar' && <Bar numbers={numbers} />}

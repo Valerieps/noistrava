@@ -45,6 +45,7 @@ export function JourneyMap({ challenge, programmedMeters }: { challenge: Challen
       here={{ point: pointAt(route, done), label }}
       ghost={ghost}
       label={strings.journey.mapLabel(journey.start.name, journey.end.name)}
+      compact
     >
       <button type="button" className="map-toggle" aria-pressed={perSenhora} onClick={() => setPerSenhora(!perSenhora)}>
         {strings.journey.perSenhora}

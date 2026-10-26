@@ -127,7 +127,7 @@ O grupo soma horas de atividade para bater uma meta num período, com ou sem jor
   subiu ou desceu nas últimas 24 horas e quem está na torcida. *(1)*
 - Sem jornada, há destaques: a maior atividade, o dia mais forte, a sequência de dias em que alguém
   se mexeu, os fusos em ação e a parte de cada modalidade. *(1)*
-- Com jornada, eu vejo a última e a próxima parada e a linha do caminho com os marcos, e o ranking
+- Com jornada, eu vejo a linha do caminho com as paradas e os marcos, e o ranking
   mostra quem levou o grupo mais longe, em km. *(1)*
 
 ## Editar, cancelar e apagar
