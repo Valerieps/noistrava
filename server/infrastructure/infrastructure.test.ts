@@ -129,7 +129,12 @@ describe('token encryption', () => {
   it('refuses a key of the wrong size and a tampered text', async () => {
     await expect(encryptText(btoa('short'), 'x')).rejects.toThrow();
     const sealed = await encryptText(key, 'secret-token');
-    await expect(decryptText(key, `${sealed.slice(0, -2)}AA`)).rejects.toThrow();
+    // A character in the middle carries 6 whole bits, so changing it always changes the data; the
+    // last characters may carry padding bits that decoding ignores.
+    const [iv, data] = sealed.split('.');
+    const middle = Math.floor(data.length / 2);
+    const tampered = `${data.slice(0, middle)}${data[middle] === 'A' ? 'B' : 'A'}${data.slice(middle + 1)}`;
+    await expect(decryptText(key, `${iv}.${tampered}`)).rejects.toThrow();
   });
 });
 
