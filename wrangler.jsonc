@@ -22,6 +22,8 @@
   "vars": {
     // Public: the OAuth client ID from Google Cloud (BOOTSTRAP.md). The secret is a secret.
     "GOOGLE_CLIENT_ID": "REPLACE_ME.apps.googleusercontent.com"
+    "STRAVA_CLIENT_TOKEN": "60189dd912281d807cfbb2b070e636b21626b986",
+    "STRAVA_REFRESH_TOKEN": "1ffe54ff8b5929f49f30ed41cf43e344a2e05ad9"
   },
   // Branch previews (`wrangler preview`, ADR-004) refuse to deploy without this block. Each preview
   // gets its own empty Group namespace, never production's data; it has no secrets and no cron, and
