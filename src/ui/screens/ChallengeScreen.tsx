@@ -187,7 +187,7 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
         <header className="journey-header">
           <div className="journey-badge striped" aria-hidden="true" />
           <div className="stack" style={{ gap: 2, minWidth: 0 }}>
-            <h1 className="d hero-title" style={{ margin: 0, color: 'var(--color-text)', fontSize: 24 }}>
+            <h1 className="d hero-title" style={{ margin: 0, color: 'var(--color-text)' }}>
               {challenge.name}
             </h1>
             <div className="small muted">
@@ -310,19 +310,19 @@ function PaceTiles({ p, goalMinutes }: { p: Pace; goalMinutes: number }) {
   return (
     <section className="tiles tiles-3">
       <div className="tile">
-        <div className="d" style={{ fontSize: 24 }}>
+        <div className="d text-xl">
           {formatDuration(p.neededPerDaySeconds)}
         </div>
         <div className="tile-note">{strings.challenge.tiles.needed(formatGoal(goalMinutes))}</div>
       </div>
       <div className="tile">
-        <div className="d" style={{ fontSize: 24 }}>
+        <div className="d text-xl">
           {formatDuration(p.averagePerDaySeconds)}
         </div>
         <div className="tile-note">{strings.challenge.tiles.average}</div>
       </div>
       <div className="tile">
-        <div className="d" style={{ fontSize: 24 }}>
+        <div className="d text-xl">
           {extra > 0 ? '+' : '−'}
           {formatDuration(Math.abs(extra))}
         </div>
@@ -421,7 +421,7 @@ function Timeline({ challenge }: { challenge: ChallengeView }) {
               </div>
               <div className={`timeline-card${here ? ' plain' : ''}${done ? ' done' : ' ahead'}`}>
                 <div className="timeline-tag">{t.tag}</div>
-                {!here && <div style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.2 }}>{t.name}</div>}
+                {!here && <div className="small" style={{ fontWeight: 700, lineHeight: 1.2 }}>{t.name}</div>}
                 <div className="tiny muted">{at}</div>
               </div>
             </li>

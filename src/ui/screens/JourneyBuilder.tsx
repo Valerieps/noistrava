@@ -84,7 +84,7 @@ function PlannedRoute({ journey }: { journey: Journey }) {
       </p>
       <div className="equivalent">
         <span>{f.equivalent}</span>
-        <span className="d" style={{ fontSize: 22 }}>
+        <span className="d text-lg">
           {formatGoal(journeyGoalMinutes(journey.distanceMeters))}
         </span>
       </div>

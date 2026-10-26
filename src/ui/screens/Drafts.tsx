@@ -68,7 +68,7 @@ export function Drafts() {
       )}
       {items.map((draft) => (
         <section key={draft.id} className="panel" style={{ gap: 10 }}>
-          <h2 className="ellipsis" style={{ fontSize: 16, fontWeight: 700 }}>
+          <h2 className="ellipsis card-title">
             {draft.name}
           </h2>
           <div className="small muted">

@@ -69,7 +69,7 @@ export function Ranking({ members, log, period, now }: { members: readonly Chall
       <div className="stack" role="tabpanel">
         {rows.map((r, i) => (
           <div key={r.memberId} className="rank-row">
-            <div className="d muted" style={{ fontSize: 16 }}>
+            <div className="d muted text-md">
               {i + 1}
             </div>
             <Avatar name={r.name} photoUrl={photo.get(r.memberId) ?? null} lead={i === 0 && r.value > 0} />
@@ -82,7 +82,7 @@ export function Ranking({ members, log, period, now }: { members: readonly Chall
               </div>
             </div>
             <div className="right">
-              <div className="d" style={{ fontSize: 17 }}>
+              <div className="d text-md">
                 {value(r.value)}
               </div>
               <div className="tiny muted">{sub(r.value)}</div>
@@ -105,7 +105,7 @@ export function JourneyRanking({ members, log, now }: { members: readonly Challe
       {rows.length === 0 && <p className="muted small">{strings.challenge.ranking.empty}</p>}
       {rows.map((r, i) => (
         <div key={r.memberId} className="rank-row">
-          <div className="d muted" style={{ fontSize: 16 }}>
+          <div className="d muted text-md">
             {i + 1}
           </div>
           <Avatar name={r.name} photoUrl={photo.get(r.memberId) ?? null} lead={i === 0 && r.value > 0} />
@@ -116,7 +116,7 @@ export function JourneyRanking({ members, log, now }: { members: readonly Challe
             <div className="tiny muted">{strings.challenge.ranking.shareOfTotal(total ? Math.round((r.value / total) * 100) : 0)}</div>
           </div>
           <div className="right">
-            <div className="d" style={{ fontSize: 17 }}>
+            <div className="d text-md">
               {formatKm(secondsToKm(r.value))}
             </div>
             <div className="tiny muted">{formatDuration(r.value)}</div>
