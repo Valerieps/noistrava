@@ -53,6 +53,32 @@ export function MoreIcon() {
   );
 }
 
+export function SwapIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" {...common} strokeWidth={2.2}>
+      <path d="M8 20V5M4 9l4-4 4 4M16 4v15M12 15l4 4 4-4" />
+    </svg>
+  );
+}
+
+export function PinIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" {...common}>
+      <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" />
+      <circle cx="12" cy="9.5" r="2.5" />
+    </svg>
+  );
+}
+
+export function SearchIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" {...common} strokeWidth={2.4}>
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="M16 16l4 4" />
+    </svg>
+  );
+}
+
 export function ChevronIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" {...common} strokeWidth={2.4}>

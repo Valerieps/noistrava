@@ -99,6 +99,8 @@ O grupo soma horas de atividade para bater uma meta num período, com ou sem jor
 - Com jornada, eu escolho o ponto de partida e o de chegada buscando lugares no mapa, e o app
   calcula a rota de carro entre eles. A meta é a distância da rota. *(1)*
 - Eu busco cada lugar pelo nome e escolho entre até 5 resultados. *(1)*
+- Eu vejo a partida, as paradas e a chegada numa linha só, como num app de corrida ou de mapa, e
+  posso inverter a partida e a chegada com um toque; inverter pede para calcular a rota de novo. *(1)*
 - O app escolhe sozinho as paradas no caminho; eu não acrescento nem tiro paradas. Cada parada é um
   marco, além de 25%, 50% e 75%. *(1)*
 - O número de paradas depende da distância: uma a cada 25 km de rota, no máximo 8. Uma rota com

@@ -857,39 +857,188 @@ svg text {
 }
 
 
-.place-row,
-.place-search {
+/* The journey's places on one rail, as ride apps show them: a ring for the start, a square for
+   the end, small dots for the stops, a dotted line through them. */
+.route-card {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-tile);
+  background: var(--color-surface);
 }
 
-.place-search input {
+.route-rail {
   flex: 1;
   min-width: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.route-row {
+  display: flex;
+  align-items: center;
+  min-height: 52px;
+}
+
+.route-row.stop {
+  min-height: 36px;
+}
+
+.route-marker {
+  position: relative;
+  align-self: stretch;
+  flex: none;
+  width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.route-marker::before,
+.route-marker::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  height: 50%;
+  border-left: 2px dotted var(--color-ghost-strong);
+  transform: translateX(-1px);
+}
+
+.route-marker::before {
+  top: 0;
+}
+
+.route-marker::after {
+  bottom: 0;
+}
+
+.route-row:first-child .route-marker::before,
+.route-row:last-child .route-marker::after {
+  display: none;
+}
+
+.route-dot {
+  position: relative;
+  z-index: 1;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 3.5px solid var(--color-text);
+  background: var(--color-surface);
+  box-shadow: 0 0 0 3px var(--color-surface);
+}
+
+.route-marker.end .route-dot {
+  border: 0;
+  border-radius: 3px;
+  background: var(--color-brand);
+}
+
+.route-marker.stop .route-dot {
+  width: 8px;
+  height: 8px;
+  border: 0;
+  background: var(--color-text-muted);
+}
+
+.route-field,
+.route-search input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.route-field {
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.route-field.empty {
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+.route-search {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.route-search input {
+  font-weight: 400;
+  outline: 2px solid var(--color-brand);
+}
+
+.route-search .icon-button,
+.route-swap {
+  color: var(--color-brand-ink);
+}
+
+.route-swap {
+  border: 1px solid var(--color-border);
+}
+
+.route-stop {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: 0 var(--space-3);
+  font-size: var(--text-sm);
 }
 
 .place-results {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-tile);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.place-results li + li {
+  border-top: 1px solid var(--color-border);
 }
 
 .place-results button {
   width: 100%;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
+  align-items: center;
+  gap: var(--space-3);
   text-align: left;
-  border-radius: 14px;
-  border-color: var(--color-border);
-  background: var(--color-surface);
+  border: 0;
+  border-radius: 0;
+  padding: var(--space-3) var(--space-4);
+  background: transparent;
   color: var(--color-text);
+  font-weight: 400;
+}
+
+.place-results svg {
+  flex: none;
+  color: var(--color-text-muted);
+}
+
+.place-result-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 .timeline {
