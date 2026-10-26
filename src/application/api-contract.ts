@@ -126,7 +126,7 @@ export interface PlaceSuggestion {
   readonly lng: number;
 }
 
-/** The walking route to compute: the start, the end, and the stops in the order they are walked. */
+/** The driving route to compute: the start, the end, and the stops in the order they are walked. */
 export interface RouteInput {
   start: Place;
   end: Place;

@@ -157,7 +157,7 @@ async function finishStravaConnection(request: Request, env: Env, url: URL): Pro
 }
 
 /**
- * The journey's place search and walking route (ADR-009), for any member: only someone creating a
+ * The journey's place search and driving route (ADR-009), for any member: only someone creating a
  * challenge calls them, one call per search or route she asks for. A failure of the public server
  * answers `unavailable`, and the creator tries again later.
  */

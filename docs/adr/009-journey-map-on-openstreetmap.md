@@ -26,3 +26,8 @@ Computing the route only at creation keeps the group's use of the free public se
 self-hosted routing (far too heavy for one route a month).
 **Limits to watch:** The public servers have no SLA; if one is down, creating a journey fails and the
 creator tries later, while running challenges keep working from the stored route.
+
+**Update (2026-10-26):** the route is computed with the FOSSGIS car profile
+(`/routed-car/route/v1/driving`) instead of the foot profile, at the owner's request: driving routes
+follow the main roads between cities. The app no longer says how the route is computed; the map
+keeps the OpenStreetMap attribution.

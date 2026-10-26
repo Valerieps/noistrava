@@ -53,7 +53,7 @@ describe('place search', () => {
   });
 });
 
-describe('walking route', () => {
+describe('driving route', () => {
   it('accepts the start and the end with the domain rules, ignoring stops sent by an old app', () => {
     expect(parseRouteRequest({ start: lisboa, end: cascais })).toEqual({ start: lisboa, end: cascais });
     expect(parseRouteRequest({ start: lisboa, end: cascais, stops: [sintra] })).toEqual({ start: lisboa, end: cascais });
@@ -61,10 +61,10 @@ describe('walking route', () => {
     expect(parseRouteRequest({ start: lisboa })).toBeNull();
   });
 
-  it('asks the FOSSGIS foot router for the whole geometry, in lng,lat order', () => {
+  it('asks the FOSSGIS car router for the whole geometry, in lng,lat order', () => {
     const url = new URL(routeUrl({ start: lisboa, end: cascais }));
     expect(url.origin).toBe('https://routing.openstreetmap.de');
-    expect(url.pathname).toBe('/routed-foot/route/v1/foot/-9.139300,38.722300;-9.421500,38.697900');
+    expect(url.pathname).toBe('/routed-car/route/v1/driving/-9.139300,38.722300;-9.421500,38.697900');
     expect(url.searchParams.get('overview')).toBe('full');
     expect(url.searchParams.get('geometries')).toBe('geojson');
   });
@@ -93,7 +93,7 @@ describe('walking route', () => {
     });
   });
 
-  it('refuses an answer without a walking route', () => {
+  it('refuses an answer without a driving route', () => {
     const request = { start: lisboa, end: cascais };
     expect(journeyFromRoute(request, { code: 'NoRoute', routes: [] })).toBeNull();
     expect(journeyFromRoute(request, { code: 'Ok', routes: [{ distance: 10, geometry: { coordinates: [[0, 0]] } }] })).toBeNull();

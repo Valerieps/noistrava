@@ -1,5 +1,5 @@
 // Choosing the journey (docs/spec/desafio-horas.md, "Jornada"): the start and the end, each found
-// by searching places, then the walking route the server computes between them, with the stops it
+// by searching places, then the driving route the server computes between them, with the stops it
 // chooses. Each search and each route happens only when the creator asks (ADR-009, ADR-011).
 import { useState, type KeyboardEvent } from 'react';
 import type { PlaceSuggestion } from '../../application/api-contract';
@@ -90,7 +90,7 @@ function PlannedRoute({ journey }: { journey: Journey }) {
         </span>
       </div>
       <p className="tiny muted" style={{ margin: 0 }}>
-        {f.perHour} {f.routeCredit}
+        {f.perHour}
       </p>
     </>
   );

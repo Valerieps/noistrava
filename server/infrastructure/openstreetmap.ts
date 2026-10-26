@@ -1,4 +1,4 @@
-// The journey's place search, walking route and automatic stops (ADR-009, ADR-011): Nominatim, the
+// The journey's place search, driving route and automatic stops (ADR-009, ADR-011): Nominatim, the
 // FOSSGIS OSRM server and Overpass, called only by the Worker when the creator asks, with an
 // identifying User-Agent as their usage policies require. Nothing here is called again while a
 // challenge runs.
@@ -7,7 +7,7 @@ import { parseJourney, type Journey, type Place } from '../../src/domain/challen
 import { NEAR_ROUTE_METERS, autoStopCount, chooseStops, type StopCandidate } from '../../src/domain/challenge/journey-stops';
 
 const SEARCH = 'https://nominatim.openstreetmap.org/search';
-const ROUTE = 'https://routing.openstreetmap.de/routed-foot/route/v1/foot';
+const ROUTE = 'https://routing.openstreetmap.de/routed-car/route/v1/driving';
 const OVERPASS = 'https://overpass-api.de/api/interpreter';
 
 export const SEARCH_QUERY_MAX_LENGTH = 120;
@@ -136,7 +136,7 @@ export function simplifyRoute(points: readonly (readonly [number, number])[], ma
 
 /**
  * Reads OSRM's answer into the journey to store, still without stops: the simplified route as
- * [lat, lng] and the total distance. Null when there is no walking route.
+ * [lat, lng] and the total distance. Null when there is no driving route.
  */
 export function journeyFromRoute(request: RouteRequest, body: unknown): Journey | null {
   if (typeof body !== 'object' || body === null) return null;
@@ -215,7 +215,7 @@ async function findCandidates(journey: Journey, agent: string): Promise<StopCand
 }
 
 /**
- * The walking route, then its stops. `invalid` when OSRM answers but finds no usable walking route;
+ * The driving route, then its stops. `invalid` when OSRM answers but finds no usable driving route;
  * `unavailable` when it is down. When Overpass fails, the journey goes on without stops.
  */
 export async function planRoute(
@@ -224,7 +224,7 @@ export async function planRoute(
 ): Promise<{ ok: true; journey: Journey } | { ok: false; error: 'invalid' | 'unavailable' }> {
   const response = await fetch(routeUrl(request), { headers: { 'User-Agent': agent, Accept: 'application/json' } });
   const body = (await response.json().catch(() => null)) as { code?: unknown } | null;
-  // OSRM answers 400 with a code such as NoRoute when the places cannot be joined on foot.
+  // OSRM answers 400 with a code such as NoRoute when the places cannot be joined by road.
   if (!response.ok && !(response.status === 400 && typeof body?.code === 'string')) return { ok: false, error: 'unavailable' };
   const journey = journeyFromRoute(request, body);
   if (!journey) return { ok: false, error: 'invalid' };
