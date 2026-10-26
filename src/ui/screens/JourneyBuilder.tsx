@@ -48,7 +48,6 @@ export function JourneyBuilder({ initial, onChange }: { initial: Journey | null;
     <div className="stack">
       <PlacePicker label={f.journeyStart} value={start} onPick={(p) => changed(() => setStart(p))} />
       <PlacePicker label={f.journeyEnd} value={end} onPick={(p) => changed(() => setEnd(p))} />
-      <span className="tiny muted">{f.stopsHint}</span>
 
       {!planned && (
         <button type="button" className="big-button" disabled={!start || !end || planning} onClick={plan}>

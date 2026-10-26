@@ -75,8 +75,6 @@ O grupo soma horas de atividade para bater uma meta num período, com ou sem jor
   Por exemplo, com GMT-3 e GMT-7, um desafio de segunda 0h a domingo 24h começa segunda 0h em
   GMT-3 e termina domingo 24h em GMT-7. *(1)*
   Por quê: assim o período cobre o dia inteiro de todas.
-- Ao escolher as datas, eu vejo os fusos das integrantes e a hora exata de início e de término em
-  cada um, antes de confirmar. *(1)*
 - Conta a atividade que começa dentro do período. *(1)*
 - Enquanto nenhuma integrante tem fuso, o período vale em UTC. *(1)*
 
