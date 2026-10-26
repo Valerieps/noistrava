@@ -15,6 +15,13 @@ const SEARCH_RESULTS = 5;
 const PLACE_NAME_MAX_LENGTH = 120;
 /** Below the domain's limit, so the stored route stays small. */
 const ROUTE_POINTS_TARGET = 1_000;
+/**
+ * How long each public server gets to answer. Overpass, when busy, takes a minute or more and then
+ * often answers nothing; without a limit the creator sat on "Calculando…" all that time.
+ */
+export const SEARCH_TIMEOUT_MS = 10_000;
+export const ROUTE_TIMEOUT_MS = 15_000;
+export const STOPS_TIMEOUT_MS = 15_000;
 
 /** "Senhoras (+https://the-app; contact)": who to reach when the group misuses the service. */
 export function userAgent(origin: string, contact: string | undefined): string {
@@ -56,10 +63,24 @@ export function suggestionsFromResponse(body: unknown): PlaceSuggestion[] {
   return suggestions;
 }
 
+/** Fetches and reads the JSON answer; throws when it takes longer than `ms`. */
+async function fetchJson(url: string, init: RequestInit, ms: number): Promise<{ response: Response; body: unknown }> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  try {
+    const response = await fetch(url, { ...init, signal: controller.signal });
+    const body: unknown = await response.json().catch(() => null);
+    if (controller.signal.aborted) throw new Error(`no answer within ${ms} ms`);
+    return { response, body };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export async function searchPlaces(query: string, agent: string): Promise<PlaceSuggestion[] | null> {
-  const response = await fetch(searchUrl(query), { headers: { 'User-Agent': agent, Accept: 'application/json' } });
+  const { response, body } = await fetchJson(searchUrl(query), { headers: { 'User-Agent': agent, Accept: 'application/json' } }, SEARCH_TIMEOUT_MS);
   if (!response.ok) return null;
-  return suggestionsFromResponse(await response.json().catch(() => null));
+  return suggestionsFromResponse(body);
 }
 
 /** What the creator sends: the start and the end. The app chooses the stops (ADR-011). */
@@ -168,7 +189,7 @@ export function stopsQuery(route: readonly (readonly [number, number])[]): strin
     .join(',');
   const near = `(around:${NEAR_ROUTE_METERS},${line})`;
   return [
-    '[out:json][timeout:25];',
+    `[out:json][timeout:${STOPS_TIMEOUT_MS / 1000}];`,
     '(',
     `node["place"~"^(city|town)$"]["name"]${near};`,
     `nwr["tourism"~"^(attraction|museum|viewpoint)$"]["wikidata"]["name"]${near};`,
@@ -203,27 +224,33 @@ export function candidatesFromOverpass(body: unknown): StopCandidate[] {
   return candidates;
 }
 
-/** The places near the route, or null when Overpass does not answer. */
+/** The places near the route, or null when Overpass refuses; throws when it does not answer in time. */
 async function findCandidates(journey: Journey, agent: string): Promise<StopCandidate[] | null> {
-  const response = await fetch(OVERPASS, {
-    method: 'POST',
-    headers: { 'User-Agent': agent, Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ data: stopsQuery(journey.route) }),
-  });
+  const { response, body } = await fetchJson(
+    OVERPASS,
+    {
+      method: 'POST',
+      headers: { 'User-Agent': agent, Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ data: stopsQuery(journey.route) }),
+    },
+    STOPS_TIMEOUT_MS,
+  );
   if (!response.ok) return null;
-  return candidatesFromOverpass(await response.json().catch(() => null));
+  return candidatesFromOverpass(body);
 }
 
 /**
  * The driving route, then its stops. `invalid` when OSRM answers but finds no usable driving route;
- * `unavailable` when it is down. When Overpass fails, the journey goes on without stops.
+ * `unavailable` when it is down; throws when it does not answer in time. When Overpass fails or
+ * is slow, the journey goes on without stops.
  */
 export async function planRoute(
   request: RouteRequest,
   agent: string,
 ): Promise<{ ok: true; journey: Journey } | { ok: false; error: 'invalid' | 'unavailable' }> {
-  const response = await fetch(routeUrl(request), { headers: { 'User-Agent': agent, Accept: 'application/json' } });
-  const body = (await response.json().catch(() => null)) as { code?: unknown } | null;
+  const answer = await fetchJson(routeUrl(request), { headers: { 'User-Agent': agent, Accept: 'application/json' } }, ROUTE_TIMEOUT_MS);
+  const { response } = answer;
+  const body = answer.body as { code?: unknown } | null;
   // OSRM answers 400 with a code such as NoRoute when the places cannot be joined by road.
   if (!response.ok && !(response.status === 400 && typeof body?.code === 'string')) return { ok: false, error: 'unavailable' };
   const journey = journeyFromRoute(request, body);

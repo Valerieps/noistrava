@@ -1,12 +1,15 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   candidatesFromOverpass,
   journeyFromRoute,
   normalizeSearchQuery,
   parseRouteRequest,
+  planRoute,
+  ROUTE_TIMEOUT_MS,
   routeUrl,
   searchUrl,
   simplifyRoute,
+  STOPS_TIMEOUT_MS,
   stopsQuery,
   suggestionsFromResponse,
   userAgent,
@@ -126,5 +129,40 @@ describe('automatic stops (ADR-011)', () => {
       { name: 'Castelo dos Mouros', lat: 38.79, lng: -9.39, kind: 'attraction', population: null },
     ]);
     expect(candidatesFromOverpass({ remark: 'timeout' })).toEqual([]);
+  });
+});
+
+describe('waiting for the public servers', () => {
+  const porto = { name: 'Porto', lat: 41.1579, lng: -8.6291 };
+  // 300 km: enough for automatic stops.
+  const osrm = { code: 'Ok', routes: [{ distance: 300_000, geometry: { coordinates: [[-9.1393, 38.7223], [-8.6291, 41.1579]] } }] };
+
+  /** A server that never answers until the request is given up. */
+  function silent(init?: RequestInit): Promise<Response> {
+    return new Promise((_, reject) => init?.signal?.addEventListener('abort', () => reject(new Error('aborted'))));
+  }
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('goes on without stops when Overpass does not answer in time', async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal('fetch', (url: string, init?: RequestInit) => (url.startsWith('https://routing.') ? Promise.resolve(Response.json(osrm)) : silent(init)));
+    const planned = planRoute({ start: lisboa, end: porto }, 'test');
+    await vi.advanceTimersByTimeAsync(STOPS_TIMEOUT_MS);
+    const result = await planned;
+    expect(result.ok && result.journey.stops).toEqual([]);
+    expect(result.ok && result.journey.distanceMeters).toBe(300_000);
+  });
+
+  it('gives up when the router does not answer in time', async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal('fetch', (_url: string, init?: RequestInit) => silent(init));
+    const planned = planRoute({ start: lisboa, end: porto }, 'test');
+    const failed = expect(planned).rejects.toThrow();
+    await vi.advanceTimersByTimeAsync(ROUTE_TIMEOUT_MS);
+    await failed;
   });
 });
