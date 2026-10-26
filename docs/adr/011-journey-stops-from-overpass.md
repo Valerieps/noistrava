@@ -3,7 +3,7 @@
 **Status:** Accepted
 **Date:** 2026-10-26
 **Decision:** The app chooses the journey's stops; the creator no longer picks them.
-- **Finding places:** after OSRM returns the walking route, the Worker sends one query to the
+- **Finding places:** after OSRM returns the driving route, the Worker sends one query to the
   public Overpass API (`https://overpass-api.de`, listed in `SERVER_ORIGINS`) for the cities and
   towns, and the attractions and historic sites with a Wikidata entry, within 10 km of the route.
   The route goes as a line of at most 150 points; the request carries the same identifying

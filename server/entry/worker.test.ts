@@ -304,7 +304,7 @@ describe("the journey's places and route (ADR-009)", () => {
 
   const osrm = () => Response.json({ code: 'Ok', routes: [{ distance: 30_000, geometry: { coordinates: [[-9.1393, 38.7223], [-9.4215, 38.6979]] } }] });
 
-  it('computes the walking route with its stops, as a journey the challenge accepts', async () => {
+  it('computes the driving route with its stops, as a journey the challenge accepts', async () => {
     const ana = await signIn('ana@example.com', 'Ana');
     network.mockResolvedValueOnce(osrm());
     network.mockResolvedValueOnce(Response.json({ elements: [{ type: 'node', lat: 38.69, lon: -9.31, tags: { place: 'town', name: 'Oeiras' } }] }));
@@ -330,7 +330,7 @@ describe("the journey's places and route (ADR-009)", () => {
     expect((await value<Journey>(route(ana, { start: lisboa, end: cascais }))).stops).toEqual([]);
   });
 
-  it('tells a missing walking route from a server that is down', async () => {
+  it('tells a missing driving route from a server that is down', async () => {
     const ana = await signIn('ana@example.com', 'Ana');
     vi.spyOn(console, 'error').mockImplementation(() => {});
     network.mockResolvedValueOnce(Response.json({ code: 'NoRoute', message: 'Impossible route' }, { status: 400 }));
