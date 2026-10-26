@@ -1,0 +1,17 @@
+node_modules/
+dist/
+*.local
+*.tsbuildinfo
+
+# Compiled output from a stray `tsc`; Vite would resolve it before the .ts sources.
+src/**/*.js
+vite.config.js
+network-policy.js
+
+# Claude Code worktrees and personal settings.
+.claude/worktrees/
+.claude/settings.local.json
+
+# Wrangler local state and secrets.
+.wrangler/
+.dev.vars

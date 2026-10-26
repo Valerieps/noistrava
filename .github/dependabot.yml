@@ -1,0 +1,18 @@
+# Weekly dependency check. Versions stay pinned exactly; each update is a pull request whose
+# build must pass before merging. Updates are grouped so a week is one or two PRs, not ten.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      dev-dependencies:
+        dependency-type: development
+      runtime-dependencies:
+        dependency-type: production
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

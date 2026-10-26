@@ -1,0 +1,40 @@
+// Cloudflare Worker: the app's files, the API, the live connection and the cron (ADR-004).
+// Secrets are not here: set GOOGLE_CLIENT_SECRET and BOOTSTRAP_ADMIN_EMAILS with
+// `npx wrangler secret put <NAME>`, and locally in .dev.vars (see .dev.vars.example).
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "app-name",
+  "main": "server/entry/worker.ts",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "GROUP", "class_name": "Group" }]
+  },
+  // Never edit a shipped migration; add the next tag.
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Group"] }],
+  // One cron for every time-based job; each job decides whether it is due (GroupService.tick).
+  "triggers": { "crons": ["*/5 * * * *"] },
+  "vars": {
+    // Public: the OAuth client ID from Google Cloud (BOOTSTRAP.md). The secret is a secret.
+    "GOOGLE_CLIENT_ID": "REPLACE_ME.apps.googleusercontent.com"
+  },
+  // Branch previews (`wrangler preview`, ADR-004) refuse to deploy without this block. Each preview
+  // gets its own empty Group namespace, never production's data; it has no secrets and no cron, and
+  // Google sign-in does not work there (ADR-005), so the public client ID is enough.
+  "previews": {
+    "vars": {
+      "GOOGLE_CLIENT_ID": "REPLACE_ME.apps.googleusercontent.com"
+    },
+    "durable_objects": {
+      "bindings": [{ "name": "GROUP", "class_name": "Group" }]
+    }
+  },
+  "observability": { "enabled": true },
+  // No Wrangler usage telemetry from builds or CI (docs/SEGURANCA.md).
+  "send_metrics": false
+}

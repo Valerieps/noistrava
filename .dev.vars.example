@@ -1,0 +1,8 @@
+# Copy to .dev.vars (ignored by git) for `npm run dev:api`.
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+# Comma-separated e-mails that may enter as admin while the group has no admin.
+BOOTSTRAP_ADMIN_EMAILS=
+# 1 turns on the test sign-in (any invited e-mail, no Google) on localhost only (ADR-007).
+# Never in wrangler.jsonc. With it, you can try the app before Google Cloud is set up.
+DEV_SIGN_IN=1

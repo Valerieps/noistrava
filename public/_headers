@@ -1,0 +1,12 @@
+# Response headers for the static files (Workers static assets). API responses set their own.
+# The Content-Security-Policy lives in index.html (meta tag, injected by the production build) so
+# it applies to the page only: as a header it would also apply to a service worker (ADR-002).
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: no-referrer
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+
+# The service worker must never be served stale, or a fix to it would take a day to arrive.
+/sw.js
+  Cache-Control: no-cache

@@ -1,0 +1,17 @@
+[
+  { "name": "t:bug", "color": "f9d0c4", "description": "Comportamento errado" },
+  { "name": "t:vulnerability", "color": "f9d0c4", "description": "Risco de segurança ou de perder dados" },
+  { "name": "t:enhancement", "color": "f9d0c4", "description": "Pedido de funcionalidade" },
+  { "name": "t:debito-tecnico", "color": "f9d0c4", "description": "Débito técnico, limitação conhecida ou verificação que falta" },
+  { "name": "t:documentation", "color": "f9d0c4", "description": "Documentação" },
+  { "name": "p:alta", "color": "fbca04", "description": "" },
+  { "name": "p:media", "color": "fbca04", "description": "" },
+  { "name": "p:baixa", "color": "fbca04", "description": "" },
+  { "name": "s:small", "color": "5319e7", "description": "" },
+  { "name": "s:medium", "color": "5319e7", "description": "" },
+  { "name": "s:large", "color": "5319e7", "description": "" },
+  { "name": "q:perguntas em aberto", "color": "85e8bf", "description": "Esperando resposta da dona" },
+  { "name": "q:SEM perguntas em aberto", "color": "37f45c", "description": "Pronta para construir" },
+  { "name": "st:duplicate", "color": "ffffff", "description": "Já existe" },
+  { "name": "st:wontfix", "color": "ffffff", "description": "Não vai ser feito" }
+]

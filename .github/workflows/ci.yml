@@ -1,0 +1,30 @@
+# Runs the same build Workers Builds runs (typecheck, unit tests, production build) on every
+# pull request, so a broken change is caught before it reaches main (ADR-003). The docs check
+# keeps links between docs and the ADR status lines honest. Runs on GitHub, never in the app.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run docs:check

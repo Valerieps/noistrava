@@ -1,0 +1,156 @@
+// The Worker: serves the app's files, the API under /api, the live connection and the cron
+// (ADR-004). Everything about the group is delegated to the Group Durable Object.
+import type { ApiError, ApiResult } from '../../src/application/api-contract';
+import { SESSION_DAYS, type GoogleProfile } from '../application/members';
+import { clearCookie, LOGIN_COOKIE, readCookie, SESSION_COOKIE, setCookie } from '../infrastructure/cookies';
+import { randomToken, sha256 } from '../infrastructure/crypto';
+import { devProfile, devSignInAllowed } from '../infrastructure/dev-sign-in';
+import {
+  authorizationUrl,
+  decodePendingLogin,
+  encodePendingLogin,
+  exchangeCode,
+  newPendingLogin,
+  profileFromIdToken,
+} from '../infrastructure/google-oauth';
+import type { Env } from './env';
+import { Group, SESSION_HASH_HEADER } from './group-object';
+
+export { Group };
+
+const SECURITY_HEADERS = {
+  'Cache-Control': 'no-store',
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'no-referrer',
+};
+
+const STATUS: Record<ApiError, number> = {
+  unauthenticated: 401,
+  forbidden: 403,
+  not_found: 404,
+  invalid: 400,
+  conflict: 409,
+  last_admin: 409,
+  unavailable: 503,
+};
+
+function json(body: unknown, status = 200, headers: Record<string, string> = {}): Response {
+  return new Response(JSON.stringify(body), { status, headers: { ...SECURITY_HEADERS, 'Content-Type': 'application/json', ...headers } });
+}
+
+function redirect(location: string, cookies: string[] = []): Response {
+  const headers = new Headers({ ...SECURITY_HEADERS, Location: location });
+  for (const cookie of cookies) headers.append('Set-Cookie', cookie);
+  return new Response(null, { status: 302, headers });
+}
+
+function group(env: Env) {
+  return env.GROUP.get(env.GROUP.idFromName('grupo'));
+}
+
+async function sessionHash(request: Request): Promise<string | null> {
+  const token = readCookie(request.headers.get('Cookie'), SESSION_COOKIE);
+  return token ? sha256(token) : null;
+}
+
+/** Requests that change state or open the live connection must come from the app's own pages. */
+function sameOrigin(request: Request, url: URL): boolean {
+  return request.headers.get('Origin') === url.origin;
+}
+
+async function login(env: Env, url: URL): Promise<Response> {
+  const pending = newPendingLogin();
+  const target = await authorizationUrl(env.GOOGLE_CLIENT_ID, `${url.origin}/api/auth/callback`, pending);
+  return redirect(target, [setCookie(LOGIN_COOKIE, encodePendingLogin(pending), 600)]);
+}
+
+/** Signs the profile in through the invite rules; the session cookie, or null without invite. */
+async function startSession(env: Env, profile: GoogleProfile): Promise<string | null> {
+  const token = randomToken();
+  const bootstrap = (env.BOOTSTRAP_ADMIN_EMAILS ?? '').split(',').filter(Boolean);
+  const result = await group(env).signIn(profile, await sha256(token), bootstrap);
+  return result.ok ? setCookie(SESSION_COOKIE, token, SESSION_DAYS * 24 * 60 * 60) : null;
+}
+
+/** Starts a session for an e-mail without Google, through the same invite rules (ADR-007). */
+async function devSignIn(request: Request, env: Env): Promise<Response> {
+  const body = (await request.json().catch(() => null)) as { email?: unknown; name?: unknown } | null;
+  const profile = body && devProfile(body);
+  if (!profile) return json({ error: 'invalid' }, 400);
+  const cookie = await startSession(env, profile);
+  return cookie ? json({ value: null }, 200, { 'Set-Cookie': cookie }) : json({ error: 'forbidden' }, 403);
+}
+
+async function callback(request: Request, env: Env, url: URL): Promise<Response> {
+  const pending = decodePendingLogin(readCookie(request.headers.get('Cookie'), LOGIN_COOKIE));
+  const code = url.searchParams.get('code');
+  const failed = redirect('/?erro=login', [clearCookie(LOGIN_COOKIE)]);
+  if (!pending || !code || url.searchParams.get('state') !== pending.state) return failed;
+
+  const idToken = await exchangeCode({
+    code,
+    clientId: env.GOOGLE_CLIENT_ID,
+    clientSecret: env.GOOGLE_CLIENT_SECRET,
+    redirectUri: `${url.origin}/api/auth/callback`,
+    verifier: pending.verifier,
+  });
+  const profile = idToken ? profileFromIdToken(idToken, env.GOOGLE_CLIENT_ID, pending.nonce, new Date()) : null;
+  if (!profile) return failed;
+  const cookie = await startSession(env, profile);
+  if (!cookie) return redirect('/?erro=sem-convite', [clearCookie(LOGIN_COOKIE)]);
+  return redirect('/', [clearCookie(LOGIN_COOKIE), cookie]);
+}
+
+async function api(request: Request, env: Env, url: URL): Promise<Response> {
+  const path = url.pathname;
+
+  if (path === '/api/auth/login' && request.method === 'GET') return login(env, url);
+  if (path === '/api/auth/callback' && request.method === 'GET') return callback(request, env, url);
+
+  if (!sameOrigin(request, url)) return json({ error: 'forbidden' }, 403);
+  const hash = await sessionHash(request);
+
+  if (path === '/api/live' && request.headers.get('Upgrade') === 'websocket') {
+    if (!hash) return json({ error: 'unauthenticated' }, 401);
+    const headers = new Headers({ Upgrade: 'websocket', [SESSION_HASH_HEADER]: hash });
+    return group(env).fetch(new Request(url.toString(), { headers }));
+  }
+
+  if (request.method !== 'POST' || request.headers.get('Content-Type') !== 'application/json') {
+    return json({ error: 'not_found' }, 404);
+  }
+
+  if (path === '/api/auth/logout') {
+    if (hash) await group(env).signOut(hash);
+    return json({ ok: true }, 200, { 'Set-Cookie': clearCookie(SESSION_COOKIE) });
+  }
+
+  if (path === '/api/auth/dev' && devSignInAllowed(env.DEV_SIGN_IN, url)) return devSignIn(request, env);
+
+  const match = /^\/api\/(query|command)\/([a-zA-Z.]+)$/.exec(path);
+  if (!match) return json({ error: 'not_found' }, 404);
+  if (!hash) return json({ error: 'unauthenticated' }, 401);
+
+  let input: unknown;
+  try {
+    input = await request.json();
+  } catch {
+    return json({ error: 'invalid' }, 400);
+  }
+  const [, kind, name] = match;
+  // RPC wraps results in a Disposable, which hides the union from narrowing; restore it.
+  const result = (kind === 'query' ? await group(env).query(hash, name, input) : await group(env).command(hash, name, input)) as ApiResult<unknown>;
+  return result.ok ? json({ value: result.value }) : json({ error: result.error }, STATUS[result.error]);
+}
+
+export default {
+  async fetch(request, env, _ctx): Promise<Response> {
+    const url = new URL(request.url);
+    if (url.pathname.startsWith('/api/')) return api(request, env, url);
+    return env.ASSETS.fetch(request);
+  },
+
+  async scheduled(_controller, env, _ctx): Promise<void> {
+    await group(env).tick();
+  },
+} satisfies ExportedHandler<Env>;

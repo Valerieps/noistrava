@@ -1,0 +1,31 @@
+name: Bug
+description: Algo não funciona como o spec diz
+labels: ["t:bug"]
+body:
+  - type: textarea
+    id: passos
+    attributes:
+      label: Passos
+      description: O que eu fiz, em ordem
+    validations:
+      required: true
+  - type: textarea
+    id: esperado
+    attributes:
+      label: Esperado
+      description: O que deveria acontecer (cite o arquivo do `docs/spec/`, se houver)
+    validations:
+      required: true
+  - type: textarea
+    id: obtido
+    attributes:
+      label: Obtido
+    validations:
+      required: true
+  - type: dropdown
+    id: prioridade
+    attributes:
+      label: Prioridade
+      options: ["p:alta", "p:media", "p:baixa"]
+    validations:
+      required: true

@@ -1,0 +1,26 @@
+name: Pedido de funcionalidade
+description: Algo novo, ainda não decidido
+labels: ["t:enhancement", "q:perguntas em aberto"]
+body:
+  - type: textarea
+    id: pedido
+    attributes:
+      label: O pedido
+      description: O que eu quero poder fazer, em primeira pessoa
+    validations:
+      required: true
+  - type: textarea
+    id: spec
+    attributes:
+      label: O que muda no spec
+      description: Quais arquivos de `docs/spec/` e quais regras
+  - type: textarea
+    id: em-aberto
+    attributes:
+      label: Em aberto
+      description: Perguntas que precisam de resposta antes de construir, como checklist
+      value: "- [ ] "
+  - type: textarea
+    id: incoerencias
+    attributes:
+      label: Incoerências com o modelo atual
