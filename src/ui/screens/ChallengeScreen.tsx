@@ -1,7 +1,7 @@
 // The challenge screen (docs/spec/desafio-horas.md): the current challenge with its progress, the
 // pace, the ranking, the highlights and the log, with or without a journey. Answering the invite,
 // editing, cancelling and deleting start here too.
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ApiError, ChallengeView, LogEntryView, MeView } from '../../application/api-contract';
 import { PERCENT_MILESTONES } from '../../domain/challenge/challenge';
 import { daysLeft, formatDuration, formatGoal, pace, secondsToKm, type Pace } from '../../domain/challenge/progress';
@@ -9,7 +9,7 @@ import { isAdmin } from '../../domain/group/roles';
 import { strings } from '../../domain/strings';
 import { useServices } from '../backend-context';
 import { formatDate, formatDateTime, formatDayMonth, formatKm, formatPeriod } from '../format';
-import { PlusIcon } from '../icons';
+import { MoreIcon, PlusIcon } from '../icons';
 import { Link, navigate } from '../router';
 import { useQuery } from '../use-query';
 import { ActivityLog } from './challenge/ActivityLog';
@@ -194,6 +194,7 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
               {periodText} · {left}
             </div>
           </div>
+          <Options me={me} challenge={challenge} busy={busy} onLeave={leave} onCancel={cancel} onDelete={remove} />
         </header>
       ) : (
         <header className="hero striped">
@@ -205,6 +206,7 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
               {periodText} · {left} · {strings.challenge.createdBy(challenge.creatorName)}
             </div>
           </div>
+          <Options me={me} challenge={challenge} busy={busy} onLeave={leave} onCancel={cancel} onDelete={remove} />
         </header>
       )}
 
@@ -240,7 +242,6 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
 
         <ActivityLog challengeId={challenge.id} entries={entries} journey={!!journey} now={now} onChanged={log.reload} />
 
-        <Options me={me} challenge={challenge} busy={busy} onLeave={leave} onCancel={cancel} onDelete={remove} />
         <DraftsLink next />
         {challenge.myResponse === 'accepted' && !challenge.closed && <div className="spacer-fab" />}
       </div>
@@ -431,6 +432,7 @@ function Timeline({ challenge }: { challenge: ChallengeView }) {
   );
 }
 
+/** The challenge's options, in a three-dot menu on the right of the header. */
 function Options({
   me,
   challenge,
@@ -446,37 +448,63 @@ function Options({
   onCancel: () => void;
   onDelete: () => void;
 }) {
+  const [expanded, setExpanded] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!expanded) return;
+    const onPointer = (event: PointerEvent) => {
+      if (!ref.current?.contains(event.target as Node)) setExpanded(false);
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setExpanded(false);
+    };
+    document.addEventListener('pointerdown', onPointer);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('pointerdown', onPointer);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [expanded]);
+
   const creator = challenge.creatorId === me.id;
   const open = challenge.state === 'open';
   const canLeave = open && challenge.myResponse === 'accepted';
   if (!(creator && open) && !isAdmin(me) && !canLeave) return null;
+
+  const pick = (action: () => void) => () => {
+    setExpanded(false);
+    action();
+  };
   return (
-    <section className="panel" style={{ gap: 10 }}>
-      <h2 className="d" style={{ fontSize: 17 }}>
-        {strings.challenge.options}
-      </h2>
-      <div className="actions">
-        {creator && open && (
-          <button type="button" className="secondary" disabled={busy} onClick={() => navigate(`/desafio/${encodeURIComponent(challenge.id)}/editar`)}>
-            {strings.challenge.edit}
-          </button>
-        )}
-        {creator && open && (
-          <button type="button" className="secondary" disabled={busy} onClick={onCancel}>
-            {strings.challenge.cancel}
-          </button>
-        )}
-        {canLeave && (
-          <button type="button" className="quiet" disabled={busy} onClick={onLeave}>
-            {strings.challenge.invite.leave}
-          </button>
-        )}
-        {isAdmin(me) && (
-          <button type="button" className="danger" disabled={busy} onClick={onDelete}>
-            {strings.challenge.delete}
-          </button>
-        )}
-      </div>
-    </section>
+    <div className="header-menu" ref={ref}>
+      <button type="button" aria-label={strings.challenge.options} aria-haspopup="menu" aria-expanded={expanded} onClick={() => setExpanded((e) => !e)}>
+        <MoreIcon />
+      </button>
+      {expanded && (
+        <div className="menu-list" role="menu" aria-label={strings.challenge.options}>
+          {creator && open && (
+            <button type="button" role="menuitem" disabled={busy} onClick={pick(() => navigate(`/desafio/${encodeURIComponent(challenge.id)}/editar`))}>
+              {strings.challenge.edit}
+            </button>
+          )}
+          {creator && open && (
+            <button type="button" role="menuitem" disabled={busy} onClick={pick(onCancel)}>
+              {strings.challenge.cancel}
+            </button>
+          )}
+          {canLeave && (
+            <button type="button" role="menuitem" disabled={busy} onClick={pick(onLeave)}>
+              {strings.challenge.invite.leave}
+            </button>
+          )}
+          {isAdmin(me) && (
+            <button type="button" role="menuitem" className="danger-strong" disabled={busy} onClick={pick(onDelete)}>
+              {strings.challenge.delete}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
