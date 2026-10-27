@@ -15,8 +15,7 @@ export const IMAGE_ORIGINS: readonly string[] = ['https://lh3.googleusercontent.
 
 /**
  * The only servers the Worker (server/) calls: Google sign-in, Strava (ADR-008), and OpenStreetMap
- * place search and driving routes for the journey (ADR-009), and Overpass for the journey's
- * automatic stops (ADR-011). Add an API here with an ADR.
+ * place search and driving routes for the journey (ADR-009). Add an API here with an ADR.
  */
 export const SERVER_ORIGINS: readonly string[] = [
   'https://accounts.google.com',
@@ -24,5 +23,4 @@ export const SERVER_ORIGINS: readonly string[] = [
   'https://www.strava.com',
   'https://nominatim.openstreetmap.org',
   'https://routing.openstreetmap.de',
-  'https://overpass-api.de',
 ];

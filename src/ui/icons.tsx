@@ -35,6 +35,14 @@ export function PlusIcon() {
   );
 }
 
+export function CloseIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" {...common} strokeWidth={2.4}>
+      <path d="M6 6l12 12M18 6L6 18" />
+    </svg>
+  );
+}
+
 export function BackIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" {...common} strokeWidth={2.4}>

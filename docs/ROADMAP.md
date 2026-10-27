@@ -38,9 +38,8 @@ O que ainda não está pronto.
 - [ ] "No ritmo" é estar a até 1% da meta do programado; a reta final são os 5 últimos dias do
   período (`spec/desafio-horas.md`, "Andamento").
 - [ ] A busca mostra até 5 lugares (`spec/desafio-horas.md`, "Jornada").
-- [ ] Paradas automáticas: uma a cada 25 km, no máximo 8; lugares a até 10 km da rota; ponto
-  turístico famoso é o que tem página na Wikipédia; se a busca das paradas falhar, a rota fica sem
-  paradas (`spec/desafio-horas.md`, "Jornada").
+- [ ] Paradas: cada nova entra antes da chegada, na ordem em que eu acrescento; no máximo 20; um
+  lugar não se repete; inverter a viagem inverte as paradas (`spec/desafio-horas.md`, "Jornada").
 - [ ] As setas do ranking comparam com 24 horas atrás; o log mostra as 4 atividades mais recentes e
   "Ver tudo" abre o resto (`spec/desafio-horas.md`, "Andamento").
 
