@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  candidatesFromOverpass,
   journeyFromRoute,
   normalizeSearchQuery,
   parseRouteRequest,
@@ -9,8 +8,6 @@ import {
   routeUrl,
   searchUrl,
   simplifyRoute,
-  STOPS_TIMEOUT_MS,
-  stopsQuery,
   suggestionsFromResponse,
   userAgent,
 } from './openstreetmap';
@@ -18,6 +15,7 @@ import {
 const lisboa = { name: 'Lisboa', lat: 38.7223, lng: -9.1393 };
 const sintra = { name: 'Sintra', lat: 38.8029, lng: -9.3817 };
 const cascais = { name: 'Cascais', lat: 38.6979, lng: -9.4215 };
+const porto = { name: 'Porto', lat: 41.1579, lng: -8.6291 };
 
 describe('place search', () => {
   it('identifies the app, with the contact when there is one', () => {
@@ -57,17 +55,19 @@ describe('place search', () => {
 });
 
 describe('driving route', () => {
-  it('accepts the start and the end with the domain rules, ignoring stops sent by an old app', () => {
-    expect(parseRouteRequest({ start: lisboa, end: cascais })).toEqual({ start: lisboa, end: cascais });
-    expect(parseRouteRequest({ start: lisboa, end: cascais, stops: [sintra] })).toEqual({ start: lisboa, end: cascais });
-    expect(parseRouteRequest({ start: lisboa, end: { name: '', lat: 0, lng: 0 } })).toBeNull();
-    expect(parseRouteRequest({ start: lisboa })).toBeNull();
+  it('accepts the places with the domain rules, keeping the stops in order', () => {
+    expect(parseRouteRequest({ start: lisboa, end: cascais, stops: [] })).toEqual({ start: lisboa, end: cascais, stops: [] });
+    expect(parseRouteRequest({ start: lisboa, end: cascais, stops: [sintra, porto] })).toEqual({ start: lisboa, end: cascais, stops: [sintra, porto] });
+    expect(parseRouteRequest({ start: lisboa, end: cascais, stops: [sintra, sintra] })).toBeNull();
+    expect(parseRouteRequest({ start: lisboa, end: { name: '', lat: 0, lng: 0 }, stops: [] })).toBeNull();
+    expect(parseRouteRequest({ start: lisboa, end: cascais })).toBeNull();
+    expect(parseRouteRequest({ start: lisboa, end: cascais, stops: Array.from({ length: 21 }, (_, i) => ({ ...sintra, name: `P${i}` })) })).toBeNull();
   });
 
   it('asks the FOSSGIS car router for the whole geometry, in lng,lat order', () => {
-    const url = new URL(routeUrl({ start: lisboa, end: cascais }));
+    const url = new URL(routeUrl({ start: lisboa, end: cascais, stops: [sintra] }));
     expect(url.origin).toBe('https://routing.openstreetmap.de');
-    expect(url.pathname).toBe('/routed-car/route/v1/driving/-9.139300,38.722300;-9.421500,38.697900');
+    expect(url.pathname).toBe('/routed-car/route/v1/driving/-9.139300,38.722300;-9.381700,38.802900;-9.421500,38.697900');
     expect(url.searchParams.get('overview')).toBe('full');
     expect(url.searchParams.get('geometries')).toBe('geojson');
   });
@@ -82,61 +82,40 @@ describe('driving route', () => {
     expect(simplifyRoute([[0, 0], [0, 1], [0, 2]])).toEqual([[0, 0], [0, 2]]);
   });
 
-  it('turns the answer into the journey, still without stops', () => {
+  it('turns the answer into the journey, each stop where its leg ends', () => {
     const body = {
       code: 'Ok',
-      routes: [{ distance: 45_300.4, geometry: { coordinates: [[-9.1393, 38.7223], [-9.3817, 38.8029], [-9.4215, 38.6979]] } }],
+      routes: [
+        {
+          distance: 45_300.4,
+          legs: [{ distance: 28_100.2 }, { distance: 17_200.2 }],
+          geometry: { coordinates: [[-9.1393, 38.7223], [-9.3817, 38.8029], [-9.4215, 38.6979]] },
+        },
+      ],
     };
-    expect(journeyFromRoute({ start: lisboa, end: cascais }, body)).toEqual({
+    expect(journeyFromRoute({ start: lisboa, end: cascais, stops: [sintra] }, body)).toEqual({
       start: lisboa,
       end: cascais,
-      stops: [],
+      stops: [{ ...sintra, distanceMeters: 28_100 }],
       distanceMeters: 45_300,
       route: [[38.7223, -9.1393], [38.8029, -9.3817], [38.6979, -9.4215]],
     });
   });
 
   it('refuses an answer without a driving route', () => {
-    const request = { start: lisboa, end: cascais };
+    const request = { start: lisboa, end: cascais, stops: [] };
     expect(journeyFromRoute(request, { code: 'NoRoute', routes: [] })).toBeNull();
-    expect(journeyFromRoute(request, { code: 'Ok', routes: [{ distance: 10, geometry: { coordinates: [[0, 0]] } }] })).toBeNull();
-    expect(journeyFromRoute(request, { code: 'Ok', routes: [{ distance: 0, geometry: { coordinates: [[0, 0], [1, 1]] } }] })).toBeNull();
+    expect(journeyFromRoute(request, { code: 'Ok', routes: [{ distance: 10, legs: [{ distance: 10 }], geometry: { coordinates: [[0, 0]] } }] })).toBeNull();
+    expect(journeyFromRoute(request, { code: 'Ok', routes: [{ distance: 0, legs: [{ distance: 0 }], geometry: { coordinates: [[0, 0], [1, 1]] } }] })).toBeNull();
+    // A stop the route passes at its very start does not fall inside it.
+    const atStart = { start: lisboa, end: cascais, stops: [sintra] };
+    expect(journeyFromRoute(atStart, { code: 'Ok', routes: [{ distance: 10, legs: [{ distance: 0 }, { distance: 10 }], geometry: { coordinates: [[0, 0], [1, 1]] } }] })).toBeNull();
+    expect(journeyFromRoute(atStart, { code: 'Ok', routes: [{ distance: 10, legs: [{ distance: 10 }], geometry: { coordinates: [[0, 0], [1, 1]] } }] })).toBeNull();
     expect(journeyFromRoute(request, null)).toBeNull();
   });
 });
 
-describe('automatic stops (ADR-011)', () => {
-  it('asks Overpass for cities, towns and famous attractions within 10 km of the route', () => {
-    const query = stopsQuery([[38.7223, -9.1393], [38.6979, -9.4215]]);
-    expect(query).toContain('node["place"~"^(city|town)$"]["name"](around:10000,38.72230,-9.13930,38.69790,-9.42150);');
-    expect(query).toContain('["wikidata"]');
-    expect(query).toContain('out tags center;');
-  });
-
-  it('reads each place with its Portuguese name, kind and population, skipping broken items', () => {
-    const body = {
-      elements: [
-        { type: 'node', lat: 38.8, lon: -9.38, tags: { place: 'town', name: 'Sintra', population: '30 000' } },
-        { type: 'node', lat: 48.85, lon: 2.35, tags: { place: 'city', name: 'Paris', 'name:pt': 'Paris' } },
-        { type: 'way', center: { lat: 38.79, lon: -9.39 }, tags: { historic: 'castle', name: 'Castelo dos Mouros', population: '9' } },
-        { type: 'node', lat: 1, lon: 1, tags: { tourism: 'museum' } },
-        { type: 'way', tags: { tourism: 'museum', name: 'Sem centro' } },
-      ],
-    };
-    expect(candidatesFromOverpass(body)).toEqual([
-      { name: 'Sintra', lat: 38.8, lng: -9.38, kind: 'town', population: 30_000 },
-      { name: 'Paris', lat: 48.85, lng: 2.35, kind: 'city', population: null },
-      { name: 'Castelo dos Mouros', lat: 38.79, lng: -9.39, kind: 'attraction', population: null },
-    ]);
-    expect(candidatesFromOverpass({ remark: 'timeout' })).toEqual([]);
-  });
-});
-
 describe('waiting for the public servers', () => {
-  const porto = { name: 'Porto', lat: 41.1579, lng: -8.6291 };
-  // 300 km: enough for automatic stops.
-  const osrm = { code: 'Ok', routes: [{ distance: 300_000, geometry: { coordinates: [[-9.1393, 38.7223], [-8.6291, 41.1579]] } }] };
-
   /** A server that never answers until the request is given up. */
   function silent(init?: RequestInit): Promise<Response> {
     return new Promise((_, reject) => init?.signal?.addEventListener('abort', () => reject(new Error('aborted'))));
@@ -147,20 +126,10 @@ describe('waiting for the public servers', () => {
     vi.unstubAllGlobals();
   });
 
-  it('goes on without stops when Overpass does not answer in time', async () => {
-    vi.useFakeTimers();
-    vi.stubGlobal('fetch', (url: string, init?: RequestInit) => (url.startsWith('https://routing.') ? Promise.resolve(Response.json(osrm)) : silent(init)));
-    const planned = planRoute({ start: lisboa, end: porto }, 'test');
-    await vi.advanceTimersByTimeAsync(STOPS_TIMEOUT_MS);
-    const result = await planned;
-    expect(result.ok && result.journey.stops).toEqual([]);
-    expect(result.ok && result.journey.distanceMeters).toBe(300_000);
-  });
-
   it('gives up when the router does not answer in time', async () => {
     vi.useFakeTimers();
     vi.stubGlobal('fetch', (_url: string, init?: RequestInit) => silent(init));
-    const planned = planRoute({ start: lisboa, end: porto }, 'test');
+    const planned = planRoute({ start: lisboa, end: porto, stops: [] }, 'test');
     const failed = expect(planned).rejects.toThrow();
     await vi.advanceTimersByTimeAsync(ROUTE_TIMEOUT_MS);
     await failed;

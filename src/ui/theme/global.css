@@ -883,8 +883,8 @@ svg text {
   min-height: 52px;
 }
 
-.route-row.stop {
-  min-height: 36px;
+.route-row.add {
+  min-height: 40px;
 }
 
 .route-marker {
@@ -944,6 +944,16 @@ svg text {
   background: var(--color-text-muted);
 }
 
+.route-marker.add svg {
+  position: relative;
+  z-index: 1;
+  width: 16px;
+  height: 16px;
+  color: var(--color-brand-ink);
+  background: var(--color-surface);
+  box-shadow: 0 0 0 3px var(--color-surface);
+}
+
 .route-field,
 .route-search input {
   flex: 1;
@@ -991,14 +1001,20 @@ svg text {
   border: 1px solid var(--color-border);
 }
 
-.route-stop {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  justify-content: space-between;
-  gap: var(--space-2);
-  padding: 0 var(--space-3);
-  font-size: var(--text-sm);
+.route-add {
+  padding: var(--space-2) var(--space-3);
+  text-decoration: none;
+}
+
+.route-km {
+  flex: none;
+  padding-left: var(--space-2);
+}
+
+.route-remove {
+  width: 36px;
+  height: 36px;
+  color: var(--color-text-muted);
 }
 
 .place-results {

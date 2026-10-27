@@ -1,6 +1,7 @@
 # ADR-011: Journey stops chosen from Overpass
 
-**Status:** Accepted
+**Status:** Superseded (2026-10-27): the owner dropped the automatic stops. The creator adds the
+stops by hand again, sent to OSRM as waypoints (ADR-009); Overpass left `SERVER_ORIGINS`.
 **Date:** 2026-10-26
 **Decision:** The app chooses the journey's stops; the creator no longer picks them.
 - **Finding places:** after OSRM returns the driving route, the Worker sends one query to the

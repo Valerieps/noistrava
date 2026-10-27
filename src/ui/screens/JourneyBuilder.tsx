@@ -1,38 +1,46 @@
-// Choosing the journey (docs/spec/desafio-horas.md, "Jornada"): the start and the end, each found
-// by searching places, then the driving route the server computes between them, with the stops it
-// chooses. Each search and each route happens only when the creator asks (ADR-009, ADR-011).
-// Laid out like a ride app: the start and the end on one rail, the stops between them once the
-// route is computed, a button to swap the two and the search results under the rail.
+// Choosing the journey (docs/spec/desafio-horas.md, "Jornada"): the start, the stops and the end,
+// each found by searching places, then the driving route the server computes through them. Each
+// search and each route is one call, only when the creator asks (ADR-009).
+// Laid out like a ride app: the start, the stops and the end on one rail, a button to add a stop
+// and one to swap the trip around, and the search results under the rail.
 import { useState, type KeyboardEvent } from 'react';
 import type { PlaceSuggestion } from '../../application/api-contract';
-import { journeyGoalMinutes, type Journey, type Place } from '../../domain/challenge/challenge';
+import { MAX_STOPS, journeyGoalMinutes, type Journey, type Place } from '../../domain/challenge/challenge';
 import { measureRoute, pointAt } from '../../domain/challenge/journey-map';
 import { formatGoal } from '../../domain/challenge/progress';
 import { strings } from '../../domain/strings';
 import { useServices } from '../backend-context';
 import { formatKm } from '../format';
-import { PinIcon, SearchIcon, SwapIcon } from '../icons';
+import { CloseIcon, PinIcon, PlusIcon, SearchIcon, SwapIcon } from '../icons';
 import { RouteMap } from '../map/RouteMap';
 
 const place = ({ name, lat, lng }: Place): Place => ({ name, lat, lng });
 
-type End = 'start' | 'end';
+/** The place being searched: the start, the end, a stop by its position, or a new stop. */
+type Slot = 'start' | 'end' | 'new' | number;
 
 export function JourneyBuilder({ initial, onChange }: { initial: Journey | null; onChange: (journey: Journey | null) => void }) {
   const { backend } = useServices();
   const f = strings.challengeForm;
   const [start, setStart] = useState<Place | null>(initial ? place(initial.start) : null);
   const [end, setEnd] = useState<Place | null>(initial ? place(initial.end) : null);
+  const [stops, setStops] = useState<Place[]>(initial ? initial.stops.map(place) : []);
   const [planned, setPlanned] = useState<Journey | null>(initial);
   const [planning, setPlanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // The end being searched, if any; the search is focused only when the creator opened it.
-  const [editing, setEditing] = useState<End | null>(initial ? null : 'start');
+  // The place being searched, if any; the search is focused only when the creator opened it.
+  const [editing, setEditing] = useState<Slot | null>(initial ? null : 'start');
   const [focus, setFocus] = useState(false);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<PlaceSuggestion[] | null>(null);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
+
+  function current(slot: Slot): Place | null {
+    if (slot === 'start') return start;
+    if (slot === 'end') return end;
+    return slot === 'new' ? null : stops[slot];
+  }
 
   /** Any change of place drops the route computed for the old ones. */
   function changed(apply: () => void) {
@@ -42,9 +50,9 @@ export function JourneyBuilder({ initial, onChange }: { initial: Journey | null;
     onChange(null);
   }
 
-  function edit(which: End | null) {
-    setEditing(which);
-    setFocus(which !== null);
+  function edit(slot: Slot | null) {
+    setEditing(slot);
+    setFocus(slot !== null);
     setQuery('');
     setResults(null);
     setSearchError(null);
@@ -67,20 +75,37 @@ export function JourneyBuilder({ initial, onChange }: { initial: Journey | null;
 
   /** Picking the start moves on to the end while it is still empty, as ride apps do. */
   function pick(suggestion: PlaceSuggestion) {
+    if (editing === null) return;
     const chosen = place(suggestion);
+    // Each place appears once on the journey, so each stop is a milestone of its own.
+    const others = [start, end, ...stops].filter((p) => p && p !== current(editing));
+    if (others.some((p) => p?.name === chosen.name)) {
+      setSearchError(f.placeTaken);
+      return;
+    }
     if (editing === 'start') {
       changed(() => setStart(chosen));
       edit(end ? null : 'end');
-    } else {
+    } else if (editing === 'end') {
       changed(() => setEnd(chosen));
       edit(start ? null : 'start');
+    } else {
+      const slot = editing;
+      changed(() => setStops(slot === 'new' ? [...stops, chosen] : stops.map((s, i) => (i === slot ? chosen : s))));
+      edit(null);
     }
   }
 
+  function remove(index: number) {
+    changed(() => setStops(stops.filter((_, i) => i !== index)));
+  }
+
+  /** Swapping turns the whole trip around: the stops come in the opposite order. */
   function swap() {
     changed(() => {
       setStart(end);
       setEnd(start);
+      setStops([...stops].reverse());
     });
   }
 
@@ -88,7 +113,7 @@ export function JourneyBuilder({ initial, onChange }: { initial: Journey | null;
     if (!start || !end) return;
     setPlanning(true);
     setError(null);
-    const result = await backend.planRoute({ start, end });
+    const result = await backend.planRoute({ start, end, stops });
     setPlanning(false);
     if (!result.ok) {
       setError(result.error === 'invalid' ? f.noRoute : f.routeFailed);
@@ -98,9 +123,12 @@ export function JourneyBuilder({ initial, onChange }: { initial: Journey | null;
     onChange(result.value);
   }
 
+  /** A search can be left when it keeps a place already chosen, or when it was a new stop. */
+  const canLeave = editing === 'new' || (editing !== null && current(editing) !== null);
+
   // Enter searches instead of submitting the challenge form; Escape gives up the search.
   function onKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key === 'Escape' && (editing === 'start' ? start : end)) {
+    if (event.key === 'Escape' && canLeave) {
       event.preventDefault();
       edit(null);
     }
@@ -111,19 +139,24 @@ export function JourneyBuilder({ initial, onChange }: { initial: Journey | null;
 
   // Leaving an empty search keeps the place already chosen.
   function onBlur() {
-    if (query.trim() === '' && !results && (editing === 'start' ? start : end)) edit(null);
+    if (query.trim() === '' && !results && canLeave) edit(null);
   }
 
-  function field(which: End) {
-    const value = which === 'start' ? start : end;
-    const label = which === 'start' ? f.journeyStart : f.journeyEnd;
-    if (editing === which) {
+  function label(slot: Slot): string {
+    if (slot === 'start') return f.journeyStart;
+    if (slot === 'end') return f.journeyEnd;
+    return slot === 'new' ? f.addStop : f.stopLabel(slot + 1);
+  }
+
+  function field(slot: Slot) {
+    const value = current(slot);
+    if (editing === slot) {
       return (
         <div className="route-search">
           <input
             type="search"
             enterKeyHint="search"
-            aria-label={label}
+            aria-label={label(slot)}
             autoFocus={focus}
             value={query}
             placeholder={f.searchPlaceholder}
@@ -138,10 +171,16 @@ export function JourneyBuilder({ initial, onChange }: { initial: Journey | null;
       );
     }
     return (
-      <button type="button" className={`route-field${value ? '' : ' empty'}`} aria-label={value ? f.placeField(label, value.name) : label} onClick={() => edit(which)}>
-        {value ? value.name : which === 'start' ? f.journeyStartPlaceholder : f.journeyEndPlaceholder}
+      <button type="button" className={`route-field${value ? '' : ' empty'}`} aria-label={value ? f.placeField(label(slot), value.name) : label(slot)} onClick={() => edit(slot)}>
+        {value ? value.name : slot === 'start' ? f.journeyStartPlaceholder : f.journeyEndPlaceholder}
       </button>
     );
+  }
+
+  /** Where the computed route passes the stop, once there is one. */
+  function stopKm(stop: Place): string | null {
+    const found = planned?.stops.find((s) => s.name === stop.name);
+    return found ? strings.journey.atKm(Math.round(found.distanceMeters / 1000)) : null;
   }
 
   return (
@@ -154,17 +193,40 @@ export function JourneyBuilder({ initial, onChange }: { initial: Journey | null;
             </span>
             {field('start')}
           </li>
-          {planned?.stops.map((s) => (
-            <li key={`${s.lat},${s.lng}`} className="route-row stop">
+          {stops.map((s, i) => (
+            <li key={s.name} className="route-row">
               <span className="route-marker stop">
                 <i className="route-dot" />
               </span>
-              <span className="route-stop">
-                <span>{s.name}</span>
-                <span className="tiny muted">{strings.journey.atKm(Math.round(s.distanceMeters / 1000))}</span>
-              </span>
+              {field(i)}
+              {editing !== i && (
+                <>
+                  {stopKm(s) && <span className="route-km tiny muted">{stopKm(s)}</span>}
+                  <button type="button" className="icon-button route-remove" aria-label={f.removeStop(s.name)} disabled={planning} onClick={() => remove(i)}>
+                    <CloseIcon />
+                  </button>
+                </>
+              )}
             </li>
           ))}
+          {editing === 'new' && (
+            <li className="route-row">
+              <span className="route-marker stop">
+                <i className="route-dot" />
+              </span>
+              {field('new')}
+            </li>
+          )}
+          {editing === null && stops.length < MAX_STOPS && (
+            <li className="route-row add">
+              <span className="route-marker add">
+                <PlusIcon />
+              </span>
+              <button type="button" className="link-button route-add" disabled={planning} onClick={() => edit('new')}>
+                {f.addStop}
+              </button>
+            </li>
+          )}
           <li className="route-row">
             <span className="route-marker end">
               <i className="route-dot" />
@@ -202,9 +264,12 @@ export function JourneyBuilder({ initial, onChange }: { initial: Journey | null;
       )}
 
       {!planned && (
-        <button type="button" className="big-button" disabled={!start || !end || planning} onClick={plan}>
-          {planning ? f.planning : f.planRoute}
-        </button>
+        <>
+          <span className="tiny muted">{f.stopsHint}</span>
+          <button type="button" className="big-button" disabled={!start || !end || planning} onClick={plan}>
+            {planning ? f.planning : f.planRoute}
+          </button>
+        </>
       )}
       {error && (
         <p className="notice" role="alert">
@@ -222,9 +287,6 @@ function PlannedRoute({ journey }: { journey: Journey }) {
   const stops = [{ ...journey.start, distanceMeters: 0 }, ...journey.stops, { ...journey.end, distanceMeters: journey.distanceMeters }];
   return (
     <>
-      <p className="tiny muted" style={{ margin: 0 }}>
-        {journey.stops.length > 0 ? f.autoStops : f.noStops}
-      </p>
       <RouteMap
         route={journey.route}
         lines={[{ points: journey.route, tone: 'walked' }]}

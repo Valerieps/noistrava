@@ -24,8 +24,8 @@ conferidas pelo `src/security.test.ts`, que roda em todo build.
 - Quem sai do grupo tem as atividades apagadas e os tokens do Strava apagados; os desafios
   terminados guardam só os totais dela. Quando a pessoa desconecta o app no Strava, os tokens são
   apagados na hora.
-- Para a jornada (ADR-009, ADR-011), o Worker manda ao OpenStreetMap só o texto da busca e as
-  coordenadas dos lugares escolhidos e da rota, nunca dado de integrante. O navegador busca os tiles do mapa mandando só
+- Para a jornada (ADR-009), o Worker manda ao OpenStreetMap só o texto da busca e as coordenadas
+  dos lugares escolhidos, nunca dado de integrante. O navegador busca os tiles do mapa mandando só
   a origem do app como `Referer`, que o servidor de tiles exige.
 - O webhook do Strava não é assinado: o evento só avisa que algo mudou, e o servidor busca a
   atividade na API com o token da própria pessoa (ADR-008).

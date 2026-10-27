@@ -280,6 +280,7 @@ describe('connecting Strava', () => {
 describe("the journey's places and route (ADR-009)", () => {
   const lisboa = { name: 'Lisboa', lat: 38.7223, lng: -9.1393 };
   const cascais = { name: 'Cascais', lat: 38.6979, lng: -9.4215 };
+  const oeiras = { name: 'Oeiras', lat: 38.69, lng: -9.31 };
   const search = (session: string | undefined, body: unknown) => send('/api/places/search', { session, body });
   const route = (session: string | undefined, body: unknown) => send('/api/places/route', { session, body });
 
@@ -302,17 +303,17 @@ describe("the journey's places and route (ADR-009)", () => {
     expect((init.headers as Record<string, string>)['User-Agent']).toBe(`Senhoras/1.0 (+${ORIGIN}; grupo@example.com)`);
   });
 
-  const osrm = () => Response.json({ code: 'Ok', routes: [{ distance: 30_000, geometry: { coordinates: [[-9.1393, 38.7223], [-9.4215, 38.6979]] } }] });
-
-  it('computes the driving route with its stops, as a journey the challenge accepts', async () => {
+  it('computes the driving route through the stops, as a journey the challenge accepts', async () => {
     const ana = await signIn('ana@example.com', 'Ana');
-    network.mockResolvedValueOnce(osrm());
-    network.mockResolvedValueOnce(Response.json({ elements: [{ type: 'node', lat: 38.69, lon: -9.31, tags: { place: 'town', name: 'Oeiras' } }] }));
-    const journey = await value<Journey>(route(ana, { start: lisboa, end: cascais }));
-    expect(journey.stops.map((s) => s.name)).toEqual(['Oeiras']);
-    const [url, init] = network.mock.calls[1] as [string, RequestInit];
-    expect(url).toBe('https://overpass-api.de/api/interpreter');
-    expect(init.method).toBe('POST');
+    network.mockResolvedValueOnce(
+      Response.json({
+        code: 'Ok',
+        routes: [{ distance: 30_000, legs: [{ distance: 12_000 }, { distance: 18_000 }], geometry: { coordinates: [[-9.1393, 38.7223], [-9.4215, 38.6979]] } }],
+      }),
+    );
+    const journey = await value<Journey>(route(ana, { start: lisboa, end: cascais, stops: [oeiras] }));
+    expect(journey.stops).toEqual([{ ...oeiras, distanceMeters: 12_000 }]);
+    expect(network).toHaveBeenCalledTimes(1);
     const created = await value<{ id: string }>(command(ana, 'challenge.create', { name: 'Até Cascais', startDate: '2026-11-02', endDate: '2026-11-08', journey, creatorIsSenhora: true }));
     const view = await value<{ challenge: ChallengeView }>(query(ana, 'challenge', { challengeId: created.id }));
     expect(view.challenge.goalMinutes).toBe(6 * 60);
@@ -320,23 +321,13 @@ describe("the journey's places and route (ADR-009)", () => {
     expect(view.challenge.journey?.stops.map((s) => s.name)).toEqual(['Oeiras']);
   });
 
-  it('keeps the route without stops when Overpass does not answer', async () => {
-    const ana = await signIn('ana@example.com', 'Ana');
-    vi.spyOn(console, 'error').mockImplementation(() => {});
-    network.mockResolvedValueOnce(osrm());
-    network.mockResolvedValueOnce(new Response('busy', { status: 504 }));
-    expect((await value<Journey>(route(ana, { start: lisboa, end: cascais }))).stops).toEqual([]);
-    network.mockResolvedValueOnce(osrm());
-    expect((await value<Journey>(route(ana, { start: lisboa, end: cascais }))).stops).toEqual([]);
-  });
-
   it('tells a missing driving route from a server that is down', async () => {
     const ana = await signIn('ana@example.com', 'Ana');
     vi.spyOn(console, 'error').mockImplementation(() => {});
     network.mockResolvedValueOnce(Response.json({ code: 'NoRoute', message: 'Impossible route' }, { status: 400 }));
-    expect(await error(route(ana, { start: lisboa, end: cascais }))).toEqual({ status: 400, body: { error: 'invalid' } });
+    expect(await error(route(ana, { start: lisboa, end: cascais, stops: [] }))).toEqual({ status: 400, body: { error: 'invalid' } });
     network.mockResolvedValueOnce(new Response('busy', { status: 429 }));
-    expect(await error(route(ana, { start: lisboa, end: cascais }))).toEqual({ status: 503, body: { error: 'unavailable' } });
+    expect(await error(route(ana, { start: lisboa, end: cascais, stops: [] }))).toEqual({ status: 503, body: { error: 'unavailable' } });
     network.mockResolvedValueOnce(new Response('down', { status: 502 }));
     expect(await error(search(ana, { query: 'Lisboa' }))).toEqual({ status: 503, body: { error: 'unavailable' } });
     // The network itself failing.

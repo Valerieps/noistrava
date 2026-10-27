@@ -136,6 +136,8 @@ export interface PlaceSuggestion {
 export interface RouteInput {
   start: Place;
   end: Place;
+  /** In the order the route goes through them. */
+  stops: Place[];
 }
 
 export interface ActivityInput {
