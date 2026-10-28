@@ -31,7 +31,7 @@ export function MonthCalendar({ days, today }: { days: readonly DayTotal[]; toda
   const title = formatMonth(month, Number(today.slice(0, 4)));
 
   return (
-    <section className="panel month-calendar" aria-label={t.calendarLabel}>
+    <section className="sheet-section month-calendar" aria-label={t.calendarLabel}>
       <div className="month-calendar-head">
         <button type="button" className="icon-button flip" aria-label={t.previousMonth} disabled={month <= first} onClick={() => setMonth(shiftMonth(month, -1))}>
           <ChevronIcon />
