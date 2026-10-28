@@ -4,7 +4,7 @@ import { useState, type ReactNode } from 'react';
 import type { LogEntryView } from '../../../application/api-contract';
 import { curvePoints, elapsedFraction, type Pace, type Period } from '../../../domain/challenge/progress';
 import { strings } from '../../../domain/strings';
-import { BarViewIcon, CurveViewIcon, RingViewIcon } from '../../icons';
+import { BarViewIcon, CurveViewIcon, PaceIcon, RingViewIcon } from '../../icons';
 
 type View = 'bar' | 'ring' | 'curve';
 const VIEWS: View[] = ['bar', 'ring', 'curve'];
@@ -207,6 +207,44 @@ export function PaceMessage({ title, body, tone }: { title: string; body: string
     <div className={`message tone-${tone}`} role="status">
       <strong>{title}</strong>
       <span>{body}</span>
+    </div>
+  );
+}
+
+const HERO_RADIUS = 60;
+const HERO_LENGTH = 2 * Math.PI * HERO_RADIUS;
+
+/** The ring in the challenge's top: the track, the programmed and the effective, in white. */
+export function HeroRing({ numbers }: { numbers: ProgressNumbers }) {
+  const arc = (fraction: number) => `${(Math.min(1, Math.max(0, fraction)) * HERO_LENGTH).toFixed(1)} ${HERO_LENGTH.toFixed(1)}`;
+  const circle = (stroke: string, dash?: string) => (
+    <circle cx="66" cy="66" r={HERO_RADIUS} fill="none" stroke={stroke} strokeWidth="12" strokeLinecap={dash ? 'round' : undefined} strokeDasharray={dash} transform="rotate(-90 66 66)" />
+  );
+  return (
+    <div className="hero-ring">
+      <svg width="132" height="132" viewBox="0 0 132 132" role="img" aria-label={numbers.ringLabel}>
+        {circle('rgba(255, 255, 255, 0.22)')}
+        {numbers.programmed > 0 && circle('rgba(255, 255, 255, 0.45)', arc(numbers.programmed))}
+        {numbers.effective > 0 && circle('#ffffff', arc(numbers.effective))}
+      </svg>
+      <div className="hero-ring-center d" aria-hidden="true">
+        {Math.round(numbers.effective * 100)}%
+      </div>
+    </div>
+  );
+}
+
+/** The pace sentence on the sheet: a round icon, the title and the text, with no box. */
+export function PaceNote({ title, body, tone }: { title: string; body: string; tone: Pace['tone'] }) {
+  return (
+    <div className="sheet-note" role="status">
+      <div className="sheet-note-icon">
+        <PaceIcon tone={tone} />
+      </div>
+      <div>
+        <strong>{title}</strong>
+        <span>{body}</span>
+      </div>
     </div>
   );
 }

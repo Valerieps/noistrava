@@ -1960,3 +1960,318 @@ ul.pills {
   gap: var(--space-2);
   align-items: center;
 }
+
+/* Challenge screen, direction C: a brand-colored top and a white sheet (docs/rascunhos/desafio-visual-c.md).
+   Only the hours challenge uses these classes so far; .panel, .tile and .message stay as they are. */
+
+.top-bar:has(+ .hero-c) {
+  border-bottom: 0;
+  background: var(--color-hero);
+}
+
+.top-bar:has(+ .hero-c) .top-bar-name,
+.top-bar:has(+ .hero-c) .icon-button {
+  color: var(--color-on-hero);
+}
+
+.hero-c {
+  position: relative;
+  isolation: isolate;
+  padding: var(--space-2) var(--space-5) calc(var(--space-6) + var(--radius-sheet));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  background: var(--color-hero);
+  color: var(--color-on-hero);
+}
+
+/* The creator's pattern, drawn in white over the brand color */
+.hero-c::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.hero-c-stripes::before {
+  background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0 14px, transparent 14px 28px);
+}
+
+.hero-c-dots::before {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.13) 0 5px, transparent 5.5px) 0 0 / 22px 22px;
+}
+
+.hero-c-checks::before {
+  background: repeating-conic-gradient(rgba(255, 255, 255, 0.08) 0 25%, transparent 0 50%) 0 0 / 32px 32px;
+}
+
+.hero-c-zigzag::before {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%) -12px 0 / 24px 24px,
+    linear-gradient(225deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%) -12px 0 / 24px 24px,
+    linear-gradient(315deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%) 0 0 / 24px 24px,
+    linear-gradient(45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%) 0 0 / 24px 24px;
+}
+
+.hero-c-grid::before {
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px) 0 0 / 20px 20px,
+    linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px) 0 0 / 20px 20px;
+}
+
+.hero-c-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: 44px;
+  color: var(--color-on-hero-muted);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.hero-c .header-menu > button {
+  border-color: transparent;
+  background: rgba(255, 255, 255, 0.18);
+  color: var(--color-on-hero);
+}
+
+.hero-c .header-menu > .menu-list {
+  color: var(--color-text);
+}
+
+.hero-c-title {
+  margin: 0;
+  color: var(--color-on-hero);
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.05;
+}
+
+.hero-c-by {
+  color: var(--color-on-hero-muted);
+  font-size: var(--text-sm);
+}
+
+.hero-c-total {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  margin-top: var(--space-3);
+}
+
+.hero-c-number {
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.hero-c-of {
+  margin-top: var(--space-1);
+  color: var(--color-on-hero-muted);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.hero-ring {
+  position: relative;
+  width: 132px;
+  height: 132px;
+  flex: none;
+}
+
+.hero-ring svg {
+  display: block;
+}
+
+.hero-ring-center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: var(--text-xl);
+  font-weight: 800;
+}
+
+.sheet {
+  position: relative;
+  margin-top: calc(-1 * var(--radius-sheet));
+  min-height: 60vh;
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  overflow: hidden;
+  background: var(--color-sheet);
+}
+
+.sheet-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+}
+
+.sheet-section > h2,
+.sheet-head h2 {
+  font-size: var(--text-lg);
+  font-weight: 800;
+}
+
+.sheet-band {
+  height: 8px;
+  background: var(--color-band);
+}
+
+.sheet > .sheet-band:first-child {
+  display: none;
+}
+
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.sheet-select {
+  position: relative;
+  display: flex;
+  align-items: center;
+  color: var(--color-brand-ink);
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+.sheet-select select {
+  min-height: 44px;
+  padding: 0 var(--space-5) 0 var(--space-2);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  appearance: none;
+  cursor: pointer;
+}
+
+.sheet-select svg {
+  position: absolute;
+  right: 0;
+  transform: rotate(90deg);
+  pointer-events: none;
+}
+
+.sheet-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0 calc(-1 * var(--space-1));
+}
+
+.sheet-row {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  align-items: center;
+  min-height: 56px;
+  padding: var(--space-2) 0;
+}
+
+.sheet-row .initial {
+  width: 40px;
+  height: 40px;
+  font-size: var(--text-base);
+}
+
+.sheet-row-name {
+  font-size: var(--text-base);
+  font-weight: 700;
+}
+
+.sheet-row-sub {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+.sheet-row-value {
+  font-size: var(--text-md);
+  font-weight: 800;
+  text-align: right;
+}
+
+.sheet .heart {
+  background: transparent;
+}
+
+.sheet .heart[aria-pressed='true'] {
+  color: var(--color-brand);
+}
+
+.sheet-foot {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+}
+
+.sheet-note {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.sheet-note-icon {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-accent-soft);
+  color: var(--color-accent-ink);
+}
+
+.sheet-note strong {
+  display: block;
+  font-size: var(--text-md);
+  font-weight: 700;
+}
+
+.sheet-note span {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.sheet-numbers {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.sheet-number-value {
+  font-size: var(--text-lg);
+  font-weight: 800;
+}
+
+.sheet-number-note {
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  line-height: 1.3;
+}
+
+.sheet-invite {
+  background: var(--color-brand-soft);
+}
+
+.fab-round {
+  width: 60px;
+  height: 60px;
+  min-height: 60px;
+  padding: 0;
+  justify-content: center;
+  background: var(--color-hero);
+  color: var(--color-on-hero);
+}
+
+.fab-round svg {
+  width: 28px;
+  height: 28px;
+}

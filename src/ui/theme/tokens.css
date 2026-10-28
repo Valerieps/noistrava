@@ -34,6 +34,14 @@
   --color-heat-2: #cc6e98;
   --color-heat-3: #a82a5c;
 
+  /* The challenge screen: a brand-colored top and a white sheet (docs/rascunhos/desafio-visual-c.md) */
+  --color-hero: #c2185b;
+  --color-on-hero: #ffffff;
+  --color-on-hero-muted: #fde3ee;
+  --color-sheet: #ffffff;
+  --color-band: #f5f1f7;
+  --color-hairline: #efeaf2;
+
   --font-sans: Figtree, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-display: 'Bricolage Grotesque', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-size-base: 15px;
@@ -58,6 +66,7 @@
   --radius: 12px;
   --radius-tile: 18px;
   --radius-card: 24px;
+  --radius-sheet: 28px;
   --radius-pill: 999px;
   --shadow-float: 0 8px 24px rgba(0, 0, 0, 0.18);
   --nav-height: 64px;
@@ -91,6 +100,13 @@
     --color-heat-1: #5a2944;
     --color-heat-2: #a83f6e;
     --color-heat-3: #ff5c8f;
+
+    --color-hero: #8e1043;
+    --color-on-hero: #ffffff;
+    --color-on-hero-muted: #f6cfdf;
+    --color-sheet: #19131f;
+    --color-band: #110d15;
+    --color-hairline: #2c2337;
   }
 }
 
@@ -122,4 +138,11 @@
   --color-heat-1: #5a2944;
   --color-heat-2: #a83f6e;
   --color-heat-3: #ff5c8f;
+
+  --color-hero: #8e1043;
+  --color-on-hero: #ffffff;
+  --color-on-hero-muted: #f6cfdf;
+  --color-sheet: #19131f;
+  --color-band: #110d15;
+  --color-hairline: #2c2337;
 }

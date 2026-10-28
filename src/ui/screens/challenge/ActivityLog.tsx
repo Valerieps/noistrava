@@ -14,12 +14,15 @@ export function ActivityLog({
   challengeId,
   entries,
   journey,
+  sheet = false,
   now,
   onChanged,
 }: {
   challengeId: string;
   entries: readonly LogEntryView[];
   journey: boolean;
+  /** On the white sheet (borderless rows) instead of cards. */
+  sheet?: boolean;
   now: Date;
   onChanged: () => void;
 }) {
@@ -35,6 +38,57 @@ export function ActivityLog({
     setBusy(null);
     setError(!result.ok);
     onChanged();
+  }
+
+  const heart = (entry: LogEntryView) => (
+    <button
+      type="button"
+      className="heart"
+      aria-pressed={entry.heartedByMe}
+      aria-label={entry.heartedByMe ? strings.challenge.log.unheart(entry.memberName) : strings.challenge.log.heart(entry.memberName)}
+      disabled={busy === entry.activityId}
+      onClick={() => void toggle(entry)}
+    >
+      <HeartIcon filled={entry.heartedByMe} />
+      {entry.hearts > 0 && entry.hearts}
+    </button>
+  );
+
+  if (sheet) {
+    return (
+      <section className="sheet-section">
+        <div className="sheet-head">
+          <h2 className="d">{strings.challenge.log.sheetTitle}</h2>
+          {entries.length > PREVIEW && (
+            <button type="button" className="link-button" onClick={() => setAll(!all)} aria-expanded={all}>
+              {all ? strings.challenge.log.seeLess : strings.challenge.log.seeAll}
+            </button>
+          )}
+        </div>
+        {error && (
+          <p className="notice" role="alert">
+            {strings.genericError}
+          </p>
+        )}
+        {entries.length === 0 && <p className="muted small">{strings.challenge.log.empty}</p>}
+        <div className="sheet-list">
+          {shown.map((entry) => (
+            <div key={entry.activityId} className="sheet-row">
+              <div className="initial large" aria-hidden="true">
+                {initial(entry.memberName)}
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <div>
+                  <b>{entry.memberName}</b> {strings.challenge.log.did(formatDuration(entry.durationSeconds), sportName(entry.sport).toLowerCase())}
+                </div>
+                <div className="sheet-row-sub">{formatWhen(entry.startedAt, entry.timezone, now)}</div>
+              </div>
+              {heart(entry)}
+            </div>
+          ))}
+        </div>
+      </section>
+    );
   }
 
   return (
@@ -73,17 +127,7 @@ export function ActivityLog({
                 {formatDuration(entry.durationSeconds)}
               </div>
             )}
-            <button
-              type="button"
-              className="heart"
-              aria-pressed={entry.heartedByMe}
-              aria-label={entry.heartedByMe ? strings.challenge.log.unheart(entry.memberName) : strings.challenge.log.heart(entry.memberName)}
-              disabled={busy === entry.activityId}
-              onClick={() => void toggle(entry)}
-            >
-              <HeartIcon filled={entry.heartedByMe} />
-              {entry.hearts > 0 && entry.hearts}
-            </button>
+            {heart(entry)}
           </div>
         </div>
       ))}
