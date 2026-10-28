@@ -21,7 +21,7 @@ Cada fase precisa ser usável sozinha. Cada regra em `spec/` diz de que fase val
 | Fase | O que entra |
 | --- | --- |
 | 1 | Acesso, desafio de horas colaborativas (com ou sem jornada), atividades manuais e do Strava, log com corações, histórico |
-| 2 | Notificações; outros tipos de desafio |
+| 2 | Notificações; outros tipos de desafio (o primeiro é a corrente) |
 
 ## Arquivos
 
@@ -29,6 +29,7 @@ Cada fase precisa ser usável sozinha. Cada regra em `spec/` diz de que fase val
 | --- | --- |
 | [spec/acesso-e-membros.md](spec/acesso-e-membros.md) | Login com Google, convites, papéis do grupo, integrantes e perfil |
 | [spec/desafio-horas.md](spec/desafio-horas.md) | Desafio de horas colaborativas: papéis, período, meta, jornada, log e histórico |
+| [spec/desafio-corrente.md](spec/desafio-corrente.md) | Desafio da corrente: elo do dia, quebras salvas e perdidas, término e o calendário |
 | [spec/atividades.md](spec/atividades.md) | Atividades: registro manual, editar e excluir |
 | [spec/strava.md](spec/strava.md) | Conexão com o Strava e o aceite de compartilhar |
 | [spec/_modelo.md](spec/_modelo.md) | Modelo para um arquivo de feature novo |

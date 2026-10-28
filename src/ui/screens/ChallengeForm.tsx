@@ -1,9 +1,10 @@
-// Creating or editing a challenge (docs/spec/desafio-horas.md, "Criar" and "Editar"): the name,
-// the goal in hours or a journey, the period, and whether the creator is a
-// Senhora. A new challenge is saved as a draft, or opened at once while no other is open.
+// Creating or editing a challenge (docs/spec/desafio-horas.md, "Criar" and "Editar"): the type,
+// the name, the goal in hours or a journey, or a chain's breaks (docs/spec/desafio-corrente.md),
+// the period, and whether the creator is a Senhora. A new challenge is saved as a draft, or opened at once while no other is open.
 import { useEffect, useState, type FormEvent } from 'react';
 import type { ApiError, ChallengeSetupInput, ChallengeView } from '../../application/api-contract';
-import { CHALLENGE_NAME_MAX_LENGTH, GOAL_HOURS_MAX, type Journey } from '../../domain/challenge/challenge';
+import { CHAIN_MIN_MINUTES_MAX, maxBreaks } from '../../domain/challenge/chain';
+import { CHALLENGE_NAME_MAX_LENGTH, GOAL_HOURS_MAX, type ChallengeType, type Journey } from '../../domain/challenge/challenge';
 import { strings } from '../../domain/strings';
 import { BackHeader } from '../App';
 import { useServices } from '../backend-context';
@@ -59,7 +60,12 @@ function Form({ challenge }: { challenge: ChallengeView | null }) {
   const [name, setName] = useState(challenge?.name ?? '');
   const [startDate, setStartDate] = useState(challenge?.startDate ?? today);
   const [endDate, setEndDate] = useState(challenge?.endDate ?? endOfMonth(today));
-  const [goalHours, setGoalHours] = useState(challenge ? String(Math.round(challenge.goalMinutes / 60)) : '100');
+  const [goalHours, setGoalHours] = useState(challenge?.goalMinutes ? String(Math.round(challenge.goalMinutes / 60)) : '100');
+  const [type, setType] = useState<ChallengeType>(challenge?.type ?? 'horas_colaborativas');
+  const [allowedBreaks, setAllowedBreaks] = useState(String(challenge?.chain?.allowedBreaks ?? 0));
+  const [minMinutes, setMinMinutes] = useState(String(challenge?.chain?.minMinutesPerDay ?? 0));
+  const chain = type === 'corrente';
+  const breaksMax = startDate <= endDate ? maxBreaks(startDate, endDate) : 0;
   const [senhora, setSenhora] = useState(isDraft ? challenge.creatorIsSenhora : true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,12 +84,14 @@ function Form({ challenge }: { challenge: ChallengeView | null }) {
 
   async function submit(mode: Mode) {
     // A draft may wait for its route; an open challenge may not.
-    if (withJourney && !journey && mode !== 'draft') {
+    if (!chain && withJourney && !journey && mode !== 'draft') {
       setError(strings.challengeForm.routeNeeded);
       return;
     }
     setBusy(true);
-    const setup: ChallengeSetupInput = !withJourney
+    const setup: ChallengeSetupInput = chain
+      ? { type, name, startDate, endDate, chain: { allowedBreaks: Number(allowedBreaks), minMinutesPerDay: Number(minMinutes) } }
+      : !withJourney
       ? { name, startDate, endDate, goalHours: Number(goalHours) }
       : journey
         ? { name, startDate, endDate, journey }
@@ -121,29 +129,60 @@ function Form({ challenge }: { challenge: ChallengeView | null }) {
           </label>
         </section>
 
-        <section className="panel">
-          <div role="radiogroup" aria-label={f.goalSection} className="segmented" style={{ alignSelf: 'stretch' }}>
-            <button type="button" role="radio" aria-checked={!withJourney} onClick={() => setWithJourney(false)} style={{ flex: 1, width: 'auto', borderRadius: 'var(--radius-pill)', fontWeight: 600 }}>
-              {f.hoursOnly}
-            </button>
-            <button type="button" role="radio" aria-checked={withJourney} onClick={() => {
-                setWithJourney(true);
-                // The builder starts again from the stored journey, so the form does too.
-                setJourney(initialJourney);
-              }} style={{ flex: 1, width: 'auto', borderRadius: 'var(--radius-pill)', fontWeight: 600 }}>
-              {f.withJourney}
-            </button>
-          </div>
-          {withJourney ? (
-            <JourneyBuilder initial={initialJourney} onChange={setJourney} />
-          ) : (
-            <label>
-              <span className="field-label">{f.goalHours}</span>
-              <input type="number" inputMode="numeric" required min={1} max={GOAL_HOURS_MAX} step={1} value={goalHours} onChange={(e) => setGoalHours(e.target.value)} />
-              <span className="tiny muted">{f.goalHint}</span>
-            </label>
-          )}
-        </section>
+        {creating && (
+          <section className="panel">
+            <div role="radiogroup" aria-label={f.typeSection} className="segmented" style={{ alignSelf: 'stretch' }}>
+              <button type="button" role="radio" aria-checked={!chain} onClick={() => setType('horas_colaborativas')} style={{ flex: 1, width: 'auto', borderRadius: 'var(--radius-pill)', fontWeight: 600 }}>
+                {f.hoursType}
+              </button>
+              <button type="button" role="radio" aria-checked={chain} onClick={() => setType('corrente')} style={{ flex: 1, width: 'auto', borderRadius: 'var(--radius-pill)', fontWeight: 600 }}>
+                {f.chainType}
+              </button>
+            </div>
+            {chain && <span className="tiny muted">{f.chainHint}</span>}
+          </section>
+        )}
+
+        {chain ? (
+          <section className="panel">
+            <div className="form-grid">
+              <label>
+                <span className="field-label">{f.allowedBreaks}</span>
+                <input type="number" inputMode="numeric" required min={0} max={breaksMax} step={1} value={allowedBreaks} onChange={(e) => setAllowedBreaks(e.target.value)} />
+              </label>
+              <label>
+                <span className="field-label">{f.minMinutes}</span>
+                <input type="number" inputMode="numeric" required min={0} max={CHAIN_MIN_MINUTES_MAX} step={1} value={minMinutes} onChange={(e) => setMinMinutes(e.target.value)} />
+              </label>
+            </div>
+            <span className="tiny muted">{f.allowedBreaksHint(breaksMax)}</span>
+            <span className="tiny muted">{f.minMinutesHint}</span>
+          </section>
+        ) : (
+          <section className="panel">
+            <div role="radiogroup" aria-label={f.goalSection} className="segmented" style={{ alignSelf: 'stretch' }}>
+              <button type="button" role="radio" aria-checked={!withJourney} onClick={() => setWithJourney(false)} style={{ flex: 1, width: 'auto', borderRadius: 'var(--radius-pill)', fontWeight: 600 }}>
+                {f.hoursOnly}
+              </button>
+              <button type="button" role="radio" aria-checked={withJourney} onClick={() => {
+                  setWithJourney(true);
+                  // The builder starts again from the stored journey, so the form does too.
+                  setJourney(initialJourney);
+                }} style={{ flex: 1, width: 'auto', borderRadius: 'var(--radius-pill)', fontWeight: 600 }}>
+                {f.withJourney}
+              </button>
+            </div>
+            {withJourney ? (
+              <JourneyBuilder initial={initialJourney} onChange={setJourney} />
+            ) : (
+              <label>
+                <span className="field-label">{f.goalHours}</span>
+                <input type="number" inputMode="numeric" required min={1} max={GOAL_HOURS_MAX} step={1} value={goalHours} onChange={(e) => setGoalHours(e.target.value)} />
+                <span className="tiny muted">{f.goalHint}</span>
+              </label>
+            )}
+          </section>
+        )}
 
         <section className="panel">
           <div className="form-grid">

@@ -1,7 +1,9 @@
-// The collective-hours challenge (docs/spec/desafio-horas.md). Progress is never stored: it is
-// computed from the Senhoras' activities on every read and every change. `settle` moves the
-// challenge's state and milestones to match; closing writes each Senhora's total for the history.
-import type { ChallengeMemberView, ChallengeView, HistoryItemView, LogEntryView } from '../../src/application/api-contract';
+// The challenges: collective hours (docs/spec/desafio-horas.md) and the chain
+// (docs/spec/desafio-corrente.md). Progress is never stored: it is computed from the Senhoras'
+// activities on every read and every change. `settle` moves the challenge's state and milestones
+// to match; closing writes each Senhora's total, and a chain's days, for the history.
+import type { ChainView, ChallengeMemberView, ChallengeView, HistoryItemView, LogEntryView } from '../../src/application/api-contract';
+import { CHAIN_CLOSE_HOURS, chainDays, chainSummary } from '../../src/domain/challenge/chain';
 import {
   activityCounts,
   challengePeriod,
@@ -15,6 +17,7 @@ import {
   type ChallengeConfig,
   type ChallengeResponse,
   type ChallengeState,
+  type ChallengeType,
   type Participation,
 } from '../../src/domain/challenge/challenge';
 import { isAdmin } from '../../src/domain/group/roles';
@@ -23,7 +26,7 @@ import type { Member } from './members';
 
 interface ChallengeRow {
   id: string;
-  type: 'horas_colaborativas';
+  type: ChallengeType;
   name: string;
   creator_id: string;
   starts_at: string;
@@ -35,6 +38,7 @@ interface ChallengeRow {
   config: string;
   created_at: string;
   creator_is_senhora: number | null;
+  chain_result: string | null;
 }
 
 interface CountedActivity {
@@ -106,6 +110,64 @@ function totalsByMember(activities: readonly CountedActivity[]): Map<string, num
 
 const sum = (totals: Map<string, number>) => [...totals.values()].reduce((a, b) => a + b, 0);
 
+const HOUR_MS = 3_600_000;
+
+/**
+ * Where a chain stands now: its days come from the activities of the period and of the day after
+ * it, which can save the last day. Once closed, the frozen days are read instead.
+ */
+function chainOf(ctx: Context, row: ChallengeRow): ChainView {
+  if (row.chain_result !== null) return JSON.parse(row.chain_result) as ChainView;
+  const config = configOf(row);
+  const chain = config.chain!;
+  const window = { startsAt: row.starts_at, endsAt: new Date(Date.parse(row.ends_at) + 24 * HOUR_MS).toISOString() };
+  const days = chainDays({
+    startDate: config.startDate,
+    endDate: config.endDate,
+    config: chain,
+    activities: countedActivities(ctx, row, window).map((a) => ({ memberId: a.member_id, startedAt: a.started_at, timezone: a.timezone, durationSeconds: a.duration_seconds })),
+    timezones: memberTimezones(ctx),
+    now: ctx.clock.now(),
+  });
+  const names = new Map(ctx.sql.all<{ id: string; name: string }>('SELECT id, name FROM members').map((m) => [m.id, m.name]));
+  const { lost, saved, streak } = chainSummary(days, chain.allowedBreaks);
+  return {
+    ...chain,
+    lost,
+    saved,
+    streak,
+    days: days.map((d) => ({
+      date: d.date,
+      state: d.state,
+      activeCount: d.active.length,
+      savedBy: d.savedBy.map((id) => ({ memberId: id, name: names.get(id) ?? '' })).sort((x, y) => x.name.localeCompare(y.name)),
+    })),
+  };
+}
+
+/**
+ * A chain fails, and closes, the moment more breaks are lost than allowed. When the period passes
+ * it succeeds, and the result follows the breaks until it closes, a day later than the hours'.
+ */
+function settleChain(ctx: Context, row: ChallengeRow): boolean {
+  const now = nowIso(ctx);
+  const chain = chainOf(ctx, row);
+  const broken = chain.lost > chain.allowedBreaks;
+  if (row.state === 'open' && broken) {
+    ctx.sql.run("UPDATE challenges SET state = 'failed', ended_at = ?, closes_at = ? WHERE id = ?", now, now, row.id);
+    close(ctx, load(ctx, row.id) as ChallengeRow);
+    return true;
+  }
+  let state = row.state;
+  let endedAt = row.ended_at;
+  if (state === 'open' && now >= row.ends_at) endedAt = row.ends_at;
+  if (endedAt !== null) state = broken ? 'failed' : 'succeeded';
+  if (state === row.state && endedAt === row.ended_at) return false;
+  const closes = endedAt === null ? null : new Date(Date.parse(endedAt) + CHAIN_CLOSE_HOURS * HOUR_MS).toISOString();
+  ctx.sql.run('UPDATE challenges SET state = ?, ended_at = ?, closes_at = ? WHERE id = ?', state, endedAt, closes, row.id);
+  return true;
+}
+
 /**
  * Brings a challenge that is not closed in line with its activities: records the milestones
  * reached (they never go back), ends it with success the moment the goal is hit, without success
@@ -114,6 +176,7 @@ const sum = (totals: Map<string, number>) => [...totals.values()].reduce((a, b) 
  */
 export function settle(ctx: Context, row: ChallengeRow): boolean {
   if (row.closed_at !== null || row.state === 'cancelled' || row.state === 'draft') return false;
+  if (row.type === 'corrente') return settleChain(ctx, row);
   const now = nowIso(ctx);
   let state = row.state;
   let endedAt = row.ended_at;
@@ -174,7 +237,8 @@ function close(ctx: Context, row: ChallengeRow): void {
       totals.get(senhora.id) ?? 0,
     );
   }
-  ctx.sql.run('UPDATE challenges SET closed_at = ? WHERE id = ?', nowIso(ctx), row.id);
+  const chain = row.type === 'corrente' ? JSON.stringify(chainOf(ctx, row)) : null;
+  ctx.sql.run('UPDATE challenges SET closed_at = ?, chain_result = ? WHERE id = ?', nowIso(ctx), chain, row.id);
 }
 
 /** The cron's part: ends challenges whose period passed and closes those past the tolerance. */
@@ -235,6 +299,7 @@ function view(ctx: Context, actor: Member, id: string): ChallengeView {
     myResponse: members.find((m) => m.memberId === actor.id)?.response ?? 'pending',
     creatorIsSenhora: row.creator_is_senhora === 1,
     journeyPending: config.journeyPending === true,
+    chain: row.type === 'corrente' ? chainOf(ctx, row) : null,
   };
 }
 
@@ -300,8 +365,10 @@ export function history(ctx: Context): HistoryItemView[] {
       .map((r) => ({ memberId: r.member_id, name: r.name, totalSeconds: r.total_seconds }));
     const total = results.reduce((a, r) => a + r.totalSeconds, 0);
     const { goalMinutes } = configOf(row);
+    const chain = row.type === 'corrente' && row.chain_result !== null ? (JSON.parse(row.chain_result) as ChainView) : null;
     return {
       id: row.id,
+      type: row.type,
       name: row.name,
       state: row.state,
       startsAt: row.starts_at,
@@ -311,6 +378,7 @@ export function history(ctx: Context): HistoryItemView[] {
       totalSeconds: total,
       percent: percentOfGoal(total, goalMinutes),
       results,
+      chain: chain && { allowedBreaks: chain.allowedBreaks, lost: chain.lost, saved: chain.saved },
     };
   });
 }
@@ -348,11 +416,12 @@ export function createChallenge(ctx: Context, actor: Member, input: Record<strin
   if (!draft && period.endsAt.getTime() <= ctx.clock.now().getTime()) return failure('invalid');
 
   const id = ctx.ids.next();
-  const { name, ...config } = setup;
+  const { type, name, ...config } = setup;
   ctx.sql.run(
     `INSERT INTO challenges (id, type, name, creator_id, starts_at, ends_at, state, config, created_at, creator_is_senhora)
-     VALUES (?, 'horas_colaborativas', ?, ?, ?, ?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     id,
+    type,
     name,
     actor.id,
     period.startsAt.toISOString(),
@@ -404,6 +473,8 @@ export function editChallenge(ctx: Context, actor: Member, input: Record<string,
   if (!draft && row.state !== 'open') return failure('conflict');
   const setup = draft ? parseDraftSetup(input) : parseChallengeSetup(input);
   if (!setup) return failure('invalid');
+  // The type changes only in a draft: an open challenge keeps the one everyone accepted.
+  if (!draft && setup.type !== row.type) return failure('invalid');
   if (input.creatorIsSenhora !== undefined && (!draft || typeof input.creatorIsSenhora !== 'boolean')) return failure('invalid');
   const period = challengePeriod(setup.startDate, setup.endDate, memberTimezones(ctx));
   if (!draft && period.endsAt.getTime() <= ctx.clock.now().getTime()) return failure('invalid');
@@ -411,9 +482,10 @@ export function editChallenge(ctx: Context, actor: Member, input: Record<string,
     ctx.sql.run('UPDATE challenges SET creator_is_senhora = ? WHERE id = ?', input.creatorIsSenhora ? 1 : 0, row.id);
   }
 
-  const { name, ...config } = setup;
+  const { type, name, ...config } = setup;
   ctx.sql.run(
-    'UPDATE challenges SET name = ?, starts_at = ?, ends_at = ?, config = ? WHERE id = ?',
+    'UPDATE challenges SET type = ?, name = ?, starts_at = ?, ends_at = ?, config = ? WHERE id = ?',
+    type,
     name,
     period.startsAt.toISOString(),
     period.endsAt.toISOString(),

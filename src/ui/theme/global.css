@@ -1507,3 +1507,92 @@ button:disabled {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/* The chain's calendar (docs/spec/desafio-corrente.md): one square per day, Monday first. */
+.chain-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-1);
+}
+
+.chain-weekday {
+  text-align: center;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.chain-day {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  border: 2px solid transparent;
+}
+
+.chain-day.today {
+  outline: 2px solid var(--color-text);
+  outline-offset: 1px;
+}
+
+.chain-day.linked,
+.chain-swatch.linked {
+  background: var(--color-brand);
+  color: var(--color-on-brand);
+}
+
+.chain-day.saved,
+.chain-swatch.saved {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+  color: var(--color-accent-ink);
+}
+
+.chain-day.lost,
+.chain-swatch.lost {
+  background: var(--color-ghost-track);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+  text-decoration: line-through;
+}
+
+.chain-day.at_risk,
+.chain-swatch.at_risk {
+  background: var(--color-surface);
+  border: 2px dashed var(--color-accent);
+  color: var(--color-accent-ink);
+}
+
+.chain-day.waiting {
+  background: var(--color-surface);
+  border-color: var(--color-ghost-strong);
+  color: var(--color-text);
+}
+
+.chain-day.future {
+  background: var(--color-ghost-track);
+  color: var(--color-text-muted);
+}
+
+.chain-swatch {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  border-radius: 4px;
+  border: 2px solid transparent;
+}
+
+.chain-saved {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.chain-saved li {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}

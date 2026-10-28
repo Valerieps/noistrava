@@ -1,5 +1,6 @@
 // "Histórico" (docs/spec/desafio-horas.md): the closed challenges, newest first, with the result,
-// the total, the percent and each Senhora's total.
+// the total, the percent and each Senhora's total; a chain shows its breaks saved and lost
+// (docs/spec/desafio-corrente.md).
 import type { HistoryItemView } from '../../application/api-contract';
 import { formatDuration, formatGoal } from '../../domain/challenge/progress';
 import { strings } from '../../domain/strings';
@@ -50,6 +51,9 @@ export function History() {
 }
 
 function stateChip(item: HistoryItemView): { text: string; tone: string } {
+  if (item.chain && item.state !== 'cancelled') {
+    return item.state === 'succeeded' ? { text: strings.chain.history.succeeded, tone: 'ok' } : { text: strings.chain.history.failed, tone: 'warn' };
+  }
   if (item.state === 'succeeded') {
     const days = item.endedAt ? Math.max(1, Math.ceil((Date.parse(item.endedAt) - Date.parse(item.startsAt)) / DAY_MS)) : 0;
     return { text: strings.history.succeeded(days), tone: 'ok' };
@@ -62,7 +66,7 @@ function HistoryCard({ item }: { item: HistoryItemView }) {
   const chip = stateChip(item);
   const goalSeconds = item.goalMinutes * 60;
   // The bar fills to the goal; past it, to the total.
-  const scale = Math.max(goalSeconds, item.totalSeconds) || 1;
+  const scale = (item.chain ? item.totalSeconds : Math.max(goalSeconds, item.totalSeconds)) || 1;
   const cancelledDay = item.state === 'cancelled' && item.endedAt ? Math.max(1, Math.ceil((Date.parse(item.endedAt) - Date.parse(item.startsAt)) / DAY_MS)) : null;
   return (
     <article className="history-card">
@@ -78,7 +82,11 @@ function HistoryCard({ item }: { item: HistoryItemView }) {
       </div>
       <div className="split" style={{ alignItems: 'baseline' }}>
         <div className="d text-xl">
-          {item.state === 'succeeded' ? formatDuration(item.totalSeconds) : strings.history.totalOfGoal(formatDuration(item.totalSeconds), formatGoal(item.goalMinutes))}
+          {item.chain
+            ? strings.chain.history.summary(item.chain.saved, item.chain.lost, item.chain.allowedBreaks)
+            : item.state === 'succeeded'
+              ? formatDuration(item.totalSeconds)
+              : strings.history.totalOfGoal(formatDuration(item.totalSeconds), formatGoal(item.goalMinutes))}
         </div>
         <div className="small muted">{cancelledDay ? strings.history.cancelledOn(cancelledDay) : strings.history.senhoras(item.results.length)}</div>
       </div>

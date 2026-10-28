@@ -72,7 +72,7 @@ export function Drafts() {
             {draft.name}
           </h2>
           <div className="small muted">
-            {formatPeriod(draft.startDate, draft.endDate)} · {draft.journeyPending ? d.routePending : draft.journey ? d.journey(formatGoal(draft.goalMinutes)) : formatGoal(draft.goalMinutes)}
+            {formatPeriod(draft.startDate, draft.endDate)} · {draft.chain ? strings.chain.draft(draft.chain.allowedBreaks) : draft.journeyPending ? d.routePending : draft.journey ? d.journey(formatGoal(draft.goalMinutes)) : formatGoal(draft.goalMinutes)}
           </div>
           <div className="actions">
             {canActivate && (
