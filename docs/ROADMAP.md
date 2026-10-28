@@ -12,6 +12,7 @@ O que ainda não está pronto.
 | Feature | Fase | Spec | Observação |
 | --- | --- | --- | --- |
 | Jornada: postal de cada marco (foto e resumo do lugar), "Onde estamos" e números do caminho (países, rios) | 1 | `spec/desafio-horas.md` | Estão nos rascunhos; precisam de dados que o servidor não tem |
+| Acompanhamento individual: o meu ritmo, a minha contribuição e os selos | 2 | `spec/acompanhamento.md` | Tela no brief `rascunhos/perfil-acompanhamento.md`. Precisa antes que o Strava traga os últimos 90 dias e as atividades fora de desafio (`spec/strava.md`) |
 | Notificações | 2 | `spec/desafio-horas.md`, `spec/desafio-corrente.md` | Regras em aberto |
 
 ## O código ainda não segue o spec
@@ -52,6 +53,16 @@ O que ainda não está pronto.
   período, o resultado fecha 48 horas depois (`spec/desafio-corrente.md`, "Término").
 - [ ] Corrente: o tipo só muda no rascunho; a sequência conta os dias com elo ou salvos desde a
   última quebra perdida; a corrente não tem destaques nem ritmo (`spec/desafio-corrente.md`).
+- [ ] Acompanhamento: cada atividade vale no fuso dela; a semana em andamento sem atividade não
+  quebra a sequência; a comparação usa as 4 semanas completas anteriores, com as paradas como zero;
+  os períodos do dia, o "depois de N dias" a partir de 14 dias e o "puxei o grupo" contado no meu
+  fuso (`spec/acompanhamento.md`).
+- [ ] Selos: 5 atividades para Madrugadora (4h às 6h) e Coruja (21h às 4h); Eclética no mesmo mês;
+  marcos de 10, 50 e 100 horas; Elo de ouro e Torcida fiel com 50 corações; um selo ganho nunca se
+  perde; os selos se calculam também sobre o passado (`spec/acompanhamento.md`, "Selos").
+- [ ] Selos que faltam: a contagem de Consistente são as semanas seguidas com 3 dias ativos até
+  agora, e a de Eclética, as modalidades do mês; o próximo selo é o de maior fração feita, com
+  empate pela ordem da tabela (`spec/acompanhamento.md`, "Selos").
 
 ## Adiado
 
@@ -60,3 +71,6 @@ O que ainda não está pronto.
   no bundle: o app usa a fonte do sistema até elas entrarem como arquivos próprios.
 - [ ] Uma atividade do Strava excluída no app não volta (`spec/atividades.md`).
 - [ ] Desconectar o Strava mantém as atividades que já vieram (`spec/strava.md`).
+- Distância e elevação do Strava, para selos como uma Montanha de elevação acumulada: a dona quer,
+  mas fica para depois do acompanhamento. Pede mudar a regra "nunca distância" e um aceite novo
+  (`spec/strava.md`).

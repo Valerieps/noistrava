@@ -6,6 +6,7 @@ Um termo, um sentido. Estes nomes valem para os textos da interface e para as do
 - **Não entra aqui:** as regras em si, que ficam em `spec/`. Se uma definição daqui e uma regra
   divergirem, vale o spec, e o termo daqui é corrigido.
 
+- **Acompanhamento:** as métricas e os selos do meu perfil, que só eu vejo. (`spec/acompanhamento.md`)
 - **Admin:** integrante que convida, remove, dá papéis e apaga desafios. Sempre há pelo menos um. (`spec/acesso-e-membros.md`)
 - **Atividade:** um exercício de uma pessoa, com início, tempo total e modalidade; vem do Strava ou do registro manual. Pertence à pessoa, não ao desafio. (`spec/atividades.md`)
 - **Convite:** permissão para um e-mail entrar no grupo; pendente, aceito ou revogado. (`spec/acesso-e-membros.md`)
@@ -22,5 +23,7 @@ Um termo, um sentido. Estes nomes valem para os textos da interface e para as do
 - **Quebra:** um dia da corrente que ficou sem elo. Salva, quando 2 Senhoras se mexem no dia seguinte; senão, perdida, e gasta uma das quebras permitidas. (`spec/desafio-corrente.md`)
 - **Rascunho:** desafio guardado que só quem criou vê; vira desafio ativo quando ela ativa, se não houver outro ativo. (`spec/desafio-horas.md`)
 - **Reação:** um coração numa atividade do log do desafio. (`spec/desafio-horas.md`)
+- **Selo:** conquista do acompanhamento, ganha num marco pessoal, como 4 semanas seguidas ativas. No lugar de "badge". (`spec/acompanhamento.md`)
+- **Semana ativa:** semana de segunda a domingo com pelo menos uma atividade minha. (`spec/acompanhamento.md`)
 - **Senhora:** integrante que aceitou participar de um desafio; o plural é Senhoras. Em alguns lugares aparece antes do nome, como "Senhora Renato". (`spec/desafio-horas.md`)
 - **Torcida:** integrantes que não participam de um desafio: veem tudo e reagem, mas não registram nem editam nada nele. (`spec/desafio-horas.md`)

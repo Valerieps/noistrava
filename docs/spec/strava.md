@@ -23,6 +23,11 @@ Minhas atividades chegam sozinhas do Strava, sem eu precisar registrar.
 - O tempo que conta é o tempo total da atividade no Strava. *(1)*
 - Ao conectar, e ao entrar num desafio já começado, o app traz as minhas atividades desde o início do
   desafio. Atividades de antes do período não vêm. *(1)*
+- A partir da fase 2, ao conectar, o app traz as minhas atividades dos últimos 90 dias, e toda
+  atividade nova chega, com ou sem desafio ativo. As que ficam fora de qualquer desafio só eu vejo,
+  no meu acompanhamento. *(2)*
+  Por quê: o acompanhamento ([acompanhamento.md](acompanhamento.md)) precisa das semanas entre um
+  desafio e outro.
 
 ## Desconectar
 
