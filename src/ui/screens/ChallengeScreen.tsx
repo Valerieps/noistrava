@@ -17,7 +17,7 @@ import { ActivityLog } from './challenge/ActivityLog';
 import { ChainMessage, ChainPanel } from './challenge/ChainPanel';
 import { Highlights } from './challenge/Highlights';
 import { JourneyMap } from './challenge/JourneyMap';
-import { PaceMessage, ProgressPanel, type ProgressNumbers } from './challenge/ProgressPanel';
+import { HeroProgress, PaceMessage, PaceNote, ProgressPanel, useProgressView, ViewPicker, type ProgressNumbers } from './challenge/ProgressPanel';
 import { JourneyRanking, Ranking, senhorasOf } from './challenge/Ranking';
 
 const MINUTE = 60_000;
@@ -182,6 +182,78 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
         ),
       };
 
+  const [view, pickView] = useProgressView();
+  const registerable = challenge.myResponse === 'accepted' && !challenge.closed;
+
+  if (!journey && !chain) {
+    const programmedText = open ? formatDuration(p.programmedSeconds) : undefined;
+    return (
+      <>
+        <header className={`hero-c hero-c-${challenge.banner}`}>
+          <div className="hero-c-label">
+            <span>{strings.challenge.heroLabel(left)}</span>
+            <div className="hero-c-tools">
+              <ViewPicker view={view} onPick={pickView} />
+              <Options me={me} challenge={challenge} busy={busy} onLeave={leave} onCancel={cancel} onDelete={remove} />
+            </div>
+          </div>
+          <h1 className="d hero-c-title">{challenge.name}</h1>
+          <div className="hero-c-by">{strings.challenge.createdBy(challenge.creatorName)}</div>
+          <HeroProgress
+            view={view}
+            numbers={numbers}
+            of={strings.challenge.heroOf(formatGoal(challenge.goalMinutes), programmedText)}
+            programmedNote={programmedText && strings.challenge.heroProgrammed(programmedText)}
+            period={period}
+            goalSeconds={goalSeconds}
+            log={entries}
+            now={now}
+            dateRange={dateRange}
+          />
+        </header>
+
+        <div className="sheet">
+          {error && (
+            <div className="sheet-section">
+              <p className="notice" role="alert">
+                {error}
+              </p>
+            </div>
+          )}
+          <Response sheet challenge={challenge} busy={busy} onRespond={(accept) => void respond(accept)} />
+          {!open && (
+            <div className="sheet-section">
+              <Result challenge={challenge} />
+            </div>
+          )}
+          {open && started && (
+            <div className="sheet-section">
+              <PaceNote {...paceText(p, challenge, senhoras.length, false)} tone={p.tone} />
+              <PaceTiles p={p} goalMinutes={challenge.goalMinutes} />
+            </div>
+          )}
+          <div className="sheet-band" />
+          <Ranking members={challenge.members} log={entries} period={period} now={now} />
+          <div className="sheet-band" />
+          <ActivityLog challengeId={challenge.id} entries={entries} journey={false} sheet now={now} onChanged={log.reload} />
+          <div className="sheet-band" />
+          <Highlights log={entries} />
+          <div className="sheet-band" />
+          <div className="sheet-section">
+            <DraftsLink next />
+          </div>
+          {registerable && <div className="spacer-fab" />}
+        </div>
+
+        {registerable && (
+          <Link to="/atividade/nova" className="fab fab-round" aria-label={strings.challenge.register}>
+            <PlusIcon />
+          </Link>
+        )}
+      </>
+    );
+  }
+
   return (
     <>
       {journey ? (
@@ -240,23 +312,20 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
               message={open && started ? <PaceMessage {...paceText(p, challenge, senhoras.length, !!journey)} tone={p.tone} /> : null}
             />
 
-            {open && started && !journey && <PaceTiles p={p} goalMinutes={challenge.goalMinutes} />}
           </>
         )}
 
         {journey && <Timeline challenge={challenge} />}
 
-        {journey ? <JourneyRanking members={challenge.members} log={entries} now={now} /> : <Ranking members={challenge.members} log={entries} period={period} now={now} />}
-
-        {!journey && !chain && <Highlights log={entries} />}
+        {journey && <JourneyRanking members={challenge.members} log={entries} now={now} />}
 
         <ActivityLog challengeId={challenge.id} entries={entries} journey={!!journey} now={now} onChanged={log.reload} />
 
         <DraftsLink next />
-        {challenge.myResponse === 'accepted' && !challenge.closed && <div className="spacer-fab" />}
+        {registerable && <div className="spacer-fab" />}
       </div>
 
-      {challenge.myResponse === 'accepted' && !challenge.closed && (
+      {registerable && (
         <Link to="/atividade/nova" className="fab">
           <PlusIcon />
           {strings.challenge.register}
@@ -317,37 +386,30 @@ function paceText(p: Pace, challenge: ChallengeView, senhoras: number, journey: 
 
 function PaceTiles({ p, goalMinutes }: { p: Pace; goalMinutes: number }) {
   const extra = p.neededPerDaySeconds - p.averagePerDaySeconds;
+  const tiles = [
+    { value: formatDuration(p.neededPerDaySeconds), note: strings.challenge.tiles.needed(formatGoal(goalMinutes)) },
+    { value: formatDuration(p.averagePerDaySeconds), note: strings.challenge.tiles.average },
+    { value: `${extra > 0 ? '+' : '−'}${formatDuration(Math.abs(extra))}`, note: extra > 0 ? strings.challenge.tiles.extra : strings.challenge.tiles.slack },
+  ];
   return (
-    <section className="tiles tiles-3">
-      <div className="tile">
-        <div className="d text-xl">
-          {formatDuration(p.neededPerDaySeconds)}
+    <div className="sheet-numbers">
+      {tiles.map((t) => (
+        <div key={t.note}>
+          <div className="d sheet-number-value">{t.value}</div>
+          <div className="sheet-number-note">{t.note}</div>
         </div>
-        <div className="tile-note">{strings.challenge.tiles.needed(formatGoal(goalMinutes))}</div>
-      </div>
-      <div className="tile">
-        <div className="d text-xl">
-          {formatDuration(p.averagePerDaySeconds)}
-        </div>
-        <div className="tile-note">{strings.challenge.tiles.average}</div>
-      </div>
-      <div className="tile">
-        <div className="d text-xl">
-          {extra > 0 ? '+' : '−'}
-          {formatDuration(Math.abs(extra))}
-        </div>
-        <div className="tile-note">{extra > 0 ? strings.challenge.tiles.extra : strings.challenge.tiles.slack}</div>
-      </div>
-    </section>
+      ))}
+    </div>
   );
 }
 
-function Response({ challenge, busy, onRespond }: { challenge: ChallengeView; busy: boolean; onRespond: (accept: boolean) => void }) {
+/** The invite: a box on the old layout, plain on the sheet. */
+function Response({ challenge, busy, onRespond, sheet = false }: { challenge: ChallengeView; busy: boolean; onRespond: (accept: boolean) => void; sheet?: boolean }) {
   if (challenge.state !== 'open') return null;
   const t = strings.challenge.invite;
   if (challenge.myResponse === 'pending') {
     return (
-      <section className="panel" style={{ background: 'var(--color-brand-soft)' }}>
+      <section className={sheet ? 'sheet-section sheet-invite' : 'panel'} style={sheet ? undefined : { background: 'var(--color-brand-soft)' }}>
         <h2 className="d">{t.title}</h2>
         <p className="small" style={{ margin: 0 }}>
           {t.body}
@@ -365,11 +427,13 @@ function Response({ challenge, busy, onRespond }: { challenge: ChallengeView; bu
   }
   if (challenge.myResponse === 'declined') {
     return (
-      <div className="notice row" style={{ margin: 0, justifyContent: 'space-between' }}>
-        <span>{t.torcida}</span>
-        <button type="button" disabled={busy} onClick={() => onRespond(true)}>
-          {t.join}
-        </button>
+      <div className={sheet ? 'sheet-section' : undefined}>
+        <div className="notice row" style={{ margin: 0, justifyContent: 'space-between' }}>
+          <span>{t.torcida}</span>
+          <button type="button" disabled={busy} onClick={() => onRespond(true)}>
+            {t.join}
+          </button>
+        </div>
       </div>
     );
   }

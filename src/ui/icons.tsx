@@ -168,3 +168,15 @@ export function CheckIcon() {
     </svg>
   );
 }
+
+/** The pace message's round icon: ahead, on pace, behind or the final stretch. */
+export function PaceIcon({ tone }: { tone: 'ahead' | 'onPace' | 'behind' | 'finalStretch' }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" {...common} strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
+      {tone === 'ahead' && <path d="M12 19V5M5 12l7-7 7 7" />}
+      {tone === 'onPace' && <path d="M5 12.5l4.5 4.5L19 7" />}
+      {tone === 'behind' && <path d="M13 3L5 14h6l-1 7 8-11h-6z" />}
+      {tone === 'finalStretch' && <path d="M5 21V4h12l-2 4 2 4H5" />}
+    </svg>
+  );
+}

@@ -10,12 +10,12 @@ export function Highlights({ log }: { log: readonly LogEntryView[] }) {
   const shares = sportShares(log);
 
   return (
-    <section className="panel">
+    <section className="sheet-section">
       <h2 className="d">{strings.challenge.highlights.title}</h2>
       {log.length === 0 ? (
         <p className="muted small">{strings.challenge.highlights.empty}</p>
       ) : (
-        <div className="tiles tiles-2" style={{ gap: 10 }}>
+        <div className="sheet-numbers" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
           {h.longest && (
             <Tile label={strings.challenge.highlights.longest} value={formatDuration(h.longest.durationSeconds)} note={`${h.longest.memberName}, ${sportName(h.longest.sport).toLowerCase()}`} />
           )}
@@ -48,11 +48,11 @@ export function Highlights({ log }: { log: readonly LogEntryView[] }) {
 
 function Tile({ label, value, note }: { label: string; value: string; note: string }) {
   return (
-    <div className="tile soft">
-      <div className="tiny muted">{label}</div>
-      <div className="d text-lg">
-        {value}
+    <div>
+      <div className="sheet-number-note" style={{ marginTop: 0 }}>
+        {label}
       </div>
+      <div className="d sheet-number-value">{value}</div>
       <div className="small">{note}</div>
     </div>
   );

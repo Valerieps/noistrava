@@ -65,6 +65,9 @@ export const strings = {
     noneBody: 'Quando alguém criar um desafio, ele aparece aqui. Que tal começar o próximo?',
     create: 'Criar desafio',
     seeHistory: 'Ver o histórico',
+    heroLabel: (left: string) => `Horas colaborativas · ${left}`,
+    heroProgrammed: (programmed: string) => `programado hoje ${programmed}`,
+    heroOf: (goal: string, programmed?: string) => (programmed ? `de ${goal} · programado hoje ${programmed}` : `de ${goal}`),
     ofGoal: (goal: string, percent: number) => `de ${goal} · ${percent}% da meta`,
     viewsLabel: 'Forma de ver o andamento',
     views: { bar: 'Barra', ring: 'Anel', curve: 'Curva' },
@@ -117,6 +120,9 @@ export const strings = {
     },
     ranking: {
       title: 'Ranking das Senhoras',
+      sheetTitle: 'Ranking',
+      sheetTabs: { hours: 'Horas', activities: 'Atividades', constancy: 'Dias ativos' },
+      kindLabel: 'Ordenar o ranking por',
       tabs: { hours: 'Horas', activities: 'Atividades', constancy: 'Constância' },
       shareOfTotal: (percent: number) => `${percent}% do total`,
       activities: 'atividades',
@@ -138,6 +144,8 @@ export const strings = {
     },
     log: {
       title: 'Log',
+      sheetTitle: 'Atividades',
+      did: (duration: string, sport: string) => `fez ${duration} de ${sport}`,
       seeAll: 'Ver tudo',
       seeLess: 'Ver menos',
       empty: 'Nenhuma atividade ainda. A primeira abre o placar!',
