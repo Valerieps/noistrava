@@ -27,6 +27,7 @@ export const strings = {
     profile: 'Perfil',
     members: 'Integrantes',
     invites: 'Convites',
+    settings: 'Configurações',
     back: 'Voltar',
     signOut: 'Sair',
   },
@@ -361,7 +362,6 @@ export const strings = {
     manual: 'manual',
     strava: 'Strava',
     edited: 'editada',
-    membersAndInvites: 'Integrantes e convites',
   },
 
   strava: {
