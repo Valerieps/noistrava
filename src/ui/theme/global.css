@@ -1755,28 +1755,38 @@ ul.pills {
   color: var(--color-on-hero);
 }
 
-/* The creator's pattern, drawn in white over the brand color */
-.hero-c::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
+.hero-c-head {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
-.hero-c-stripes::before {
+/* The creator's pattern, drawn in white over the brand color behind the label, the name and the
+   creator only, fading out before the number so the figure sits on plain color */
+.hero-c-head::before {
+  content: '';
+  position: absolute;
+  inset: calc(-1 * var(--space-2)) calc(-1 * var(--space-5)) calc(-1 * var(--space-5));
+  z-index: -1;
+  pointer-events: none;
+  mask-image: linear-gradient(to bottom, #000 55%, transparent);
+}
+
+.hero-c-stripes .hero-c-head::before {
   background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0 14px, transparent 14px 28px);
 }
 
-.hero-c-dots::before {
+.hero-c-dots .hero-c-head::before {
   background: radial-gradient(circle, rgba(255, 255, 255, 0.13) 0 5px, transparent 5.5px) 0 0 / 22px 22px;
 }
 
-.hero-c-checks::before {
+.hero-c-checks .hero-c-head::before {
   background: repeating-conic-gradient(rgba(255, 255, 255, 0.08) 0 25%, transparent 0 50%) 0 0 / 32px 32px;
 }
 
-.hero-c-zigzag::before {
+.hero-c-zigzag .hero-c-head::before {
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%) -12px 0 / 24px 24px,
     linear-gradient(225deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%) -12px 0 / 24px 24px,
@@ -1784,7 +1794,7 @@ ul.pills {
     linear-gradient(45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%) 0 0 / 24px 24px;
 }
 
-.hero-c-grid::before {
+.hero-c-grid .hero-c-head::before {
   background:
     linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px) 0 0 / 20px 20px,
     linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px) 0 0 / 20px 20px;
@@ -2095,10 +2105,25 @@ ul.pills {
 }
 
 /* The view picker and the bar and curve figures, in white on the hero */
-.hero-c-tools {
+/* The view picker sits on the right of the number, just above the bar or the curve */
+.hero-c-figure-head {
   display: flex;
-  align-items: center;
-  gap: var(--space-2);
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.hero-c-figure-head > :first-child {
+  min-width: 0;
+}
+
+/* With the ring, the picker goes under the number, beside the ring */
+.hero-c-total-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-width: 0;
 }
 
 .hero-c .segmented {
