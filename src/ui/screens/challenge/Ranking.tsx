@@ -103,30 +103,35 @@ export function JourneyRanking({ members, log, now }: { members: readonly Challe
   const total = log.reduce((sum, a) => sum + a.durationSeconds, 0);
   const photo = new Map(members.map((m) => [m.memberId, m.photoUrl]));
   return (
-    <section className="panel" style={{ gap: 12 }}>
+    <section className="sheet-section">
       <h2 className="d">{strings.journey.rankingTitle}</h2>
       {rows.length === 0 && <p className="muted small">{strings.challenge.ranking.empty}</p>}
-      {rows.map((r, i) => (
-        <div key={r.memberId} className="rank-row">
-          <div className="d muted text-md">
-            {i + 1}
-          </div>
-          <Avatar name={r.name} photoUrl={photo.get(r.memberId) ?? null} lead={i === 0 && r.value > 0} />
-          <div style={{ minWidth: 0 }}>
-            <div className="rank-name ellipsis">
-              {r.name} <Move move={r.move} />
+      <div className="sheet-list">
+        {rows.map((r, i) => (
+          <div key={r.memberId} className="sheet-row">
+            <Avatar name={r.name} photoUrl={photo.get(r.memberId) ?? null} lead={i === 0 && r.value > 0} />
+            <div style={{ minWidth: 0 }}>
+              <div className="sheet-row-name ellipsis">
+                {i + 1}. {r.name}
+              </div>
+              <div className="sheet-row-sub">
+                {strings.challenge.ranking.shareOfTotal(total ? Math.round((r.value / total) * 100) : 0)}
+                {r.move !== 0 && (
+                  <>
+                    {' · '}
+                    <Move move={r.move} />
+                  </>
+                )}
+              </div>
             </div>
-            <div className="tiny muted">{strings.challenge.ranking.shareOfTotal(total ? Math.round((r.value / total) * 100) : 0)}</div>
-          </div>
-          <div className="right">
-            <div className="d text-md">
-              {formatKm(secondsToKm(r.value))}
+            <div className="right">
+              <div className="sheet-row-value d">{formatKm(secondsToKm(r.value))}</div>
+              <div className="sheet-row-sub">{formatDuration(r.value)}</div>
             </div>
-            <div className="tiny muted">{formatDuration(r.value)}</div>
           </div>
-        </div>
-      ))}
-      <Footer members={members} rows={rows} />
+        ))}
+      </div>
+      <Footer members={members} rows={rows} className="sheet-foot" />
     </section>
   );
 }

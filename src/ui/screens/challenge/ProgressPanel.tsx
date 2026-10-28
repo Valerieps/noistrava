@@ -269,6 +269,8 @@ export function HeroProgress({
   numbers,
   of,
   programmedNote,
+  barNote,
+  unit = false,
   period,
   goalSeconds,
   log,
@@ -281,6 +283,10 @@ export function HeroProgress({
   of: string;
   /** "programado hoje 42h35", under the bar; absent when the challenge is over. */
   programmedNote?: string;
+  /** On the left under the bar; "64% da meta" when absent. */
+  barNote?: string;
+  /** The number is a distance: bigger, with "de 240 km" beside it instead of under it. */
+  unit?: boolean;
   period: Period;
   goalSeconds: number;
   log: readonly LogEntryView[];
@@ -288,8 +294,8 @@ export function HeroProgress({
   dateRange: readonly [string, string];
 }) {
   const total = (
-    <div>
-      <div className="d hero-c-number">{numbers.headline}</div>
+    <div className={unit ? 'hero-c-km' : undefined}>
+      <div className={`d hero-c-number${unit ? ' big' : ''}`}>{numbers.headline}</div>
       <div className="hero-c-of">{of}</div>
     </div>
   );
@@ -311,9 +317,7 @@ export function HeroProgress({
             <div className="hero-bar-effective" style={{ width: pct(numbers.effective) }} />
           </div>
           <div className="hero-bar-notes">
-            <span>
-              {Math.round(numbers.effective * 100)}% {numbers.ofLabel}
-            </span>
+            <span>{barNote ?? `${Math.round(numbers.effective * 100)}% ${numbers.ofLabel}`}</span>
             {programmedNote && <span>{programmedNote}</span>}
           </div>
         </div>

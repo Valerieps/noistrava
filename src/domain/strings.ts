@@ -164,6 +164,11 @@ export const strings = {
   },
 
   journey: {
+    heroLabel: (left: string) => `Jornada · ${left}`,
+    route: (start: string, end: string) => `${start} → ${end}`,
+    heroOf: (total: string) => `de ${total}`,
+    heroBarNote: (done: string, goal: string, percent: number) => `${done} de ${goal} · ${percent}%`,
+    heroProgrammed: (km: number) => `programado: km ${km}`,
     mapLabel: (start: string, end: string) => `Mapa da rota de ${start} a ${end} com a posição do grupo`,
     here: (km: string, next: string) => `O grupo, a ${km} de ${next}`,
     arrivedHere: (place: string) => `O grupo chegou a ${place}`,
@@ -186,7 +191,7 @@ export const strings = {
     atKm: (km: number) => `km ${km}`,
     atKmOn: (km: number, date: string) => `km ${km} · ${date}`,
     inKm: (km: number) => `em ${km} km`,
-    hereNow: (km: number) => `km ${km} · o grupo está aqui`,
+    groupHere: 'O grupo está aqui',
     rankingTitle: 'Quem levou o grupo mais longe',
     equivalent: (hours: string) => `${hours} de atividade`,
   },

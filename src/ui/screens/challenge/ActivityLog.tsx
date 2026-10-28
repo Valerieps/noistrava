@@ -81,7 +81,10 @@ export function ActivityLog({
                 <div>
                   <b>{entry.memberName}</b> {strings.challenge.log.did(formatDuration(entry.durationSeconds), sportName(entry.sport).toLowerCase())}
                 </div>
-                <div className="sheet-row-sub">{formatWhen(entry.startedAt, entry.timezone, now)}</div>
+                <div className="sheet-row-sub">
+                  {formatWhen(entry.startedAt, entry.timezone, now)}
+                  {journey && ` · +${formatKm(secondsToKm(entry.durationSeconds))}`}
+                </div>
               </div>
               {heart(entry)}
             </div>
