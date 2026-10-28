@@ -2027,8 +2027,56 @@ ul.pills {
   line-height: 1.3;
 }
 
-.sheet-invite {
-  background: var(--color-brand-soft);
+.sheet-torcida {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+}
+
+/* The pending invite, fixed above the navigation; the sheet ends with room for it */
+.invite-bar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--nav-height) + env(safe-area-inset-bottom));
+  z-index: 6;
+  width: min(100%, 560px);
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--color-hairline);
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  background: var(--color-sheet);
+  box-shadow: var(--shadow-float);
+}
+
+.invite-bar h2 {
+  font-size: var(--text-md);
+  font-weight: 800;
+}
+
+.invite-bar p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+}
+
+.invite-bar-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+}
+
+.invite-bar-actions button {
+  min-height: 48px;
+}
+
+.spacer-invite {
+  height: 200px;
 }
 
 .fab-round {

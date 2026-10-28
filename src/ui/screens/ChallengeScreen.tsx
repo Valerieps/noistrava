@@ -149,6 +149,7 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
 
   const [view, pickView] = useProgressView();
   const registerable = challenge.myResponse === 'accepted' && !challenge.closed;
+  const inviting = open && challenge.myResponse === 'pending';
 
   const programmedText = open ? formatDuration(p.programmedSeconds) : undefined;
   const programmedKm = journey && open ? Math.round(Math.min(journey.distanceMeters / 1000, secondsToKm(p.programmedSeconds))) : undefined;
@@ -210,7 +211,7 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
             </p>
           </div>
         )}
-        <Response sheet challenge={challenge} busy={busy} onRespond={(accept) => void respond(accept)} />
+        <Torcida challenge={challenge} busy={busy} onRespond={(accept) => void respond(accept)} />
         {!open && (
           <div className="sheet-section">
             <Result challenge={challenge} />
@@ -254,8 +255,10 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
           <DraftsLink next />
         </div>
         {registerable && <div className="spacer-fab" />}
+        {inviting && <div className="spacer-invite" />}
       </div>
 
+      {inviting && <InviteBar busy={busy} onRespond={(accept) => void respond(accept)} />}
       {registerable && (
         <Link to="/atividade/nova" className="fab fab-round" aria-label={strings.challenge.register}>
           <PlusIcon />
@@ -321,41 +324,37 @@ function PaceTiles({ p, goalMinutes }: { p: Pace; goalMinutes: number }) {
   );
 }
 
-/** The invite: a box on the old layout, plain on the sheet. */
-function Response({ challenge, busy, onRespond, sheet = false }: { challenge: ChallengeView; busy: boolean; onRespond: (accept: boolean) => void; sheet?: boolean }) {
-  if (challenge.state !== 'open') return null;
+/** Being in the torcida, on the sheet, with the way back to being a Senhora. */
+function Torcida({ challenge, busy, onRespond }: { challenge: ChallengeView; busy: boolean; onRespond: (accept: boolean) => void }) {
+  if (challenge.state !== 'open' || challenge.myResponse !== 'declined') return null;
   const t = strings.challenge.invite;
-  if (challenge.myResponse === 'pending') {
-    return (
-      <section className={sheet ? 'sheet-section sheet-invite' : 'panel'} style={sheet ? undefined : { background: 'var(--color-brand-soft)' }}>
-        <h2 className="d">{t.title}</h2>
-        <p className="small" style={{ margin: 0 }}>
-          {t.body}
-        </p>
-        <div className="actions">
-          <button type="button" disabled={busy} onClick={() => onRespond(true)}>
-            {t.accept}
-          </button>
-          <button type="button" className="secondary" disabled={busy} onClick={() => onRespond(false)}>
-            {t.decline}
-          </button>
-        </div>
-      </section>
-    );
-  }
-  if (challenge.myResponse === 'declined') {
-    return (
-      <div className={sheet ? 'sheet-section' : undefined}>
-        <div className="notice row" style={{ margin: 0, justifyContent: 'space-between' }}>
-          <span>{t.torcida}</span>
-          <button type="button" disabled={busy} onClick={() => onRespond(true)}>
-            {t.join}
-          </button>
-        </div>
+  return (
+    <div className="sheet-section sheet-torcida">
+      <span>{t.torcida}</span>
+      <button type="button" className="secondary" disabled={busy} onClick={() => onRespond(true)}>
+        {t.join}
+      </button>
+    </div>
+  );
+}
+
+/** The pending invite, in a bar fixed above the navigation. */
+function InviteBar({ busy, onRespond }: { busy: boolean; onRespond: (accept: boolean) => void }) {
+  const t = strings.challenge.invite;
+  return (
+    <section className="invite-bar" aria-label={t.title}>
+      <h2 className="d">{t.title}</h2>
+      <p>{t.body}</p>
+      <div className="invite-bar-actions">
+        <button type="button" className="secondary" disabled={busy} onClick={() => onRespond(false)}>
+          {t.decline}
+        </button>
+        <button type="button" disabled={busy} onClick={() => onRespond(true)}>
+          {t.accept}
+        </button>
       </div>
-    );
-  }
-  return null;
+    </section>
+  );
 }
 
 function Result({ challenge }: { challenge: ChallengeView }) {
