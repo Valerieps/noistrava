@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { ChallengeView } from '../../src/application/api-contract';
+import type { ChallengeView, HistoryItemView, LogEntryView } from '../../src/application/api-contract';
 import { fixedClock, memorySql, sequentialIds } from '../testing/node-sql';
 import { GroupService } from './group-service';
 import type { GoogleProfile } from './members';
@@ -527,5 +527,80 @@ describe('drafts', () => {
     expect(service.command(ANA, 'challenge.respond', { challengeId: id, accept: true })).toEqual({ ok: false, error: 'not_found' });
     expect(ok<ChallengeView>(service.query(BIA, 'challenge', { challengeId: id }))).toBeDefined();
     expect(drafts(BIA)[0]).toMatchObject({ state: 'draft', totalSeconds: 0 });
+  });
+});
+
+describe('the chain', () => {
+  /** A chain from Mon 2 Nov, Ana and Bia as Senhoras. */
+  function createChain(endDate: string, allowedBreaks: number): ChallengeView {
+    const chain = ok<ChallengeView>(
+      service.command(ANA, 'challenge.create', { type: 'corrente', name: 'Corrente', startDate: '2026-11-02', endDate, chain: { allowedBreaks, minMinutesPerDay: 0 }, creatorIsSenhora: true }),
+    );
+    ok(service.command(BIA, 'challenge.respond', { challengeId: chain.id, accept: true }));
+    return chain;
+  }
+
+  const day = (date: string) => current()?.chain?.days.find((d) => d.date === date);
+
+  it('refuses more breaks than one for every 10 days, and a new type on an open challenge', () => {
+    expect(service.command(ANA, 'challenge.create', { type: 'corrente', name: 'C', startDate: '2026-11-02', endDate: '2026-11-15', chain: { allowedBreaks: 2, minMinutesPerDay: 0 }, creatorIsSenhora: true })).toEqual({
+      ok: false,
+      error: 'invalid',
+    });
+    const { id } = createChain('2026-11-15', 1);
+    expect(current()).toMatchObject({ type: 'corrente', goalMinutes: 0, journey: null, milestones: [], chain: { allowedBreaks: 1, lost: 0, saved: 0 } });
+    expect(service.command(ANA, 'challenge.edit', { challengeId: id, name: 'C', startDate: '2026-11-02', endDate: '2026-11-15', goalHours: 10 })).toEqual({ ok: false, error: 'invalid' });
+  });
+
+  it('saves a break with two Senhoras the next day, and fails once more breaks are lost than allowed', () => {
+    createChain('2026-11-15', 1);
+    log(ANA, '2026-11-02T08:00:00Z', 1);
+    clock.set('2026-11-04T12:00:00Z');
+    log(ANA, '2026-11-04T08:00:00Z', 1);
+    log(BIA, '2026-11-04T09:00:00Z', 1);
+    expect(day('2026-11-03')?.state).toBe('waiting');
+    clock.set('2026-11-05T01:00:00Z');
+    expect(day('2026-11-03')).toMatchObject({ state: 'saved', savedBy: [{ name: 'Ana' }, { name: 'Bia' }] });
+
+    clock.set('2026-11-06T12:00:00Z');
+    log(ANA, '2026-11-06T08:00:00Z', 1);
+    clock.set('2026-11-08T00:00:00Z');
+    service.tick();
+    expect(current()).toMatchObject({ state: 'open', chain: { lost: 1, saved: 1, streak: 1 } });
+    expect(day('2026-11-05')?.state).toBe('lost');
+
+    clock.set('2026-11-10T00:00:00Z');
+    expect(service.tick()).toEqual(['challenge', 'history']);
+    expect(current()).toBeNull();
+    const [item] = ok<HistoryItemView[]>(service.query(ANA, 'history', {}));
+    expect(item).toMatchObject({ type: 'corrente', state: 'failed', chain: { allowedBreaks: 1, lost: 2, saved: 1 } });
+  });
+
+  it('lets the day after the end save the last day, without counting its activities', () => {
+    const { id } = createChain('2026-11-03', 0);
+    log(ANA, '2026-11-02T08:00:00Z', 1);
+    clock.set('2026-11-04T01:00:00Z');
+    service.tick();
+    expect(current()).toMatchObject({ state: 'succeeded', closesAt: '2026-11-06T00:00:00.000Z', closed: false });
+
+    clock.set('2026-11-04T12:00:00Z');
+    log(ANA, '2026-11-04T08:00:00Z', 1);
+    log(BIA, '2026-11-04T09:00:00Z', 1);
+    clock.set('2026-11-06T00:00:00Z');
+    service.tick();
+    const closed = ok<{ challenge: ChallengeView }>(service.query(ANA, 'challenge', { challengeId: id })).challenge;
+    expect(closed).toMatchObject({ state: 'succeeded', closed: true, totalSeconds: 3600, chain: { lost: 0, saved: 1 } });
+    expect(ok<LogEntryView[]>(service.query(ANA, 'challengeLog', { challengeId: id }))).toHaveLength(1);
+  });
+
+  it('fails when the last day is not saved', () => {
+    createChain('2026-11-03', 0);
+    log(ANA, '2026-11-02T08:00:00Z', 1);
+    clock.set('2026-11-04T12:00:00Z');
+    log(ANA, '2026-11-04T08:00:00Z', 1);
+    clock.set('2026-11-06T00:00:00Z');
+    service.tick();
+    const [item] = ok<HistoryItemView[]>(service.query(ANA, 'history', {}));
+    expect(item).toMatchObject({ state: 'failed', chain: { lost: 1, saved: 0 } });
   });
 });

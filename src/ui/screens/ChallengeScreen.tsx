@@ -1,5 +1,6 @@
 // The challenge screen (docs/spec/desafio-horas.md): the current challenge with its progress, the
-// pace, the ranking, the highlights and the log, with or without a journey. Answering the invite,
+// pace, the ranking, the highlights and the log, with or without a journey; a chain shows its
+// calendar instead (docs/spec/desafio-corrente.md). Answering the invite,
 // editing, cancelling and deleting start here too.
 import { useEffect, useRef, useState } from 'react';
 import type { ApiError, ChallengeView, LogEntryView, MeView } from '../../application/api-contract';
@@ -13,6 +14,7 @@ import { MoreIcon, PlusIcon } from '../icons';
 import { Link, navigate } from '../router';
 import { useQuery } from '../use-query';
 import { ActivityLog } from './challenge/ActivityLog';
+import { ChainMessage, ChainPanel } from './challenge/ChainPanel';
 import { Highlights } from './challenge/Highlights';
 import { JourneyMap } from './challenge/JourneyMap';
 import { PaceMessage, ProgressPanel, type ProgressNumbers } from './challenge/ProgressPanel';
@@ -99,6 +101,7 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
 
   const entries: readonly LogEntryView[] = log.data ?? [];
   const journey = challenge.journey;
+  const chain = challenge.chain;
   const period = { startsAt: challenge.startsAt, endsAt: challenge.endsAt };
   const goalSeconds = challenge.goalMinutes * 60;
   const open = challenge.state === 'open';
@@ -220,25 +223,34 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
         <Response challenge={challenge} busy={busy} onRespond={(accept) => void respond(accept)} />
         {!open && <Result challenge={challenge} />}
 
-        {journey && <JourneyMap challenge={challenge} programmedMeters={open ? secondsToKm(p.programmedSeconds) * 1000 : 0} />}
+        {chain ? (
+          <>
+            {open && started && <ChainMessage chain={chain} />}
+            <ChainPanel chain={chain} />
+          </>
+        ) : (
+          <>
+            {journey && <JourneyMap challenge={challenge} programmedMeters={open ? secondsToKm(p.programmedSeconds) * 1000 : 0} />}
 
-        <ProgressPanel
-          numbers={numbers}
-          period={period}
-          goalSeconds={goalSeconds}
-          log={entries}
-          now={now}
-          dateRange={dateRange}
-          message={open && started ? <PaceMessage {...paceText(p, challenge, senhoras.length, !!journey)} tone={p.tone} /> : null}
-        />
+            <ProgressPanel
+              numbers={numbers}
+              period={period}
+              goalSeconds={goalSeconds}
+              log={entries}
+              now={now}
+              dateRange={dateRange}
+              message={open && started ? <PaceMessage {...paceText(p, challenge, senhoras.length, !!journey)} tone={p.tone} /> : null}
+            />
 
-        {open && started && !journey && <PaceTiles p={p} goalMinutes={challenge.goalMinutes} />}
+            {open && started && !journey && <PaceTiles p={p} goalMinutes={challenge.goalMinutes} />}
+          </>
+        )}
 
         {journey && <Timeline challenge={challenge} />}
 
         {journey ? <JourneyRanking members={challenge.members} log={entries} now={now} /> : <Ranking members={challenge.members} log={entries} period={period} now={now} />}
 
-        {!journey && <Highlights log={entries} zones={zones} now={now} />}
+        {!journey && !chain && <Highlights log={entries} zones={zones} now={now} />}
 
         <ActivityLog challengeId={challenge.id} entries={entries} journey={!!journey} now={now} onChanged={log.reload} />
 
@@ -367,6 +379,7 @@ function Response({ challenge, busy, onRespond }: { challenge: ChallengeView; bu
 }
 
 function Result({ challenge }: { challenge: ChallengeView }) {
+  if (challenge.chain && challenge.state !== 'cancelled') return <ChainResult challenge={challenge} />;
   const r = strings.challenge.result;
   const days = challenge.endedAt ? Math.max(1, Math.ceil((Date.parse(challenge.endedAt) - Date.parse(challenge.startsAt)) / 86_400_000)) : 0;
   const [title, body, tone] =
@@ -380,6 +393,19 @@ function Result({ challenge }: { challenge: ChallengeView }) {
       <strong>{title}</strong>
       <span>{body}</span>
       {challenge.closesAt && !challenge.closed && challenge.state !== 'cancelled' && <span>{r.tolerance(formatDateTime(challenge.closesAt))}</span>}
+    </div>
+  );
+}
+
+function ChainResult({ challenge }: { challenge: ChallengeView }) {
+  const chain = challenge.chain!;
+  const r = strings.chain.result;
+  const succeeded = challenge.state === 'succeeded';
+  return (
+    <div className={`message ${succeeded ? 'tone-ahead' : 'tone-behind'}`} role="status">
+      <strong>{succeeded ? r.succeeded : r.failed}</strong>
+      <span>{succeeded ? r.succeededBody(chain.saved) : r.failedBody(chain.lost, chain.allowedBreaks)}</span>
+      {challenge.closesAt && !challenge.closed && <span>{r.tolerance(formatDateTime(challenge.closesAt))}</span>}
     </div>
   );
 }

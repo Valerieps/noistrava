@@ -1,6 +1,7 @@
 // The collective-hours challenge (docs/spec/desafio-horas.md): its configuration, period, goal,
 // milestones and which activities count. Pure rules, shared by the app and the server.
 import { addDays, isCalendarDate, midnightIn, type CalendarDate } from '../time/zones';
+import { parseChainConfig, type ChainConfig } from './chain';
 
 export const CHALLENGE_NAME_MAX_LENGTH = 60;
 export const GOAL_HOURS_MAX = 10_000;
@@ -13,6 +14,9 @@ export const PERCENT_MILESTONES = [25, 50, 75] as const;
 const PLACE_NAME_MAX_LENGTH = 120;
 export const MAX_STOPS = 20;
 const MAX_ROUTE_POINTS = 2_000;
+
+/** Collective hours (docs/spec/desafio-horas.md) or the chain (docs/spec/desafio-corrente.md). */
+export type ChallengeType = 'horas_colaborativas' | 'corrente';
 
 /** A `draft` is seen only by its creator until she activates it (one `open` at a time). */
 export type ChallengeState = 'draft' | 'open' | 'succeeded' | 'failed' | 'cancelled';
@@ -47,9 +51,12 @@ export interface ChallengeConfig {
   readonly journey: Journey | null;
   /** Only in a draft: the journey is chosen but its route is not computed yet, so there is no goal. */
   readonly journeyPending?: true;
+  /** Only in a chain, which has no goal in hours (`goalMinutes` is 0) nor journey. */
+  readonly chain?: ChainConfig;
 }
 
 export interface ChallengeSetup extends ChallengeConfig {
+  readonly type: ChallengeType;
   readonly name: string;
 }
 
@@ -94,6 +101,8 @@ export function closesAt(endedAt: Date): Date {
 
 /** The milestones: 25%, 50% and 75% of the goal, and each stop of the journey. */
 export function milestones(config: ChallengeConfig): { readonly key: string; readonly atSeconds: number }[] {
+  // A chain has no goal in hours, so no milestones.
+  if (config.chain) return [];
   const goalSeconds = config.goalMinutes * 60;
   const percents = PERCENT_MILESTONES.map((p) => ({ key: `${p}%`, atSeconds: (goalSeconds * p) / 100 }));
   const stops = (config.journey?.stops ?? []).map((stop) => ({
@@ -129,24 +138,33 @@ export function activityCounts(startedAt: string, window: { startsAt: string; en
 
 /** Validates what the creator sends to create or edit a challenge. */
 export function parseChallengeSetup(input: {
+  type?: unknown;
   name?: unknown;
   startDate?: unknown;
   endDate?: unknown;
   goalHours?: unknown;
   journey?: unknown;
+  chain?: unknown;
 }): ChallengeSetup | null {
   if (typeof input.name !== 'string' || typeof input.startDate !== 'string' || typeof input.endDate !== 'string') return null;
   const name = normalizeChallengeName(input.name);
   if (!name || !isCalendarDate(input.startDate) || !isCalendarDate(input.endDate) || input.endDate < input.startDate) return null;
+  const type = input.type ?? 'horas_colaborativas';
 
+  if (type === 'corrente') {
+    const chain = parseChainConfig(input.chain, input.startDate, input.endDate);
+    if (!chain) return null;
+    return { type, name, startDate: input.startDate, endDate: input.endDate, goalMinutes: 0, journey: null, chain };
+  }
+  if (type !== 'horas_colaborativas') return null;
   if (input.journey !== undefined && input.journey !== null) {
     const journey = parseJourney(input.journey);
     if (!journey) return null;
-    return { name, startDate: input.startDate, endDate: input.endDate, goalMinutes: journeyGoalMinutes(journey.distanceMeters), journey };
+    return { type, name, startDate: input.startDate, endDate: input.endDate, goalMinutes: journeyGoalMinutes(journey.distanceMeters), journey };
   }
   const hours = input.goalHours;
   if (typeof hours !== 'number' || !Number.isInteger(hours) || hours < 1 || hours > GOAL_HOURS_MAX) return null;
-  return { name, startDate: input.startDate, endDate: input.endDate, goalMinutes: hours * 60, journey: null };
+  return { type, name, startDate: input.startDate, endDate: input.endDate, goalMinutes: hours * 60, journey: null };
 }
 
 /**
@@ -154,7 +172,7 @@ export function parseChallengeSetup(input: {
  * (`journeyPending`), with no goal until then.
  */
 export function parseDraftSetup(input: Parameters<typeof parseChallengeSetup>[0] & { journeyPending?: unknown }): ChallengeSetup | null {
-  if (input.journeyPending !== true) return parseChallengeSetup(input);
+  if (input.journeyPending !== true || input.type === 'corrente') return parseChallengeSetup(input);
   const setup = parseChallengeSetup({ ...input, journey: null, goalHours: 1 });
   return setup && { ...setup, goalMinutes: 0, journeyPending: true };
 }

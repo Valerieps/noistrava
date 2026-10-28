@@ -12,7 +12,7 @@ O que ainda não está pronto.
 | Feature | Fase | Spec | Observação |
 | --- | --- | --- | --- |
 | Jornada: postal de cada marco (foto e resumo do lugar), "Onde estamos" e números do caminho (países, rios) | 1 | `spec/desafio-horas.md` | Estão nos rascunhos; precisam de dados que o servidor não tem |
-| Notificações | 2 | `spec/desafio-horas.md` | Regras em aberto |
+| Notificações | 2 | `spec/desafio-horas.md`, `spec/desafio-corrente.md` | Regras em aberto |
 
 ## O código ainda não segue o spec
 
@@ -41,6 +41,15 @@ O que ainda não está pronto.
   lugar não se repete; inverter a viagem inverte as paradas (`spec/desafio-horas.md`, "Jornada").
 - [ ] As setas do ranking comparam com 24 horas atrás; o log mostra as 4 atividades mais recentes e
   "Ver tudo" abre o resto (`spec/desafio-horas.md`, "Andamento").
+- [ ] Corrente: o mínimo por dia vai de 0 a 240 minutos e vale por Senhora, somando as atividades
+  do dia dela (`spec/desafio-corrente.md`, "Criar" e "O elo do dia").
+- [ ] Corrente: o dia fica decidido 24 horas depois de terminar no fuso mais atrasado; até lá
+  aparece "em aberto" no calendário, mesmo que o dia seguinte já tenha 2 Senhoras
+  (`spec/desafio-corrente.md`, "O elo do dia").
+- [ ] Corrente: quebrar além do permitido fecha o resultado na hora, sem tolerância; no fim do
+  período, o resultado fecha 48 horas depois (`spec/desafio-corrente.md`, "Término").
+- [ ] Corrente: o tipo só muda no rascunho; a sequência conta os dias com elo ou salvos desde a
+  última quebra perdida; a corrente não tem destaques nem ritmo (`spec/desafio-corrente.md`).
 
 ## Adiado
 

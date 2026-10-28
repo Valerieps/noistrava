@@ -1,7 +1,8 @@
 // The contract between the app and the server: query and command names, inputs and outputs.
 // Types only. The server imports it with `import type`, so nothing here runs on either side.
 import type { ActivitySource } from '../domain/activity';
-import type { ChallengeResponse, ChallengeState, Journey, Place } from '../domain/challenge/challenge';
+import type { ChainConfig, ChainDayState } from '../domain/challenge/chain';
+import type { ChallengeResponse, ChallengeState, ChallengeType, Journey, Place } from '../domain/challenge/challenge';
 import type { Role } from '../domain/group/roles';
 
 export interface MemberView {
@@ -58,9 +59,26 @@ export interface ChallengeMemberView {
   readonly totalSeconds: number;
 }
 
+export interface ChainDayView {
+  readonly date: string;
+  readonly state: ChainDayState;
+  /** How many Senhoras were active that day. */
+  readonly activeCount: number;
+  /** On a saved day, the Senhoras active the next day. */
+  readonly savedBy: readonly { readonly memberId: string; readonly name: string }[];
+}
+
+/** A chain's settings and where it stands; frozen when the result closes. */
+export interface ChainView extends ChainConfig {
+  readonly lost: number;
+  readonly saved: number;
+  readonly streak: number;
+  readonly days: readonly ChainDayView[];
+}
+
 export interface ChallengeView {
   readonly id: string;
-  readonly type: 'horas_colaborativas';
+  readonly type: ChallengeType;
   readonly name: string;
   readonly creatorId: string;
   readonly creatorName: string;
@@ -85,6 +103,8 @@ export interface ChallengeView {
   readonly creatorIsSenhora: boolean;
   /** Only in a draft: a journey whose route is still to be computed. */
   readonly journeyPending: boolean;
+  /** Only in a chain. */
+  readonly chain: ChainView | null;
 }
 
 /** A row of the challenge's activity log. */
@@ -102,6 +122,7 @@ export interface LogEntryView {
 
 export interface HistoryItemView {
   readonly id: string;
+  readonly type: ChallengeType;
   readonly name: string;
   readonly state: ChallengeState;
   readonly startsAt: string;
@@ -111,10 +132,14 @@ export interface HistoryItemView {
   readonly totalSeconds: number;
   readonly percent: number;
   readonly results: readonly { readonly memberId: string; readonly name: string; readonly totalSeconds: number }[];
+  /** Only in a chain: the breaks allowed, lost and saved. */
+  readonly chain: { readonly allowedBreaks: number; readonly lost: number; readonly saved: number } | null;
 }
 
-/** Creating or editing: a goal in whole hours, or a journey whose distance is the goal. */
+/** Creating or editing: a goal in whole hours, a journey whose distance is the goal, or a chain. */
 export interface ChallengeSetupInput {
+  /** `horas_colaborativas` when left out. */
+  type?: ChallengeType;
   name: string;
   startDate: string;
   endDate: string;
@@ -122,6 +147,8 @@ export interface ChallengeSetupInput {
   journey?: Journey | null;
   /** Drafts only: with a journey whose route is not computed yet. */
   journeyPending?: boolean;
+  /** A chain's settings. */
+  chain?: ChainConfig;
 }
 
 /** A place found by the journey's search (ADR-009): a short name, and the full address to tell apart. */
