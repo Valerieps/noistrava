@@ -40,7 +40,12 @@ Na `ChallengeScreen.tsx`, quando o desafio não tem jornada nem corrente:
   - Depois vem o rótulo "Horas colaborativas · faltam N dias" (`--color-on-hero-muted`, 13px/600) e o nome do desafio (30px, 800).
   - Em seguida, uma linha com o anel (132px, traço de 12px) e o total ao lado: "38h12" em 40px/800 e "de 60h · programado hoje 42h35" em 14px.
   - O anel tem três camadas: o trilho em branco a 22%, o programado em branco a 45% e o efetivo em branco cheio, com o percentual no centro.
-- **O seletor barra/anel/curva sai do topo.** O anel fica fixo no topo. A curva pode virar uma seção da folha mais tarde (fora desta fase); se for simples, deixe o seletor só dentro de uma seção "Andamento" na folha. Na dúvida, mantenha só o anel e registre a decisão.
+- **O seletor barra/anel/curva fica, dentro do topo.** O controle segmentado com os três ícones fica no canto direito da linha do rótulo, em branco: o fundo do controle em branco a 18%, o item escolhido em branco cheio com o ícone na cor do topo e os outros ícones em branco. O número grande ("38h12" e "de 60h · programado hoje 42h35") fica sempre igual; só a figura embaixo dele muda, desenhada em branco sobre a cor:
+  - **Anel:** como descrito acima.
+  - **Barra:** barra de 8px com o trilho a 22%, o programado a 45% e o efetivo cheio; embaixo, "64% da meta" à esquerda e "programado hoje 42h35" à direita, em `--color-on-hero-muted`.
+  - **Curva:** a linha do efetivo em branco cheio (2,5px), a do programado em branco a 45% tracejada, um ponto em hoje e os eixos em `--color-on-hero-muted`. A escala e os rótulos são os de hoje.
+
+  A escolha continua sendo lembrada como hoje.
 - **Folha**, em ordem:
   1. Erro ou aviso, se houver.
   2. O convite (`Response`), como está hoje, mas sem caixa: título, texto e botões direto na folha. A barra fixa embaixo é para a fase 2.
@@ -58,7 +63,7 @@ Pronto quando: a tela de um desafio de horas sem jornada segue o descrito acima,
 ## Fase 2: os outros estados (outra tarefa)
 
 - **Jornada:**
-  - No topo, os km ("154 km" em 48px e "de 240 km"), uma barra branca de 8px com o programado a 40% e a linha "38h12 de 60h · 64%" e "programado: km 171".
+  - No topo, os km ("154 km" em 48px e "de 240 km") e o mesmo seletor barra/anel/curva da fase 1. Na barra, a linha embaixo mostra "38h12 de 60h · 64%" e "programado: km 171".
   - O mapa entra colado no início da folha, na largura toda, sem caixa, com o botão "Trechos por Senhora" flutuando no canto.
   - "Pelo caminho" vira uma lista com um trilho vertical: a etiqueta em caixa-alta de 12px e o km à direita.
   - O ranking da jornada mostra os km à direita e as horas embaixo deles.

@@ -2275,3 +2275,62 @@ ul.pills {
   width: 28px;
   height: 28px;
 }
+
+/* The view picker and the bar and curve figures, in white on the hero */
+.hero-c-tools {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.hero-c .segmented {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: transparent;
+}
+
+.hero-c .segmented button {
+  background: transparent;
+  color: var(--color-on-hero);
+}
+
+.hero-c .segmented button[aria-checked='true'] {
+  background: #ffffff;
+  color: var(--color-hero);
+}
+
+.hero-c-figure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+}
+
+.hero-bar {
+  position: relative;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.hero-bar-programmed,
+.hero-bar-effective {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: var(--radius-pill);
+}
+
+.hero-bar-programmed {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.hero-bar-effective {
+  background: #ffffff;
+}
+
+.hero-bar-notes {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  color: var(--color-on-hero-muted);
+  font-size: var(--text-xs);
+}

@@ -66,6 +66,7 @@ export const strings = {
     create: 'Criar desafio',
     seeHistory: 'Ver o histórico',
     heroLabel: (left: string) => `Horas colaborativas · ${left}`,
+    heroProgrammed: (programmed: string) => `programado hoje ${programmed}`,
     heroOf: (goal: string, programmed?: string) => (programmed ? `de ${goal} · programado hoje ${programmed}` : `de ${goal}`),
     ofGoal: (goal: string, percent: number) => `de ${goal} · ${percent}% da meta`,
     viewsLabel: 'Forma de ver o andamento',

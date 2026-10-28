@@ -17,7 +17,7 @@ import { ActivityLog } from './challenge/ActivityLog';
 import { ChainMessage, ChainPanel } from './challenge/ChainPanel';
 import { Highlights } from './challenge/Highlights';
 import { JourneyMap } from './challenge/JourneyMap';
-import { HeroRing, PaceMessage, PaceNote, ProgressPanel, type ProgressNumbers } from './challenge/ProgressPanel';
+import { HeroProgress, PaceMessage, PaceNote, ProgressPanel, useProgressView, ViewPicker, type ProgressNumbers } from './challenge/ProgressPanel';
 import { JourneyRanking, Ranking, senhorasOf } from './challenge/Ranking';
 
 const MINUTE = 60_000;
@@ -182,6 +182,7 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
         ),
       };
 
+  const [view, pickView] = useProgressView();
   const registerable = challenge.myResponse === 'accepted' && !challenge.closed;
 
   if (!journey && !chain) {
@@ -191,17 +192,24 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
         <header className={`hero-c hero-c-${challenge.banner}`}>
           <div className="hero-c-label">
             <span>{strings.challenge.heroLabel(left)}</span>
-            <Options me={me} challenge={challenge} busy={busy} onLeave={leave} onCancel={cancel} onDelete={remove} />
+            <div className="hero-c-tools">
+              <ViewPicker view={view} onPick={pickView} />
+              <Options me={me} challenge={challenge} busy={busy} onLeave={leave} onCancel={cancel} onDelete={remove} />
+            </div>
           </div>
           <h1 className="d hero-c-title">{challenge.name}</h1>
           <div className="hero-c-by">{strings.challenge.createdBy(challenge.creatorName)}</div>
-          <div className="hero-c-total">
-            <HeroRing numbers={numbers} />
-            <div>
-              <div className="d hero-c-number">{numbers.headline}</div>
-              <div className="hero-c-of">{strings.challenge.heroOf(formatGoal(challenge.goalMinutes), programmedText)}</div>
-            </div>
-          </div>
+          <HeroProgress
+            view={view}
+            numbers={numbers}
+            of={strings.challenge.heroOf(formatGoal(challenge.goalMinutes), programmedText)}
+            programmedNote={programmedText && strings.challenge.heroProgrammed(programmedText)}
+            period={period}
+            goalSeconds={goalSeconds}
+            log={entries}
+            now={now}
+            dateRange={dateRange}
+          />
         </header>
 
         <div className="sheet">
