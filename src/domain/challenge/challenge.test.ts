@@ -57,6 +57,7 @@ describe('challenge setup', () => {
 
   it('takes a goal in whole hours', () => {
     expect(parseChallengeSetup({ ...base, goalHours: 100 })).toEqual({
+      type: 'horas_colaborativas',
       name: 'Cem horas',
       startDate: '2026-11-02',
       endDate: '2026-11-08',

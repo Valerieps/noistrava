@@ -115,6 +115,8 @@ export const MIGRATIONS: readonly (readonly string[])[] = [
   ],
   // 4: drafts keep the creator's answer until she activates them.
   [`ALTER TABLE challenges ADD COLUMN creator_is_senhora INTEGER`],
+  // 5: a chain's days, frozen when its result closes (docs/spec/desafio-corrente.md).
+  [`ALTER TABLE challenges ADD COLUMN chain_result TEXT`],
 ];
 
 export function migrate(sql: Sql): void {

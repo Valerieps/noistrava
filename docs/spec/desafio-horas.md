@@ -29,7 +29,8 @@ O grupo soma horas de atividade para bater uma meta num período, com ou sem jor
   crio fica como rascunho (ver "Rascunhos"). *(1)*
 - Ao criar, eu escolho entre salvar como rascunho e criar já ativo. Criar já ativo só aparece
   quando não há desafio ativo. *(1)*
-- O desafio é do tipo "Horas colaborativas" e tem um nome dado por quem cria. *(1)*
+- O desafio é do tipo "Horas colaborativas" e tem um nome dado por quem cria. O outro tipo, a
+  corrente, está em [desafio-corrente.md](desafio-corrente.md). *(1)*
 - Eu escolho o início, o término e a meta em horas. Com jornada, a meta é a distância da rota (ver
   "Jornada"). *(1)*
 - A meta é um número inteiro de horas, de 1 a 10.000. *(1)*
