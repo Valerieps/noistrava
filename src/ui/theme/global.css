@@ -201,15 +201,6 @@ a {
   gap: var(--space-3);
 }
 
-.panel-flush {
-  padding-left: 0;
-  padding-right: 0;
-}
-
-.panel-flush > .pad {
-  padding: 0 var(--space-4);
-}
-
 .panel-foot {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
@@ -386,13 +377,6 @@ a {
   line-height: 1.05;
 }
 
-.journey-header {
-  padding: var(--space-4) var(--space-4) 0;
-  display: flex;
-  gap: var(--space-3);
-  align-items: center;
-}
-
 /* The challenge's options, behind three dots on the right of the header */
 .header-menu {
   position: relative;
@@ -437,19 +421,7 @@ a {
   color: var(--color-danger);
 }
 
-.journey-badge {
-  width: 56px;
-  height: 56px;
-  flex: none;
-  border-radius: var(--radius-tile);
-}
-
 /* Progress */
-
-.big-number {
-  font-size: var(--text-display);
-  line-height: 1;
-}
 
 .split {
   display: flex;
@@ -485,63 +457,6 @@ a {
   color: var(--color-brand-ink);
 }
 
-.bar {
-  position: relative;
-  height: 40px;
-}
-
-.bar > * {
-  position: absolute;
-}
-
-.bar-track,
-.bar-ghost,
-.bar-fill {
-  left: 0;
-  top: 10px;
-  height: 18px;
-  border-radius: var(--radius-pill);
-}
-
-.bar-track {
-  right: 0;
-  background: var(--color-ghost-track);
-}
-
-.bar-ghost {
-  background: var(--color-ghost);
-}
-
-.bar-fill {
-  background: var(--color-brand);
-}
-
-.bar-knob {
-  top: 10px;
-  width: 18px;
-  height: 18px;
-  margin-left: -9px;
-  border-radius: 50%;
-  background: var(--color-accent);
-  box-shadow: 0 0 0 3px var(--color-surface);
-}
-
-.bar-tick {
-  top: 2px;
-  width: 2px;
-  height: 34px;
-  background: var(--color-text);
-}
-
-.bar-milestone {
-  top: 14px;
-  width: 10px;
-  height: 10px;
-  margin-left: -5px;
-  border-radius: 50%;
-  background: var(--color-surface);
-}
-
 .legend {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -571,35 +486,6 @@ a {
   background: var(--color-ghost);
 }
 
-.ring {
-  display: flex;
-  gap: var(--space-4);
-  align-items: center;
-}
-
-.ring-figure {
-  position: relative;
-  width: 150px;
-  height: 150px;
-  flex: none;
-}
-
-.ring-center {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.axis {
-  display: flex;
-  justify-content: space-between;
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
-}
-
 svg text {
   font-family: var(--font-sans);
 }
@@ -627,18 +513,6 @@ svg text {
   background: var(--color-text);
   border-color: var(--color-text);
   color: var(--color-bg);
-}
-
-.rank-row {
-  display: grid;
-  grid-template-columns: 20px 36px minmax(0, 1fr) auto;
-  gap: var(--space-2);
-  align-items: center;
-}
-
-.rank-name {
-  font-size: var(--text-base);
-  font-weight: 600;
 }
 
 .move {
@@ -1115,99 +989,6 @@ svg text {
   flex-direction: column;
   gap: 2px;
   min-width: 0;
-}
-
-.timeline {
-  display: flex;
-  overflow-x: auto;
-  padding: var(--space-1) var(--space-4) var(--space-2);
-  scroll-snap-type: x mandatory;
-}
-
-.timeline-item {
-  flex: none;
-  width: 136px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  scroll-snap-align: start;
-}
-
-.timeline-rail {
-  position: relative;
-  height: 20px;
-}
-
-.timeline-rail > .line {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 9px;
-  height: 3px;
-  background: var(--color-ghost-track);
-}
-
-.timeline-rail > .line.done {
-  background: var(--color-brand);
-}
-
-.timeline-rail > .dot {
-  position: absolute;
-  left: 10px;
-  top: 3px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--color-surface);
-  border: 2px solid var(--color-text);
-}
-
-.timeline-rail > .dot.mark {
-  border-radius: 4px;
-}
-
-.timeline-rail > .dot.done {
-  background: var(--color-brand);
-}
-
-.timeline-rail > .dot.here {
-  top: 0;
-  width: 20px;
-  height: 20px;
-  background: var(--color-accent);
-  border-color: var(--color-surface);
-}
-
-.timeline-card {
-  margin-right: var(--space-2);
-  border: 2px solid var(--color-border);
-  background: var(--color-surface);
-  border-radius: var(--space-4);
-  padding: var(--space-2) var(--space-2) var(--space-2);
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.timeline-card.done {
-  border-color: var(--color-brand);
-}
-
-.timeline-card.plain {
-  border: 0;
-  padding: 0 2px;
-}
-
-.timeline-card.ahead {
-  opacity: 0.7;
-}
-
-.timeline-tag {
-  font-size: var(--text-xs);
-  font-weight: 800;
-  color: var(--color-brand-ink);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
 }
 
 /* Bottom navigation and floating action */
@@ -1876,7 +1657,8 @@ ul.pills {
 .chain-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: var(--space-1);
+  gap: var(--space-2) var(--space-1);
+  justify-items: center;
 }
 
 .chain-weekday {
@@ -1887,18 +1669,14 @@ ul.pills {
 }
 
 .chain-day {
-  aspect-ratio: 1;
+  width: 38px;
+  height: 38px;
   display: grid;
   place-items: center;
-  border-radius: var(--space-2);
+  border-radius: 50%;
   font-size: var(--text-sm);
   font-weight: 700;
   border: 2px solid transparent;
-}
-
-.chain-day.today {
-  outline: 2px solid var(--color-text);
-  outline-offset: 1px;
 }
 
 .chain-day.linked,
@@ -1924,45 +1702,37 @@ ul.pills {
 
 .chain-day.at_risk,
 .chain-swatch.at_risk {
-  background: var(--color-surface);
+  background: var(--color-sheet);
   border: 2px dashed var(--color-accent);
   color: var(--color-accent-ink);
 }
 
 .chain-day.waiting {
-  background: var(--color-surface);
+  background: var(--color-sheet);
   border-color: var(--color-ghost-strong);
   color: var(--color-text);
 }
 
 .chain-day.future {
-  background: var(--color-ghost-track);
+  background: var(--color-band);
   color: var(--color-text-muted);
+}
+
+/* After the states, so today's dark border wins over the state's */
+.chain-day.today {
+  border: 2px solid var(--color-text);
 }
 
 .chain-swatch {
   width: 14px;
   height: 14px;
   flex: none;
-  border-radius: 4px;
+  border-radius: 50%;
   border: 2px solid transparent;
 }
 
-.chain-saved {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-}
-
-.chain-saved li {
-  display: flex;
-  gap: var(--space-2);
-  align-items: center;
-}
-
-/* Challenge screen, direction C: a brand-colored top and a white sheet (docs/rascunhos/desafio-visual-c.md).
-   Only the hours challenge uses these classes so far; .panel, .tile and .message stay as they are. */
+/* Challenge screen, direction C: a brand-colored top and a white sheet, for every challenge type and
+   state. Only the challenge screen uses these classes; .panel, .tile and .message stay as they are. */
 
 .top-bar:has(+ .hero-c) {
   border-bottom: 0;
@@ -2257,8 +2027,56 @@ ul.pills {
   line-height: 1.3;
 }
 
-.sheet-invite {
-  background: var(--color-brand-soft);
+.sheet-torcida {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+}
+
+/* The pending invite, fixed above the navigation; the sheet ends with room for it */
+.invite-bar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--nav-height) + env(safe-area-inset-bottom));
+  z-index: 6;
+  width: min(100%, 560px);
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--color-hairline);
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  background: var(--color-sheet);
+  box-shadow: var(--shadow-float);
+}
+
+.invite-bar h2 {
+  font-size: var(--text-md);
+  font-weight: 800;
+}
+
+.invite-bar p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+}
+
+.invite-bar-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+}
+
+.invite-bar-actions button {
+  min-height: 48px;
+}
+
+.spacer-invite {
+  height: 200px;
 }
 
 .fab-round {
@@ -2333,4 +2151,217 @@ ul.pills {
   gap: var(--space-2);
   color: var(--color-on-hero-muted);
   font-size: var(--text-xs);
+}
+
+/* Journey on the sheet: the km in the hero, the map flush at the top, the rail list */
+.hero-c-km {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--space-2);
+}
+
+.hero-c-number.big {
+  font-size: 48px;
+}
+
+.hero-c-total .hero-c-number.big {
+  font-size: 40px;
+}
+
+.sheet > .map {
+  border-radius: 0;
+}
+
+.sheet .map-toggle {
+  border-color: transparent;
+  box-shadow: var(--shadow-float);
+}
+
+.rail-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rail-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  align-items: center;
+  min-height: 52px;
+  padding: var(--space-1) 0;
+}
+
+/* The rail: a line through every dot, brand-colored up to where the group is */
+.rail-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 9px;
+  width: 2px;
+  background: var(--color-hairline);
+}
+
+.rail-item.done::before {
+  background: var(--color-brand);
+}
+
+.rail-item:first-child::before {
+  top: 50%;
+}
+
+.rail-item:last-child::before {
+  bottom: 50%;
+}
+
+.rail-dot {
+  position: relative;
+  justify-self: center;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--color-ghost-strong);
+  background: var(--color-sheet);
+}
+
+.rail-item.done .rail-dot {
+  border-color: var(--color-brand);
+  background: var(--color-brand);
+}
+
+.rail-item.here .rail-dot {
+  width: 18px;
+  height: 18px;
+  border: 3px solid var(--color-brand);
+  background: var(--color-sheet);
+}
+
+.rail-tag {
+  color: var(--color-brand-ink);
+  font-size: var(--text-xs);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.rail-item:not(.done) .rail-tag {
+  color: var(--color-text-muted);
+}
+
+.rail-name {
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+.rail-km {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  text-align: right;
+}
+
+/* Chain: the streak in the hero, the last links under it, the saved breaks as rows */
+.hero-c-number.streak {
+  font-size: 56px;
+}
+
+.chain-links {
+  display: block;
+}
+
+.chain-saved-row {
+  grid-template-columns: 40px minmax(0, 1fr);
+}
+
+/* An ended challenge: the result in the hero, the group total split into each Senhora's share */
+.result-head {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: center;
+}
+
+.result-badge {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #ffffff;
+  color: var(--color-hero);
+}
+
+.result-badge svg {
+  width: 28px;
+  height: 28px;
+}
+
+.result-title {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.result-numbers {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.result-number {
+  font-size: var(--text-lg);
+  font-weight: 800;
+}
+
+.result-note {
+  margin-top: var(--space-1);
+  color: var(--color-on-hero-muted);
+  font-size: var(--text-xs);
+  line-height: 1.3;
+}
+
+.share-total {
+  display: flex;
+  height: 12px;
+  gap: 2px;
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.share-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.share-list li {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr) auto auto;
+  gap: var(--space-3);
+  align-items: center;
+  min-height: 44px;
+  border-bottom: 1px solid var(--color-hairline);
+  font-weight: 600;
+}
+
+.share-list li:last-child {
+  border-bottom: 0;
+}
+
+.share-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.share-value {
+  min-width: 56px;
+  font-weight: 800;
+  text-align: right;
 }

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { measureRoute, pointAt, stretch } from './journey-map';
 import {
   curvePoints,
+  daysEarly,
   daysLeft,
   formatDuration,
   formatGoal,
@@ -11,6 +12,7 @@ import {
   pace,
   programmedSeconds,
   ranking,
+  shares,
   sportShares,
   type LoggedActivity,
 } from './progress';
@@ -122,5 +124,27 @@ describe('journey map', () => {
     const middle = pointAt(route, 1000);
     expect(middle[0]).toBeCloseTo(route.points[1][0]);
     expect(stretch(route, 500, 1500)).toHaveLength(3);
+  });
+});
+
+describe('result', () => {
+  it('splits the group total into each Senhora share, most first, leaving out who has none', () => {
+    const members = [
+      { memberId: 'a', name: 'Ana', totalSeconds: HOUR },
+      { memberId: 'b', name: 'Bia', totalSeconds: 3 * HOUR },
+      { memberId: 'c', name: 'Carla', totalSeconds: 0 },
+    ];
+    const log = [{ memberId: 'b' }, { memberId: 'b' }, { memberId: 'a' }];
+    expect(shares(members, log)).toEqual([
+      { memberId: 'b', name: 'Bia', seconds: 3 * HOUR, fraction: 0.75, activities: 2 },
+      { memberId: 'a', name: 'Ana', seconds: HOUR, fraction: 0.25, activities: 1 },
+    ]);
+    expect(shares([], [])).toEqual([]);
+  });
+
+  it('counts the whole days left when the goal came early', () => {
+    expect(daysEarly('2026-10-27T10:00:00.000Z', period.endsAt)).toBe(4);
+    expect(daysEarly('2026-10-31T23:00:00.000Z', period.endsAt)).toBe(0);
+    expect(daysEarly('2026-11-01T10:00:00.000Z', period.endsAt)).toBe(0);
   });
 });

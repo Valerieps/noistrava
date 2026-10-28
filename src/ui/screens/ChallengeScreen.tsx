@@ -9,16 +9,17 @@ import { daysLeft, formatDuration, formatGoal, pace, secondsToKm, type Pace } fr
 import { isAdmin } from '../../domain/group/roles';
 import { strings } from '../../domain/strings';
 import { useServices } from '../backend-context';
-import { formatDate, formatDateTime, formatDayMonth, formatKm, formatPeriod } from '../format';
+import { formatDate, formatDayMonth, formatKm } from '../format';
 import { MoreIcon, PlusIcon } from '../icons';
 import { Link, navigate } from '../router';
 import { useQuery } from '../use-query';
 import { ActivityLog } from './challenge/ActivityLog';
-import { ChainMessage, ChainPanel } from './challenge/ChainPanel';
+import { ChainHero, ChainPanel } from './challenge/ChainPanel';
 import { Highlights } from './challenge/Highlights';
 import { JourneyMap } from './challenge/JourneyMap';
-import { HeroProgress, PaceMessage, PaceNote, ProgressPanel, useProgressView, ViewPicker, type ProgressNumbers } from './challenge/ProgressPanel';
+import { HeroProgress, PaceNote, useProgressView, ViewPicker, type ProgressNumbers } from './challenge/ProgressPanel';
 import { JourneyRanking, Ranking, senhorasOf } from './challenge/Ranking';
+import { HowWeGotThere, ResultHero, ToleranceNote } from './challenge/Result';
 
 const MINUTE = 60_000;
 
@@ -109,7 +110,6 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
   const p = pace(period, challenge.goalMinutes, challenge.totalSeconds, now);
 
   const left = !open ? strings.challenge.ended : !started ? strings.challenge.notStarted : strings.challenge.daysLeft(Math.max(1, daysLeft(period, now)));
-  const periodText = formatPeriod(challenge.startDate, challenge.endDate);
   const dateRange = [formatDayMonth(challenge.startDate), formatDayMonth(challenge.endDate)] as const;
 
   async function run(action: () => Promise<{ ok: boolean; error?: ApiError }>, after?: () => void) {
@@ -141,64 +141,56 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
     ? journeyNumbers(challenge, p, journey.progressMeters)
     : {
         headline: formatDuration(challenge.totalSeconds),
-        subline: strings.challenge.ofGoal(formatGoal(challenge.goalMinutes), challenge.percent),
         effective: challenge.totalSeconds / goalSeconds,
         programmed: open ? p.programmedSeconds / goalSeconds : 0,
-        effectiveLabel: `${strings.challenge.effective} ${formatDuration(challenge.totalSeconds)}`,
-        programmedLabel: `${strings.challenge.programmed} ${formatDuration(p.programmedSeconds)}`,
         ofLabel: strings.challenge.ofTheGoal,
         ringLabel: strings.challenge.ringLabel(formatDuration(challenge.totalSeconds), formatDuration(p.programmedSeconds)),
         goalCaption: strings.challenge.curveGoal(formatGoal(challenge.goalMinutes)),
-        milestones: PERCENT_MILESTONES.map((m) => m / 100),
-        barFooter: (
-          <>
-            <div className="legend">
-              <div>
-                <span className="swatch brand" />
-                <span>
-                  <b>{strings.challenge.effective}</b> {formatDuration(challenge.totalSeconds)}
-                </span>
-              </div>
-              {open && (
-                <div>
-                  <span className="swatch ghost" />
-                  <span>
-                    <b>{strings.challenge.programmedToday}</b> {formatDuration(p.programmedSeconds)}
-                  </span>
-                </div>
-              )}
-            </div>
-            <div className="small muted">
-              {open && strings.challenge.barNote}{' '}
-              {challenge.milestones.some((m) => m.milestone.endsWith('%')) &&
-                strings.challenge.milestonesReached(
-                  challenge.milestones
-                    .filter((m) => m.milestone.endsWith('%'))
-                    .map((m) => m.milestone)
-                    .join(', '),
-                )}
-            </div>
-          </>
-        ),
       };
 
   const [view, pickView] = useProgressView();
   const registerable = challenge.myResponse === 'accepted' && !challenge.closed;
+  const inviting = open && challenge.myResponse === 'pending';
 
-  if (!journey && !chain) {
-    const programmedText = open ? formatDuration(p.programmedSeconds) : undefined;
-    return (
-      <>
-        <header className={`hero-c hero-c-${challenge.banner}`}>
-          <div className="hero-c-label">
-            <span>{strings.challenge.heroLabel(left)}</span>
-            <div className="hero-c-tools">
-              <ViewPicker view={view} onPick={pickView} />
-              <Options me={me} challenge={challenge} busy={busy} onLeave={leave} onCancel={cancel} onDelete={remove} />
-            </div>
+  const programmedText = open ? formatDuration(p.programmedSeconds) : undefined;
+  const programmedKm = journey && open ? Math.round(Math.min(journey.distanceMeters / 1000, secondsToKm(p.programmedSeconds))) : undefined;
+  const label = chain ? strings.chain.heroLabel(left) : journey ? strings.journey.heroLabel(left) : strings.challenge.heroLabel(left);
+  const band = <div className="sheet-band" />;
+
+  return (
+    <>
+      <header className={`hero-c hero-c-${challenge.banner}`}>
+        <div className="hero-c-label">
+          <span>{label}</span>
+          <div className="hero-c-tools">
+            {open && !chain && <ViewPicker view={view} onPick={pickView} />}
+            <Options me={me} challenge={challenge} busy={busy} onLeave={leave} onCancel={cancel} onDelete={remove} />
           </div>
-          <h1 className="d hero-c-title">{challenge.name}</h1>
-          <div className="hero-c-by">{strings.challenge.createdBy(challenge.creatorName)}</div>
+        </div>
+        <h1 className="d hero-c-title">{challenge.name}</h1>
+        <div className="hero-c-by">
+          {journey && `${strings.journey.route(journey.start.name, journey.end.name)} · `}
+          {strings.challenge.createdBy(challenge.creatorName)}
+        </div>
+        {!open ? (
+          <ResultHero challenge={challenge} log={entries} />
+        ) : chain ? (
+          <ChainHero chain={chain} />
+        ) : journey ? (
+          <HeroProgress
+            view={view}
+            numbers={numbers}
+            of={strings.journey.heroOf(formatKm(journey.distanceMeters / 1000))}
+            barNote={strings.journey.heroBarNote(formatDuration(challenge.totalSeconds), formatGoal(challenge.goalMinutes), challenge.percent)}
+            programmedNote={programmedKm !== undefined ? strings.journey.heroProgrammed(programmedKm) : undefined}
+            unit
+            period={period}
+            goalSeconds={goalSeconds}
+            log={entries}
+            now={now}
+            dateRange={dateRange}
+          />
+        ) : (
           <HeroProgress
             view={view}
             numbers={numbers}
@@ -210,125 +202,70 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
             now={now}
             dateRange={dateRange}
           />
-        </header>
-
-        <div className="sheet">
-          {error && (
-            <div className="sheet-section">
-              <p className="notice" role="alert">
-                {error}
-              </p>
-            </div>
-          )}
-          <Response sheet challenge={challenge} busy={busy} onRespond={(accept) => void respond(accept)} />
-          {!open && (
-            <div className="sheet-section">
-              <Result challenge={challenge} />
-            </div>
-          )}
-          {open && started && (
-            <div className="sheet-section">
-              <PaceNote {...paceText(p, challenge, senhoras.length, false)} tone={p.tone} />
-              <PaceTiles p={p} goalMinutes={challenge.goalMinutes} />
-            </div>
-          )}
-          <div className="sheet-band" />
-          <Ranking members={challenge.members} log={entries} period={period} now={now} />
-          <div className="sheet-band" />
-          <ActivityLog challengeId={challenge.id} entries={entries} journey={false} sheet now={now} onChanged={log.reload} />
-          <div className="sheet-band" />
-          <Highlights log={entries} />
-          <div className="sheet-band" />
-          <div className="sheet-section">
-            <DraftsLink next />
-          </div>
-          {registerable && <div className="spacer-fab" />}
-        </div>
-
-        {registerable && (
-          <Link to="/atividade/nova" className="fab fab-round" aria-label={strings.challenge.register}>
-            <PlusIcon />
-          </Link>
         )}
-      </>
-    );
-  }
+      </header>
 
-  return (
-    <>
-      {journey ? (
-        <header className="journey-header">
-          <div className={`journey-badge banner-${challenge.banner}`} aria-hidden="true" />
-          <div className="stack" style={{ gap: 2, minWidth: 0 }}>
-            <h1 className="d hero-title" style={{ margin: 0, color: 'var(--color-text)' }}>
-              {challenge.name}
-            </h1>
-            <div className="small muted">
-              {periodText} · {left}
-            </div>
-          </div>
-          <Options me={me} challenge={challenge} busy={busy} onLeave={leave} onCancel={cancel} onDelete={remove} />
-        </header>
-      ) : (
-        <header className={`hero banner-${challenge.banner}`}>
-          <div className="hero-card">
-            <h1 className="d hero-title" style={{ margin: 0, color: 'var(--color-text)' }}>
-              {challenge.name}
-            </h1>
-            <div className="small muted">
-              {periodText} · {left} · {strings.challenge.createdBy(challenge.creatorName)}
-            </div>
-          </div>
-          <Options me={me} challenge={challenge} busy={busy} onLeave={leave} onCancel={cancel} onDelete={remove} />
-        </header>
-      )}
-
-      <div className="screen">
+      <div className="sheet">
+        {journey && <JourneyMap challenge={challenge} programmedMeters={open ? secondsToKm(p.programmedSeconds) * 1000 : 0} />}
         {error && (
-          <p className="notice" role="alert">
-            {error}
-          </p>
+          <div className="sheet-section">
+            <p className="notice" role="alert">
+              {error}
+            </p>
+          </div>
         )}
-
-        <Response challenge={challenge} busy={busy} onRespond={(accept) => void respond(accept)} />
-        {!open && <Result challenge={challenge} />}
-
+        <Torcida challenge={challenge} busy={busy} onRespond={(accept) => void respond(accept)} />
+        {!open && (
+          <>
+            <ToleranceNote challenge={challenge} />
+            <HowWeGotThere challenge={challenge} log={entries} />
+          </>
+        )}
         {chain ? (
-          <>
-            {open && started && <ChainMessage chain={chain} />}
-            <ChainPanel chain={chain} />
-          </>
+          <ChainPanel chain={chain} open={open} message={open && started} />
         ) : (
+          open &&
+          started && (
+            <div className="sheet-section">
+              <PaceNote {...paceText(p, challenge, senhoras.length, !!journey)} tone={p.tone} />
+              {!journey && <PaceTiles p={p} goalMinutes={challenge.goalMinutes} />}
+            </div>
+          )
+        )}
+        {journey && (
           <>
-            {journey && <JourneyMap challenge={challenge} programmedMeters={open ? secondsToKm(p.programmedSeconds) * 1000 : 0} />}
-
-            <ProgressPanel
-              numbers={numbers}
-              period={period}
-              goalSeconds={goalSeconds}
-              log={entries}
-              now={now}
-              dateRange={dateRange}
-              message={open && started ? <PaceMessage {...paceText(p, challenge, senhoras.length, !!journey)} tone={p.tone} /> : null}
-            />
-
+            {band}
+            <Timeline challenge={challenge} />
+            {band}
+            <JourneyRanking members={challenge.members} log={entries} now={now} />
           </>
         )}
-
-        {journey && <Timeline challenge={challenge} />}
-
-        {journey && <JourneyRanking members={challenge.members} log={entries} now={now} />}
-
-        <ActivityLog challengeId={challenge.id} entries={entries} journey={!!journey} now={now} onChanged={log.reload} />
-
-        <DraftsLink next />
+        {!journey && (
+          <>
+            {band}
+            <Ranking members={challenge.members} log={entries} period={period} now={now} />
+          </>
+        )}
+        {band}
+        <ActivityLog challengeId={challenge.id} entries={entries} journey={!!journey} sheet now={now} onChanged={log.reload} />
+        {!journey && !chain && (
+          <>
+            {band}
+            <Highlights log={entries} />
+          </>
+        )}
+        {band}
+        <div className="sheet-section">
+          <DraftsLink next />
+        </div>
         {registerable && <div className="spacer-fab" />}
+        {inviting && <div className="spacer-invite" />}
       </div>
 
+      {inviting && <InviteBar busy={busy} onRespond={(accept) => void respond(accept)} />}
       {registerable && (
-        <Link to="/atividade/nova" className="fab">
+        <Link to="/atividade/nova" className="fab fab-round" aria-label={strings.challenge.register}>
           <PlusIcon />
-          {strings.challenge.register}
         </Link>
       )}
     </>
@@ -341,25 +278,13 @@ function journeyNumbers(challenge: ChallengeView, p: Pace, progressMeters: numbe
   const doneKm = progressMeters / 1000;
   const programmedKm = Math.min(totalKm, secondsToKm(p.programmedSeconds));
   const open = challenge.state === 'open';
-  const places = [{ name: journey.start.name, distanceMeters: 0 }, ...journey.stops, { name: journey.end.name, distanceMeters: journey.distanceMeters }];
   return {
     headline: formatKm(doneKm),
-    subline: strings.journey.of(formatKm(doneKm), formatKm(totalKm),formatDuration(challenge.totalSeconds), formatGoal(challenge.goalMinutes), challenge.percent),
     effective: doneKm / totalKm,
     programmed: open ? programmedKm / totalKm : 0,
-    effectiveLabel: strings.journey.walked(formatKm(doneKm)),
-    programmedLabel: strings.journey.programmedKm(formatKm(programmedKm)),
     ofLabel: strings.challenge.ofTheRoute,
     ringLabel: strings.journey.ringLabel(formatKm(doneKm), formatKm(programmedKm)),
     goalCaption: strings.journey.curveGoal(journey.end.name, formatKm(totalKm)),
-    milestones: [],
-    barFooter: (
-      <div className="axis">
-        {places.map((s) => (
-          <span key={`${s.name}-${s.distanceMeters}`}>{s.name}</span>
-        ))}
-      </div>
-    ),
   };
 }
 
@@ -403,72 +328,36 @@ function PaceTiles({ p, goalMinutes }: { p: Pace; goalMinutes: number }) {
   );
 }
 
-/** The invite: a box on the old layout, plain on the sheet. */
-function Response({ challenge, busy, onRespond, sheet = false }: { challenge: ChallengeView; busy: boolean; onRespond: (accept: boolean) => void; sheet?: boolean }) {
-  if (challenge.state !== 'open') return null;
+/** Being in the torcida, on the sheet, with the way back to being a Senhora. */
+function Torcida({ challenge, busy, onRespond }: { challenge: ChallengeView; busy: boolean; onRespond: (accept: boolean) => void }) {
+  if (challenge.state !== 'open' || challenge.myResponse !== 'declined') return null;
   const t = strings.challenge.invite;
-  if (challenge.myResponse === 'pending') {
-    return (
-      <section className={sheet ? 'sheet-section sheet-invite' : 'panel'} style={sheet ? undefined : { background: 'var(--color-brand-soft)' }}>
-        <h2 className="d">{t.title}</h2>
-        <p className="small" style={{ margin: 0 }}>
-          {t.body}
-        </p>
-        <div className="actions">
-          <button type="button" disabled={busy} onClick={() => onRespond(true)}>
-            {t.accept}
-          </button>
-          <button type="button" className="secondary" disabled={busy} onClick={() => onRespond(false)}>
-            {t.decline}
-          </button>
-        </div>
-      </section>
-    );
-  }
-  if (challenge.myResponse === 'declined') {
-    return (
-      <div className={sheet ? 'sheet-section' : undefined}>
-        <div className="notice row" style={{ margin: 0, justifyContent: 'space-between' }}>
-          <span>{t.torcida}</span>
-          <button type="button" disabled={busy} onClick={() => onRespond(true)}>
-            {t.join}
-          </button>
-        </div>
-      </div>
-    );
-  }
-  return null;
-}
-
-function Result({ challenge }: { challenge: ChallengeView }) {
-  if (challenge.chain && challenge.state !== 'cancelled') return <ChainResult challenge={challenge} />;
-  const r = strings.challenge.result;
-  const days = challenge.endedAt ? Math.max(1, Math.ceil((Date.parse(challenge.endedAt) - Date.parse(challenge.startsAt)) / 86_400_000)) : 0;
-  const [title, body, tone] =
-    challenge.state === 'succeeded'
-      ? [r.succeeded, r.succeededBody(days), 'tone-ahead']
-      : challenge.state === 'failed'
-        ? [r.failed(challenge.percent), r.failedBody, 'tone-behind']
-        : [r.cancelled, r.cancelledBody, 'tone-onPace'];
   return (
-    <div className={`message ${tone}`} role="status">
-      <strong>{title}</strong>
-      <span>{body}</span>
-      {challenge.closesAt && !challenge.closed && challenge.state !== 'cancelled' && <span>{r.tolerance(formatDateTime(challenge.closesAt))}</span>}
+    <div className="sheet-section sheet-torcida">
+      <span>{t.torcida}</span>
+      <button type="button" className="secondary" disabled={busy} onClick={() => onRespond(true)}>
+        {t.join}
+      </button>
     </div>
   );
 }
 
-function ChainResult({ challenge }: { challenge: ChallengeView }) {
-  const chain = challenge.chain!;
-  const r = strings.chain.result;
-  const succeeded = challenge.state === 'succeeded';
+/** The pending invite, in a bar fixed above the navigation. */
+function InviteBar({ busy, onRespond }: { busy: boolean; onRespond: (accept: boolean) => void }) {
+  const t = strings.challenge.invite;
   return (
-    <div className={`message ${succeeded ? 'tone-ahead' : 'tone-behind'}`} role="status">
-      <strong>{succeeded ? r.succeeded : r.failed}</strong>
-      <span>{succeeded ? r.succeededBody(chain.saved) : r.failedBody(chain.lost, chain.allowedBreaks)}</span>
-      {challenge.closesAt && !challenge.closed && <span>{r.tolerance(formatDateTime(challenge.closesAt))}</span>}
-    </div>
+    <section className="invite-bar" aria-label={t.title}>
+      <h2 className="d">{t.title}</h2>
+      <p>{t.body}</p>
+      <div className="invite-bar-actions">
+        <button type="button" className="secondary" disabled={busy} onClick={() => onRespond(false)}>
+          {t.decline}
+        </button>
+        <button type="button" disabled={busy} onClick={() => onRespond(true)}>
+          {t.accept}
+        </button>
+      </div>
+    </section>
   );
 }
 
@@ -491,27 +380,25 @@ function Timeline({ challenge }: { challenge: ChallengeView }) {
     ...journey.stops.map((s) => ({ km: Math.round(s.distanceMeters / 1000), kind: 'mark' as const, tag: strings.journey.stop, name: s.name, reachedAt: reached.get(`parada:${s.name}`) })),
     { km: Math.round(totalKm), kind: 'mark', tag: strings.journey.finish, name: journey.end.name },
   ];
-  if (doneKm > 0 && doneKm < Math.round(totalKm)) items.push({ km: doneKm, kind: 'here', tag: strings.journey.now, name: strings.journey.now });
+  if (doneKm > 0 && doneKm < Math.round(totalKm)) items.push({ km: doneKm, kind: 'here', tag: strings.journey.now, name: strings.journey.groupHere });
   items.sort((a, b) => a.km - b.km || (a.kind === 'here' ? 1 : -1));
 
   return (
-    <section className="panel panel-flush" aria-label={strings.journey.along}>
-      <ol className="timeline list">
+    <section className="sheet-section">
+      <h2 className="d">{strings.journey.along}</h2>
+      <ol className="rail-list">
         {items.map((t, i) => {
           const done = t.km <= doneKm;
           const here = t.kind === 'here';
-          const at = here ? strings.journey.hereNow(t.km) : done ? (t.reachedAt ? strings.journey.atKmOn(t.km, formatDate(t.reachedAt)) : strings.journey.atKm(t.km)) : strings.journey.inKm(t.km - doneKm);
+          const at = here || done ? (t.reachedAt ? strings.journey.atKmOn(t.km, formatDate(t.reachedAt)) : strings.journey.atKm(t.km)) : strings.journey.inKm(t.km - doneKm);
           return (
-            <li key={i} className="timeline-item">
-              <div className="timeline-rail" aria-hidden="true">
-                <div className={`line${done ? ' done' : ''}`} />
-                <div className={`dot${here ? ' here' : t.kind === 'mark' ? ' mark' : ''}${done && !here ? ' done' : ''}`} />
+            <li key={i} className={`rail-item${done ? ' done' : ''}${here ? ' here' : ''}`}>
+              <div className="rail-dot" aria-hidden="true" />
+              <div style={{ minWidth: 0 }}>
+                <div className="rail-tag">{t.tag}</div>
+                <div className="rail-name ellipsis">{t.name}</div>
               </div>
-              <div className={`timeline-card${here ? ' plain' : ''}${done ? ' done' : ' ahead'}`}>
-                <div className="timeline-tag">{t.tag}</div>
-                {!here && <div className="small" style={{ fontWeight: 700, lineHeight: 1.2 }}>{t.name}</div>}
-                <div className="tiny muted">{at}</div>
-              </div>
+              <div className="rail-km">{at}</div>
             </li>
           );
         })}
