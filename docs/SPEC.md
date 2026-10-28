@@ -21,7 +21,7 @@ Cada fase precisa ser usável sozinha. Cada regra em `spec/` diz de que fase val
 | Fase | O que entra |
 | --- | --- |
 | 1 | Acesso, desafio de horas colaborativas (com ou sem jornada), atividades manuais e do Strava, log com corações, histórico |
-| 2 | Notificações; outros tipos de desafio (o primeiro é a corrente) |
+| 2 | Notificações; outros tipos de desafio (o primeiro é a corrente); acompanhamento individual no perfil |
 
 ## Arquivos
 
@@ -32,6 +32,7 @@ Cada fase precisa ser usável sozinha. Cada regra em `spec/` diz de que fase val
 | [spec/desafio-corrente.md](spec/desafio-corrente.md) | Desafio da corrente: elo do dia, quebras salvas e perdidas, término e o calendário |
 | [spec/atividades.md](spec/atividades.md) | Atividades: registro manual, editar e excluir |
 | [spec/strava.md](spec/strava.md) | Conexão com o Strava e o aceite de compartilhar |
+| [spec/acompanhamento.md](spec/acompanhamento.md) | Acompanhamento individual no perfil: o meu ritmo, a minha contribuição e os selos |
 | [spec/_modelo.md](spec/_modelo.md) | Modelo para um arquivo de feature novo |
 
 Os termos estão definidos em [GLOSSARIO.md](GLOSSARIO.md).
