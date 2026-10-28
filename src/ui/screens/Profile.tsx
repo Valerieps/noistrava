@@ -1,10 +1,10 @@
 // "Perfil": my name, my zone, the Strava connection, my numbers across challenges, my activities
-// (to edit or delete) and the way to the members, invites and signing out.
+// (to edit or delete) and signing out.
 import { useState, type FormEvent } from 'react';
 import type { MeView } from '../../application/api-contract';
 import { formatDuration, formatOffset, highlights, utcOffsetMinutes } from '../../domain/challenge/progress';
 import { NAME_MAX_LENGTH } from '../../domain/group/profile';
-import { canManageGroup, isAdmin } from '../../domain/group/roles';
+import { isAdmin } from '../../domain/group/roles';
 import { strings } from '../../domain/strings';
 import { useServices } from '../backend-context';
 import { formatDateTime, initial, sportName } from '../format';
@@ -153,11 +153,7 @@ export function Profile({ me, onSignOut }: { me: MeView; onSignOut: () => void }
           </ul>
         </section>
 
-        <nav className="menu-list" aria-label={p.membersAndInvites}>
-          <Link to="/integrantes">
-            {canManageGroup(me) ? p.membersAndInvites : strings.nav.members}
-            <ChevronIcon />
-          </Link>
+        <nav className="menu-list" aria-label={p.title}>
           <button type="button" className="danger-text" onClick={onSignOut}>
             {strings.nav.signOut}
           </button>

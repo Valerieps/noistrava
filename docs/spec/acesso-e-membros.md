@@ -25,15 +25,18 @@ desafio.
 
 | Papel | O que pode |
 | --- | --- |
-| Integrante | Usar o app, criar desafios e ver a lista de integrantes |
-| Admin | Tudo da integrante; convidar e remover integrantes; dar e tirar o papel de admin; apagar desafios |
+| Integrante | Usar o app e criar desafios |
+| Admin | Tudo da integrante; ver a lista de integrantes; convidar e remover integrantes; dar e tirar o papel de admin; apagar desafios |
 
 - Pode haver mais de um admin. O app não deixa tirar o papel do último. *(1)*
 
 ## Integrantes
 
-- Todas as integrantes veem a lista do grupo, com nome, foto e papéis. O e-mail de cada uma só o
-  admin vê. *(1)*
+- No topo das telas principais fica a barra com o nome do app. Para o admin, ela tem uma engrenagem
+  que abre as configurações, com a lista de integrantes e os convites. Para as outras integrantes,
+  a barra não tem ícone. *(1)*
+  Por quê: por enquanto as configurações só têm o que é do admin.
+- O admin vê a lista do grupo, com nome, foto, e-mail e papéis. *(1)*
 - O admin remove uma integrante depois de confirmar. Ele não remove a si mesmo: outro admin faz
   isso. Assim sempre sobra um admin. *(1)*
 - Quem é removida perde o acesso na hora, inclusive no app aberto. Um convite novo traz a pessoa de

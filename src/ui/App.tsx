@@ -4,7 +4,7 @@ import { canManageGroup } from '../domain/group/roles';
 import { strings } from '../domain/strings';
 import { useLiveStatus, useServices } from './backend-context';
 import { deviceTimezone } from './format';
-import { BackIcon, ClockIcon, FlagIcon, PersonIcon } from './icons';
+import { BackIcon, ClockIcon, FlagIcon, GearIcon, PersonIcon } from './icons';
 import { Link, navigate, usePath } from './router';
 import { ActivityForm } from './screens/ActivityForm';
 import { ChallengeForm } from './screens/ChallengeForm';
@@ -14,10 +14,11 @@ import { History } from './screens/History';
 import { Invites } from './screens/Invites';
 import { Members } from './screens/Members';
 import { Profile } from './screens/Profile';
+import { Settings } from './screens/Settings';
 import { SignIn } from './screens/SignIn';
 import { useQuery } from './use-query';
 
-/** The app's screens: the challenge, the history and the profile, with a bottom navigation. */
+/** The app's screens: the challenge, the history and the profile, with a top bar and a bottom navigation. */
 export function App() {
   const { backend, live } = useServices();
   const me = useQuery('me', {}, ['me']);
@@ -61,6 +62,7 @@ export function App() {
   return (
     <div className="shell">
       <OfflineNotice />
+      <TopBar me={me.data} />
       <Screen me={me.data} onSignOut={() => void signOut()} />
       <Navigation />
     </div>
@@ -69,7 +71,7 @@ export function App() {
 
 function Navigation() {
   const path = usePath();
-  const section = path.startsWith('/historico') ? '/historico' : ['/perfil', '/integrantes', '/convites'].includes(path) ? '/perfil' : '/';
+  const section = path.startsWith('/historico') ? '/historico' : path === '/perfil' ? '/perfil' : SETTINGS_PATHS.includes(path) ? null : '/';
   const tabs = [
     { path: '/', label: strings.nav.challenge, icon: <FlagIcon /> },
     { path: '/historico', label: strings.nav.history, icon: <ClockIcon /> },
@@ -84,6 +86,25 @@ function Navigation() {
         </Link>
       ))}
     </nav>
+  );
+}
+
+const TAB_PATHS = ['/', '/historico', '/perfil'];
+const SETTINGS_PATHS = ['/configuracoes', '/integrantes', '/convites'];
+
+/** The app's name and, for the admin, the way to the settings. Only on the tab screens. */
+function TopBar({ me }: { me: MeView }) {
+  const path = usePath();
+  if (!TAB_PATHS.includes(path)) return null;
+  return (
+    <header className="top-bar">
+      <span className="d top-bar-name">{strings.appName}</span>
+      {canManageGroup(me) && (
+        <Link to="/configuracoes" className="icon-button" aria-label={strings.nav.settings}>
+          <GearIcon />
+        </Link>
+      )}
+    </header>
   );
 }
 
@@ -122,15 +143,21 @@ function Screen({ me, onSignOut }: { me: MeView; onSignOut: () => void }) {
   const path = usePath();
   if (path === '/historico') return <History />;
   if (path === '/perfil') return <Profile me={me} onSignOut={onSignOut} />;
-  if (path === '/integrantes')
+  if (path === '/configuracoes' && canManageGroup(me))
     return (
-      <Sub title={strings.nav.members} back="/perfil">
+      <Sub title={strings.nav.settings} back="/">
+        <Settings />
+      </Sub>
+    );
+  if (path === '/integrantes' && canManageGroup(me))
+    return (
+      <Sub title={strings.nav.members} back="/configuracoes">
         <Members me={me} />
       </Sub>
     );
   if (path === '/convites' && canManageGroup(me))
     return (
-      <Sub title={strings.nav.invites} back="/perfil">
+      <Sub title={strings.nav.invites} back="/configuracoes">
         <Invites />
       </Sub>
     );
