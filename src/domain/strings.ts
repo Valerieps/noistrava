@@ -316,6 +316,9 @@ export const strings = {
     connect: 'Conectar com Strava',
     connected: 'Strava conectado. As suas atividades vão chegar sozinhas.',
     connectedPrivate: 'As atividades privadas também entram.',
+    disconnect: 'Desconectar o Strava',
+    disconnectConfirm: 'Desconectar o Strava? As atividades que já vieram continuam aqui; as novas não chegam mais.',
+    disconnected: 'O Strava foi desconectado. As atividades que já vieram continuam aqui.',
     unavailable: 'A conexão com o Strava ainda não está configurada aqui.',
     results: {
       conectado: 'Pronto, o Strava está conectado!',

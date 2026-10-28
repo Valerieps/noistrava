@@ -115,6 +115,8 @@ export const MIGRATIONS: readonly (readonly string[])[] = [
   ],
   // 4: drafts keep the creator's answer until she activates them.
   [`ALTER TABLE challenges ADD COLUMN creator_is_senhora INTEGER`],
+  // 5: from which date a Strava connection already has its activities (ADR-008).
+  [`ALTER TABLE strava_connections ADD COLUMN backfilled_since TEXT`],
 ];
 
 export function migrate(sql: Sql): void {
