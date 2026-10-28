@@ -9,7 +9,7 @@ import { daysLeft, formatDuration, formatGoal, pace, secondsToKm, type Pace } fr
 import { isAdmin } from '../../domain/group/roles';
 import { strings } from '../../domain/strings';
 import { useServices } from '../backend-context';
-import { formatDate, formatDateTime, formatDayMonth, formatKm } from '../format';
+import { formatDate, formatDayMonth, formatKm } from '../format';
 import { MoreIcon, PlusIcon } from '../icons';
 import { Link, navigate } from '../router';
 import { useQuery } from '../use-query';
@@ -19,6 +19,7 @@ import { Highlights } from './challenge/Highlights';
 import { JourneyMap } from './challenge/JourneyMap';
 import { HeroProgress, PaceNote, useProgressView, ViewPicker, type ProgressNumbers } from './challenge/ProgressPanel';
 import { JourneyRanking, Ranking, senhorasOf } from './challenge/Ranking';
+import { HowWeGotThere, ResultHero, ToleranceNote } from './challenge/Result';
 
 const MINUTE = 60_000;
 
@@ -162,7 +163,7 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
         <div className="hero-c-label">
           <span>{label}</span>
           <div className="hero-c-tools">
-            {!chain && <ViewPicker view={view} onPick={pickView} />}
+            {open && !chain && <ViewPicker view={view} onPick={pickView} />}
             <Options me={me} challenge={challenge} busy={busy} onLeave={leave} onCancel={cancel} onDelete={remove} />
           </div>
         </div>
@@ -171,7 +172,9 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
           {journey && `${strings.journey.route(journey.start.name, journey.end.name)} · `}
           {strings.challenge.createdBy(challenge.creatorName)}
         </div>
-        {chain ? (
+        {!open ? (
+          <ResultHero challenge={challenge} log={entries} />
+        ) : chain ? (
           <ChainHero chain={chain} />
         ) : journey ? (
           <HeroProgress
@@ -213,12 +216,13 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
         )}
         <Torcida challenge={challenge} busy={busy} onRespond={(accept) => void respond(accept)} />
         {!open && (
-          <div className="sheet-section">
-            <Result challenge={challenge} />
-          </div>
+          <>
+            <ToleranceNote challenge={challenge} />
+            <HowWeGotThere challenge={challenge} log={entries} />
+          </>
         )}
         {chain ? (
-          <ChainPanel chain={chain} message={open && started} />
+          <ChainPanel chain={chain} open={open} message={open && started} />
         ) : (
           open &&
           started && (
@@ -354,38 +358,6 @@ function InviteBar({ busy, onRespond }: { busy: boolean; onRespond: (accept: boo
         </button>
       </div>
     </section>
-  );
-}
-
-function Result({ challenge }: { challenge: ChallengeView }) {
-  if (challenge.chain && challenge.state !== 'cancelled') return <ChainResult challenge={challenge} />;
-  const r = strings.challenge.result;
-  const days = challenge.endedAt ? Math.max(1, Math.ceil((Date.parse(challenge.endedAt) - Date.parse(challenge.startsAt)) / 86_400_000)) : 0;
-  const [title, body, tone] =
-    challenge.state === 'succeeded'
-      ? [r.succeeded, r.succeededBody(days), 'tone-ahead']
-      : challenge.state === 'failed'
-        ? [r.failed(challenge.percent), r.failedBody, 'tone-behind']
-        : [r.cancelled, r.cancelledBody, 'tone-onPace'];
-  return (
-    <div className={`message ${tone}`} role="status">
-      <strong>{title}</strong>
-      <span>{body}</span>
-      {challenge.closesAt && !challenge.closed && challenge.state !== 'cancelled' && <span>{r.tolerance(formatDateTime(challenge.closesAt))}</span>}
-    </div>
-  );
-}
-
-function ChainResult({ challenge }: { challenge: ChallengeView }) {
-  const chain = challenge.chain!;
-  const r = strings.chain.result;
-  const succeeded = challenge.state === 'succeeded';
-  return (
-    <div className={`message ${succeeded ? 'tone-ahead' : 'tone-behind'}`} role="status">
-      <strong>{succeeded ? r.succeeded : r.failed}</strong>
-      <span>{succeeded ? r.succeededBody(chain.saved) : r.failedBody(chain.lost, chain.allowedBreaks)}</span>
-      {challenge.closesAt && !challenge.closed && <span>{r.tolerance(formatDateTime(challenge.closesAt))}</span>}
-    </div>
   );
 }
 

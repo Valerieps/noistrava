@@ -101,6 +101,17 @@ export const strings = {
       cancelled: 'Desafio cancelado',
       cancelledBody: 'O resultado ficou fechado com os totais de cada Senhora até o cancelamento.',
       tolerance: (until: string) => `Atividades atrasadas que começaram dentro do período ainda contam até ${until}.`,
+      numbers: {
+        of: (goal: string) => `de ${goal}`,
+        activities: (n: number) => (n === 1 ? 'atividade' : 'atividades'),
+        days: (n: number) => (n === 1 ? '1 dia' : `${n} dias`),
+        early: 'antes do prazo',
+      },
+      how: {
+        title: 'Como a gente chegou lá',
+        body: (total: string) => `As ${total} do grupo, com o pedaço de cada Senhora.`,
+        activities: (n: number) => (n === 1 ? '1 atividade' : `${n} atividades`),
+      },
     },
     invite: {
       title: 'Topa ser Senhora neste desafio?',
@@ -228,6 +239,7 @@ export const strings = {
       failed: 'A corrente quebrou',
       failedBody: (lost: number, allowed: number) => `Foram ${lost} quebras perdidas, e o desafio permitia ${allowed}.`,
       tolerance: (until: string) => `Atividades atrasadas e o dia seguinte ao término ainda podem salvar a corrente até ${until}.`,
+      lostNote: 'quebras perdidas',
     },
     history: {
       succeeded: 'Corrente inteira',

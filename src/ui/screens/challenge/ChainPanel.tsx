@@ -95,8 +95,11 @@ function ChainMessage({ chain }: { chain: ChainView }) {
   );
 }
 
-/** The chain on the sheet; `message` says where it stands, once it has started and while it is open. */
-export function ChainPanel({ chain, message }: { chain: ChainView; message: boolean }) {
+/**
+ * The chain on the sheet. `message` says where it stands, once it has started and while it is open;
+ * the numbers show only while it is open, since the result in the top carries them after.
+ */
+export function ChainPanel({ chain, open, message }: { chain: ChainView; open: boolean; message: boolean }) {
   const today = todayDate();
   const blanks = chain.days.length > 0 ? weekday(chain.days[0].date) : 0;
   const saved = chain.days.filter((d) => d.state === 'saved');
@@ -108,17 +111,19 @@ export function ChainPanel({ chain, message }: { chain: ChainView; message: bool
 
   return (
     <>
-      <div className="sheet-section">
-        {message && <ChainMessage chain={chain} />}
-        <div className="sheet-numbers">
-          {numbers.map((n) => (
-            <div key={n.note}>
-              <div className="d sheet-number-value">{n.value}</div>
-              <div className="sheet-number-note">{n.note}</div>
-            </div>
-          ))}
+      {open && (
+        <div className="sheet-section">
+          {message && <ChainMessage chain={chain} />}
+          <div className="sheet-numbers">
+            {numbers.map((n) => (
+              <div key={n.note}>
+                <div className="d sheet-number-value">{n.value}</div>
+                <div className="sheet-number-note">{n.note}</div>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="sheet-band" />
       <section className="sheet-section" aria-label={c.calendar}>

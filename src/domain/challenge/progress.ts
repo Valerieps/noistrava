@@ -231,3 +231,32 @@ export function curvePoints(period: Period, log: readonly LoggedActivity[], scal
   points.push([elapsedFraction(period, now), Math.min(1, total / scaleSeconds)]);
   return points;
 }
+
+export interface Share {
+  readonly memberId: string;
+  readonly name: string;
+  readonly seconds: number;
+  /** The part of the group total, from 0 to 1. */
+  readonly fraction: number;
+  readonly activities: number;
+}
+
+/** How each Senhora's hours made the group total: those with any, most first. */
+export function shares(members: readonly (RankedMember & { readonly totalSeconds: number })[], log: readonly Pick<LoggedActivity, 'memberId'>[]): Share[] {
+  const total = members.reduce((sum, m) => sum + Math.max(0, m.totalSeconds), 0);
+  return members
+    .filter((m) => m.totalSeconds > 0)
+    .sort((a, b) => b.totalSeconds - a.totalSeconds)
+    .map((m) => ({
+      memberId: m.memberId,
+      name: m.name,
+      seconds: m.totalSeconds,
+      fraction: m.totalSeconds / total,
+      activities: log.filter((a) => a.memberId === m.memberId).length,
+    }));
+}
+
+/** Whole days left in the period when the challenge ended; 0 when it ended on the last day or after. */
+export function daysEarly(endedAt: string, endsAt: string): number {
+  return Math.max(0, Math.floor((Date.parse(endsAt) - Date.parse(endedAt)) / DAY_MS));
+}
