@@ -71,7 +71,7 @@ function HistoryCard({ item }: { item: HistoryItemView }) {
   return (
     <article className="history-card">
       <div className="row" style={{ margin: 0, alignItems: 'flex-start' }}>
-        <div className="history-thumb striped" aria-hidden="true" />
+        <div className={`history-thumb banner-${item.banner}`} aria-hidden="true" />
         <div className="grow">
           <h2 className="ellipsis card-title">
             {item.name}

@@ -2,7 +2,7 @@
 // Types only. The server imports it with `import type`, so nothing here runs on either side.
 import type { ActivitySource } from '../domain/activity';
 import type { ChainConfig, ChainDayState } from '../domain/challenge/chain';
-import type { ChallengeResponse, ChallengeState, ChallengeType, Journey, Place } from '../domain/challenge/challenge';
+import type { Banner, ChallengeResponse, ChallengeState, ChallengeType, Journey, Place } from '../domain/challenge/challenge';
 import type { Role } from '../domain/group/roles';
 
 export interface MemberView {
@@ -105,6 +105,7 @@ export interface ChallengeView {
   readonly journeyPending: boolean;
   /** Only in a chain. */
   readonly chain: ChainView | null;
+  readonly banner: Banner;
 }
 
 /** A row of the challenge's activity log. */
@@ -134,6 +135,7 @@ export interface HistoryItemView {
   readonly results: readonly { readonly memberId: string; readonly name: string; readonly totalSeconds: number }[];
   /** Only in a chain: the breaks allowed, lost and saved. */
   readonly chain: { readonly allowedBreaks: number; readonly lost: number; readonly saved: number } | null;
+  readonly banner: Banner;
 }
 
 /** Creating or editing: a goal in whole hours, a journey whose distance is the goal, or a chain. */
@@ -149,6 +151,8 @@ export interface ChallengeSetupInput {
   journeyPending?: boolean;
   /** A chain's settings. */
   chain?: ChainConfig;
+  /** The header's pattern; left out, the default. */
+  banner?: Banner;
 }
 
 /** A place found by the journey's search (ADR-009): a short name, and the full address to tell apart. */

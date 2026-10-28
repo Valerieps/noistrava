@@ -69,6 +69,17 @@ describe('creating a challenge', () => {
     });
   });
 
+  it('wears stripes until the creator picks another banner', () => {
+    const { id, banner } = create();
+    expect(banner).toBe('stripes');
+    expect(ok<ChallengeView>(service.command(ANA, 'challenge.edit', { challengeId: id, name: 'Semana', startDate: '2026-11-02', endDate: '2026-11-08', goalHours: 10, banner: 'zigzag' })).banner).toBe('zigzag');
+    expect(current(BIA)?.banner).toBe('zigzag');
+    expect(service.command(ANA, 'challenge.edit', { challengeId: id, name: 'Semana', startDate: '2026-11-02', endDate: '2026-11-08', goalHours: 10, banner: 'flowers' })).toEqual({
+      ok: false,
+      error: 'invalid',
+    });
+  });
+
   it('lets only the creator edit, before the end', () => {
     const { id } = create();
     expect(service.command(BIA, 'challenge.edit', { challengeId: id, name: 'X', startDate: '2026-11-02', endDate: '2026-11-08', goalHours: 5 })).toEqual({
