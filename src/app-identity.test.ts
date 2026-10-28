@@ -30,6 +30,12 @@ describe('app identity', () => {
     expect(html).toContain(`content="${token(dark, 'color-bg')}" media="(prefers-color-scheme: dark)"`);
   });
 
+  it('forces the same dark theme that the device picks', () => {
+    const [byDevice, picked] = dark.split(":root[data-theme='dark']");
+    const colors = (css: string) => css.match(/--color-[\w-]+: *[^;]+;/g);
+    expect(colors(picked)).toEqual(colors(byDevice));
+  });
+
   it('has an icon for any purpose and a maskable one, both in public/', () => {
     for (const purpose of ['any', 'maskable']) {
       const icon = manifest.icons.find((i) => i.purpose === purpose);

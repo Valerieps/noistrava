@@ -28,6 +28,7 @@ O que ainda não está pronto.
 - [ ] No rascunho, dá para mudar se eu sou Senhora até ativar (`spec/desafio-horas.md`).
 - [ ] O admin não vê nem apaga os rascunhos das outras (`spec/desafio-horas.md`).
 - [ ] Quem entra no grupo durante um desafio pode aceitar (`spec/desafio-horas.md`).
+- [ ] O tema começa no do sistema, e cada aparelho guarda a escolha, não a conta (`spec/acesso-e-membros.md`).
 - [ ] Depois do término, ninguém muda a resposta (`spec/desafio-horas.md`).
 - [ ] Sem fuso de ninguém, o período vale em UTC (`spec/desafio-horas.md`).
 - [ ] Com a meta batida antes do fim do período, contam só as atividades de antes desse momento

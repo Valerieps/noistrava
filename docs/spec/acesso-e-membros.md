@@ -3,7 +3,7 @@
 Quem entra no app, como entra e o que cada papel do grupo pode fazer.
 
 - **Entra aqui:** login, convites, os papéis do grupo (admin e integrante), a lista de integrantes,
-  remover integrante, o perfil e o fuso de cada integrante.
+  remover integrante, o perfil e o fuso de cada integrante, as configurações e o tema.
 - **Não entra aqui:** os papéis dentro de um desafio (criador, Senhora, torcida), que ficam em
   [desafio-horas.md](desafio-horas.md), e a conexão com o Strava ([strava.md](strava.md)).
 
@@ -32,10 +32,9 @@ desafio.
 
 ## Integrantes
 
-- No topo das telas principais fica a barra com o nome do app. Para o admin, ela tem uma engrenagem
-  que abre as configurações, com a lista de integrantes e os convites. Para as outras integrantes,
-  a barra não tem ícone. *(1)*
-  Por quê: por enquanto as configurações só têm o que é do admin.
+- No topo das telas principais fica a barra com o nome do app e uma engrenagem, para todas, que
+  abre as configurações. Nelas eu mudo meu nome, conecto o Strava e escolho o tema. O admin também
+  vê ali a lista de integrantes e os convites. *(1)*
 - O admin vê a lista do grupo, com nome, foto, e-mail e papéis. *(1)*
 - O admin remove uma integrante depois de confirmar. Ele não remove a si mesmo: outro admin faz
   isso. Assim sempre sobra um admin. *(1)*
@@ -47,12 +46,16 @@ desafio.
 
 ## Perfil
 
-- Meu nome começa como o da conta Google, e eu posso mudar. Ele tem de 1 a 40 caracteres. *(1)*
+- Meu nome começa como o da conta Google, e eu posso mudar nas configurações. Ele tem de 1 a 40
+  caracteres. *(1)*
 - A foto é a da conta Google e se atualiza a cada login. *(1)*
 - Meu fuso horário vem do aparelho e se atualiza sozinho quando eu abro o app. Ele não aparece
   na tela. *(1)*
   Por quê: o início e o fim de cada desafio dependem dos fusos das integrantes; ninguém precisa
   ver o fuso para isso.
+- Nas configurações, eu escolho o tema: claro, escuro ou o do sistema. Começa no do sistema, e cada
+  aparelho guarda a sua escolha. *(1)*
+- No perfil ficam as minhas atividades, para editar ou excluir. *(1)*
 
 ## Convites
 

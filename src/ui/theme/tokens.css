@@ -64,7 +64,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     color-scheme: dark;
 
     --color-bg: #16111d;
@@ -92,4 +92,34 @@
     --color-heat-2: #a83f6e;
     --color-heat-3: #ff5c8f;
   }
+}
+
+/* The same dark theme, when the viewer picks it in the settings on a light device. Keep both blocks equal. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-bg: #16111d;
+  --color-surface: #221a2c;
+  --color-text: #f4eef7;
+  --color-text-muted: #b3a9bf;
+  --color-border: #352b41;
+  --color-brand: #ff5c8f;
+  --color-brand-ink: #ff8ab0;
+  --color-brand-soft: #3d1f33;
+  --color-on-brand: #16111d;
+  --color-accent: #ffb23f;
+  --color-accent-soft: #3b2d17;
+  --color-accent-ink: #ffc870;
+  --color-ghost: #4a3e57;
+  --color-ghost-strong: #5e5070;
+  --color-ghost-track: #2c2337;
+  --color-ok-soft: #1f3326;
+  --color-ok-ink: #9be0b0;
+  --color-land: #1d1726;
+  --color-danger: #f2b8b5;
+  --color-scrim: rgba(0, 0, 0, 0.6);
+  --color-heat-0: #2c2337;
+  --color-heat-1: #5a2944;
+  --color-heat-2: #a83f6e;
+  --color-heat-3: #ff5c8f;
 }

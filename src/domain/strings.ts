@@ -340,7 +340,6 @@ export const strings = {
   profile: {
     title: 'Perfil',
     greeting: (name: string) => `Oi, ${name}`,
-    account: 'Conta',
     nameLabel: 'Meu nome no app',
     nameRow: 'Nome',
     save: 'Salvar',
@@ -352,6 +351,13 @@ export const strings = {
     edited: 'editada',
     stravaConnected: 'Conectado',
     stravaDisconnected: 'Conectar',
+  },
+
+  settings: {
+    account: 'Conta',
+    group: 'Grupo',
+    theme: 'Tema',
+    themes: { light: 'Claro', dark: 'Escuro', system: 'Sistema' },
   },
 
   tracking: {
