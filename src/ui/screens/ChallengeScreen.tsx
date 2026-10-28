@@ -9,15 +9,15 @@ import { daysLeft, formatDuration, formatGoal, pace, secondsToKm, type Pace } fr
 import { isAdmin } from '../../domain/group/roles';
 import { strings } from '../../domain/strings';
 import { useServices } from '../backend-context';
-import { formatDate, formatDateTime, formatDayMonth, formatKm, formatPeriod } from '../format';
+import { formatDate, formatDateTime, formatDayMonth, formatKm } from '../format';
 import { MoreIcon, PlusIcon } from '../icons';
 import { Link, navigate } from '../router';
 import { useQuery } from '../use-query';
 import { ActivityLog } from './challenge/ActivityLog';
-import { ChainMessage, ChainPanel } from './challenge/ChainPanel';
+import { ChainHero, ChainPanel } from './challenge/ChainPanel';
 import { Highlights } from './challenge/Highlights';
 import { JourneyMap } from './challenge/JourneyMap';
-import { HeroProgress, PaceMessage, PaceNote, ProgressPanel, useProgressView, ViewPicker, type ProgressNumbers } from './challenge/ProgressPanel';
+import { HeroProgress, PaceNote, useProgressView, ViewPicker, type ProgressNumbers } from './challenge/ProgressPanel';
 import { JourneyRanking, Ranking, senhorasOf } from './challenge/Ranking';
 
 const MINUTE = 60_000;
@@ -109,7 +109,6 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
   const p = pace(period, challenge.goalMinutes, challenge.totalSeconds, now);
 
   const left = !open ? strings.challenge.ended : !started ? strings.challenge.notStarted : strings.challenge.daysLeft(Math.max(1, daysLeft(period, now)));
-  const periodText = formatPeriod(challenge.startDate, challenge.endDate);
   const dateRange = [formatDayMonth(challenge.startDate), formatDayMonth(challenge.endDate)] as const;
 
   async function run(action: () => Promise<{ ok: boolean; error?: ApiError }>, after?: () => void) {
@@ -141,231 +140,125 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
     ? journeyNumbers(challenge, p, journey.progressMeters)
     : {
         headline: formatDuration(challenge.totalSeconds),
-        subline: strings.challenge.ofGoal(formatGoal(challenge.goalMinutes), challenge.percent),
         effective: challenge.totalSeconds / goalSeconds,
         programmed: open ? p.programmedSeconds / goalSeconds : 0,
-        effectiveLabel: `${strings.challenge.effective} ${formatDuration(challenge.totalSeconds)}`,
-        programmedLabel: `${strings.challenge.programmed} ${formatDuration(p.programmedSeconds)}`,
         ofLabel: strings.challenge.ofTheGoal,
         ringLabel: strings.challenge.ringLabel(formatDuration(challenge.totalSeconds), formatDuration(p.programmedSeconds)),
         goalCaption: strings.challenge.curveGoal(formatGoal(challenge.goalMinutes)),
-        milestones: PERCENT_MILESTONES.map((m) => m / 100),
-        barFooter: (
-          <>
-            <div className="legend">
-              <div>
-                <span className="swatch brand" />
-                <span>
-                  <b>{strings.challenge.effective}</b> {formatDuration(challenge.totalSeconds)}
-                </span>
-              </div>
-              {open && (
-                <div>
-                  <span className="swatch ghost" />
-                  <span>
-                    <b>{strings.challenge.programmedToday}</b> {formatDuration(p.programmedSeconds)}
-                  </span>
-                </div>
-              )}
-            </div>
-            <div className="small muted">
-              {open && strings.challenge.barNote}{' '}
-              {challenge.milestones.some((m) => m.milestone.endsWith('%')) &&
-                strings.challenge.milestonesReached(
-                  challenge.milestones
-                    .filter((m) => m.milestone.endsWith('%'))
-                    .map((m) => m.milestone)
-                    .join(', '),
-                )}
-            </div>
-          </>
-        ),
       };
 
   const [view, pickView] = useProgressView();
   const registerable = challenge.myResponse === 'accepted' && !challenge.closed;
 
-  if (!chain) {
-    const programmedText = open ? formatDuration(p.programmedSeconds) : undefined;
-    const programmedKm = journey && open ? Math.round(Math.min(journey.distanceMeters / 1000, secondsToKm(p.programmedSeconds))) : undefined;
-    return (
-      <>
-        <header className={`hero-c hero-c-${challenge.banner}`}>
-          <div className="hero-c-label">
-            <span>{journey ? strings.journey.heroLabel(left) : strings.challenge.heroLabel(left)}</span>
-            <div className="hero-c-tools">
-              <ViewPicker view={view} onPick={pickView} />
-              <Options me={me} challenge={challenge} busy={busy} onLeave={leave} onCancel={cancel} onDelete={remove} />
-            </div>
-          </div>
-          <h1 className="d hero-c-title">{challenge.name}</h1>
-          <div className="hero-c-by">
-            {journey && `${strings.journey.route(journey.start.name, journey.end.name)} · `}
-            {strings.challenge.createdBy(challenge.creatorName)}
-          </div>
-          {journey ? (
-            <HeroProgress
-              view={view}
-              numbers={numbers}
-              of={strings.journey.heroOf(formatKm(journey.distanceMeters / 1000))}
-              barNote={strings.journey.heroBarNote(formatDuration(challenge.totalSeconds), formatGoal(challenge.goalMinutes), challenge.percent)}
-              programmedNote={programmedKm !== undefined ? strings.journey.heroProgrammed(programmedKm) : undefined}
-              unit
-              period={period}
-              goalSeconds={goalSeconds}
-              log={entries}
-              now={now}
-              dateRange={dateRange}
-            />
-          ) : (
-            <HeroProgress
-              view={view}
-              numbers={numbers}
-              of={strings.challenge.heroOf(formatGoal(challenge.goalMinutes), programmedText)}
-              programmedNote={programmedText && strings.challenge.heroProgrammed(programmedText)}
-              period={period}
-              goalSeconds={goalSeconds}
-              log={entries}
-              now={now}
-              dateRange={dateRange}
-            />
-          )}
-        </header>
+  const programmedText = open ? formatDuration(p.programmedSeconds) : undefined;
+  const programmedKm = journey && open ? Math.round(Math.min(journey.distanceMeters / 1000, secondsToKm(p.programmedSeconds))) : undefined;
+  const label = chain ? strings.chain.heroLabel(left) : journey ? strings.journey.heroLabel(left) : strings.challenge.heroLabel(left);
+  const band = <div className="sheet-band" />;
 
-        <div className="sheet">
-          {journey && <JourneyMap challenge={challenge} programmedMeters={open ? secondsToKm(p.programmedSeconds) * 1000 : 0} />}
-          {error && (
-            <div className="sheet-section">
-              <p className="notice" role="alert">
-                {error}
-              </p>
-            </div>
-          )}
-          <Response sheet challenge={challenge} busy={busy} onRespond={(accept) => void respond(accept)} />
-          {!open && (
-            <div className="sheet-section">
-              <Result challenge={challenge} />
-            </div>
-          )}
-          {open && started && (
+  return (
+    <>
+      <header className={`hero-c hero-c-${challenge.banner}`}>
+        <div className="hero-c-label">
+          <span>{label}</span>
+          <div className="hero-c-tools">
+            {!chain && <ViewPicker view={view} onPick={pickView} />}
+            <Options me={me} challenge={challenge} busy={busy} onLeave={leave} onCancel={cancel} onDelete={remove} />
+          </div>
+        </div>
+        <h1 className="d hero-c-title">{challenge.name}</h1>
+        <div className="hero-c-by">
+          {journey && `${strings.journey.route(journey.start.name, journey.end.name)} · `}
+          {strings.challenge.createdBy(challenge.creatorName)}
+        </div>
+        {chain ? (
+          <ChainHero chain={chain} />
+        ) : journey ? (
+          <HeroProgress
+            view={view}
+            numbers={numbers}
+            of={strings.journey.heroOf(formatKm(journey.distanceMeters / 1000))}
+            barNote={strings.journey.heroBarNote(formatDuration(challenge.totalSeconds), formatGoal(challenge.goalMinutes), challenge.percent)}
+            programmedNote={programmedKm !== undefined ? strings.journey.heroProgrammed(programmedKm) : undefined}
+            unit
+            period={period}
+            goalSeconds={goalSeconds}
+            log={entries}
+            now={now}
+            dateRange={dateRange}
+          />
+        ) : (
+          <HeroProgress
+            view={view}
+            numbers={numbers}
+            of={strings.challenge.heroOf(formatGoal(challenge.goalMinutes), programmedText)}
+            programmedNote={programmedText && strings.challenge.heroProgrammed(programmedText)}
+            period={period}
+            goalSeconds={goalSeconds}
+            log={entries}
+            now={now}
+            dateRange={dateRange}
+          />
+        )}
+      </header>
+
+      <div className="sheet">
+        {journey && <JourneyMap challenge={challenge} programmedMeters={open ? secondsToKm(p.programmedSeconds) * 1000 : 0} />}
+        {error && (
+          <div className="sheet-section">
+            <p className="notice" role="alert">
+              {error}
+            </p>
+          </div>
+        )}
+        <Response sheet challenge={challenge} busy={busy} onRespond={(accept) => void respond(accept)} />
+        {!open && (
+          <div className="sheet-section">
+            <Result challenge={challenge} />
+          </div>
+        )}
+        {chain ? (
+          <ChainPanel chain={chain} message={open && started} />
+        ) : (
+          open &&
+          started && (
             <div className="sheet-section">
               <PaceNote {...paceText(p, challenge, senhoras.length, !!journey)} tone={p.tone} />
               {!journey && <PaceTiles p={p} goalMinutes={challenge.goalMinutes} />}
             </div>
-          )}
-          {journey && (
-            <>
-              <div className="sheet-band" />
-              <Timeline challenge={challenge} />
-              <div className="sheet-band" />
-              <JourneyRanking members={challenge.members} log={entries} now={now} />
-            </>
-          )}
-          {!journey && (
-            <>
-              <div className="sheet-band" />
-              <Ranking members={challenge.members} log={entries} period={period} now={now} />
-            </>
-          )}
-          <div className="sheet-band" />
-          <ActivityLog challengeId={challenge.id} entries={entries} journey={!!journey} sheet now={now} onChanged={log.reload} />
-          {!journey && (
-            <>
-              <div className="sheet-band" />
-              <Highlights log={entries} />
-            </>
-          )}
-          <div className="sheet-band" />
-          <div className="sheet-section">
-            <DraftsLink next />
-          </div>
-          {registerable && <div className="spacer-fab" />}
+          )
+        )}
+        {journey && (
+          <>
+            {band}
+            <Timeline challenge={challenge} />
+            {band}
+            <JourneyRanking members={challenge.members} log={entries} now={now} />
+          </>
+        )}
+        {!journey && (
+          <>
+            {band}
+            <Ranking members={challenge.members} log={entries} period={period} now={now} />
+          </>
+        )}
+        {band}
+        <ActivityLog challengeId={challenge.id} entries={entries} journey={!!journey} sheet now={now} onChanged={log.reload} />
+        {!journey && !chain && (
+          <>
+            {band}
+            <Highlights log={entries} />
+          </>
+        )}
+        {band}
+        <div className="sheet-section">
+          <DraftsLink next />
         </div>
-
-        {registerable && (
-          <Link to="/atividade/nova" className="fab fab-round" aria-label={strings.challenge.register}>
-            <PlusIcon />
-          </Link>
-        )}
-      </>
-    );
-  }
-
-  return (
-    <>
-      {journey ? (
-        <header className="journey-header">
-          <div className={`journey-badge banner-${challenge.banner}`} aria-hidden="true" />
-          <div className="stack" style={{ gap: 2, minWidth: 0 }}>
-            <h1 className="d hero-title" style={{ margin: 0, color: 'var(--color-text)' }}>
-              {challenge.name}
-            </h1>
-            <div className="small muted">
-              {periodText} · {left}
-            </div>
-          </div>
-          <Options me={me} challenge={challenge} busy={busy} onLeave={leave} onCancel={cancel} onDelete={remove} />
-        </header>
-      ) : (
-        <header className={`hero banner-${challenge.banner}`}>
-          <div className="hero-card">
-            <h1 className="d hero-title" style={{ margin: 0, color: 'var(--color-text)' }}>
-              {challenge.name}
-            </h1>
-            <div className="small muted">
-              {periodText} · {left} · {strings.challenge.createdBy(challenge.creatorName)}
-            </div>
-          </div>
-          <Options me={me} challenge={challenge} busy={busy} onLeave={leave} onCancel={cancel} onDelete={remove} />
-        </header>
-      )}
-
-      <div className="screen">
-        {error && (
-          <p className="notice" role="alert">
-            {error}
-          </p>
-        )}
-
-        <Response challenge={challenge} busy={busy} onRespond={(accept) => void respond(accept)} />
-        {!open && <Result challenge={challenge} />}
-
-        {chain ? (
-          <>
-            {open && started && <ChainMessage chain={chain} />}
-            <ChainPanel chain={chain} />
-          </>
-        ) : (
-          <>
-            {journey && <JourneyMap challenge={challenge} programmedMeters={open ? secondsToKm(p.programmedSeconds) * 1000 : 0} />}
-
-            <ProgressPanel
-              numbers={numbers}
-              period={period}
-              goalSeconds={goalSeconds}
-              log={entries}
-              now={now}
-              dateRange={dateRange}
-              message={open && started ? <PaceMessage {...paceText(p, challenge, senhoras.length, !!journey)} tone={p.tone} /> : null}
-            />
-
-          </>
-        )}
-
-        {journey && <Timeline challenge={challenge} />}
-
-        {journey && <JourneyRanking members={challenge.members} log={entries} now={now} />}
-
-        <ActivityLog challengeId={challenge.id} entries={entries} journey={!!journey} now={now} onChanged={log.reload} />
-
-        <DraftsLink next />
         {registerable && <div className="spacer-fab" />}
       </div>
 
       {registerable && (
-        <Link to="/atividade/nova" className="fab">
+        <Link to="/atividade/nova" className="fab fab-round" aria-label={strings.challenge.register}>
           <PlusIcon />
-          {strings.challenge.register}
         </Link>
       )}
     </>
@@ -378,25 +271,13 @@ function journeyNumbers(challenge: ChallengeView, p: Pace, progressMeters: numbe
   const doneKm = progressMeters / 1000;
   const programmedKm = Math.min(totalKm, secondsToKm(p.programmedSeconds));
   const open = challenge.state === 'open';
-  const places = [{ name: journey.start.name, distanceMeters: 0 }, ...journey.stops, { name: journey.end.name, distanceMeters: journey.distanceMeters }];
   return {
     headline: formatKm(doneKm),
-    subline: strings.journey.of(formatKm(doneKm), formatKm(totalKm),formatDuration(challenge.totalSeconds), formatGoal(challenge.goalMinutes), challenge.percent),
     effective: doneKm / totalKm,
     programmed: open ? programmedKm / totalKm : 0,
-    effectiveLabel: strings.journey.walked(formatKm(doneKm)),
-    programmedLabel: strings.journey.programmedKm(formatKm(programmedKm)),
     ofLabel: strings.challenge.ofTheRoute,
     ringLabel: strings.journey.ringLabel(formatKm(doneKm), formatKm(programmedKm)),
     goalCaption: strings.journey.curveGoal(journey.end.name, formatKm(totalKm)),
-    milestones: [],
-    barFooter: (
-      <div className="axis">
-        {places.map((s) => (
-          <span key={`${s.name}-${s.distanceMeters}`}>{s.name}</span>
-        ))}
-      </div>
-    ),
   };
 }
 
