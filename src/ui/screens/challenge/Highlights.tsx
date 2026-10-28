@@ -1,15 +1,13 @@
-// "Destaques": the longest activity, the strongest day, the streak, the zones in play and the
-// share of each sport. All read from the log and the members' zones.
+// "Destaques": the longest activity, the streak and the share of each sport, read from the log.
 import type { LogEntryView } from '../../../application/api-contract';
-import { formatDuration, formatOffset, highlights, sportShares, utcOffsetMinutes } from '../../../domain/challenge/progress';
+import { formatDuration, highlights, sportShares } from '../../../domain/challenge/progress';
 import { strings } from '../../../domain/strings';
-import { formatDayMonth, sportName } from '../../format';
+import { sportName } from '../../format';
 import { TONES } from '../../palette';
 
-export function Highlights({ log, zones, now }: { log: readonly LogEntryView[]; zones: readonly string[]; now: Date }) {
+export function Highlights({ log }: { log: readonly LogEntryView[] }) {
   const h = highlights(log);
   const shares = sportShares(log);
-  const offsets = [...new Set(zones.map((z) => utcOffsetMinutes(z, now)))].sort((a, b) => a - b);
 
   return (
     <section className="panel">
@@ -21,15 +19,7 @@ export function Highlights({ log, zones, now }: { log: readonly LogEntryView[]; 
           {h.longest && (
             <Tile label={strings.challenge.highlights.longest} value={formatDuration(h.longest.durationSeconds)} note={`${h.longest.memberName}, ${sportName(h.longest.sport).toLowerCase()}`} />
           )}
-          {h.strongestDay && <Tile label={strings.challenge.highlights.strongestDay} value={formatDuration(h.strongestDay.seconds)} note={formatDayMonth(h.strongestDay.date)} />}
           <Tile label={strings.challenge.highlights.streak} value={strings.challenge.highlights.streakValue(h.streakDays)} note={strings.challenge.highlights.streakNote} />
-          {offsets.length > 0 && (
-            <Tile
-              label={strings.challenge.highlights.zones}
-              value={String(offsets.length)}
-              note={strings.challenge.highlights.zonesRange(formatOffset(offsets[0]), formatOffset(offsets[offsets.length - 1]))}
-            />
-          )}
         </div>
       )}
       {shares.length > 0 && (

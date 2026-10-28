@@ -180,7 +180,6 @@ export function latestOvertake(rows: readonly RankingRow[]): { passer: string; p
 
 export interface Highlights<T extends LoggedActivity> {
   readonly longest: T | null;
-  readonly strongestDay: { readonly date: string; readonly seconds: number } | null;
   /** Consecutive days, up to the latest active one, on which someone moved. */
   readonly streakDays: number;
 }
@@ -193,8 +192,6 @@ export function highlights<T extends LoggedActivity>(log: readonly T[]): Highlig
     const date = localDate(a.startedAt, a.timezone);
     perDay.set(date, (perDay.get(date) ?? 0) + a.durationSeconds);
   }
-  let strongestDay: Highlights<T>['strongestDay'] = null;
-  for (const [date, seconds] of perDay) if (!strongestDay || seconds > strongestDay.seconds) strongestDay = { date, seconds };
 
   const dates = [...perDay.keys()].sort();
   let streak = dates.length > 0 ? 1 : 0;
@@ -203,7 +200,7 @@ export function highlights<T extends LoggedActivity>(log: readonly T[]): Highlig
     if (gap !== 1) break;
     streak++;
   }
-  return { longest, strongestDay, streakDays: streak };
+  return { longest, streakDays: streak };
 }
 
 /** Each sport's share of the time, largest first; past `top`, the rest are summed as `null`. */
@@ -217,23 +214,6 @@ export function sportShares(log: readonly LoggedActivity[], top = 4): { sport: s
   const rest = sorted.slice(top).reduce((sum, [, s]) => sum + s, 0);
   if (rest > 0) shares.push({ sport: null, share: rest / total });
   return shares;
-}
-
-/** A zone's offset from UTC at `at`, in minutes. */
-export function utcOffsetMinutes(timeZone: string, at: Date): number {
-  const parts = new Intl.DateTimeFormat('en-US', { timeZone, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' }).formatToParts(at);
-  const get = (type: Intl.DateTimeFormatPartTypes) => Number(parts.find((p) => p.type === type)?.value);
-  const local = Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'));
-  return Math.round((local - Math.floor(at.getTime() / 60_000) * 60_000) / 60_000);
-}
-
-/** "GMT-3", "GMT+5:30", "GMT". */
-export function formatOffset(minutes: number): string {
-  if (minutes === 0) return 'GMT';
-  const sign = minutes > 0 ? '+' : '-';
-  const abs = Math.abs(minutes);
-  const rest = abs % 60;
-  return `GMT${sign}${Math.floor(abs / 60)}${rest ? `:${String(rest).padStart(2, '0')}` : ''}`;
 }
 
 /** The accumulated total over the period, as fractions (0..1) of the period and of `scaleSeconds`. */

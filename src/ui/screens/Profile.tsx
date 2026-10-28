@@ -2,7 +2,7 @@
 // (to edit or delete) and signing out.
 import { useState, type FormEvent } from 'react';
 import type { MeView } from '../../application/api-contract';
-import { formatDuration, formatOffset, highlights, utcOffsetMinutes } from '../../domain/challenge/progress';
+import { formatDuration, highlights } from '../../domain/challenge/progress';
 import { NAME_MAX_LENGTH } from '../../domain/group/profile';
 import { isAdmin } from '../../domain/group/roles';
 import { strings } from '../../domain/strings';
@@ -79,15 +79,6 @@ export function Profile({ me, onSignOut }: { me: MeView; onSignOut: () => void }
               </p>
             )}
           </form>
-          <div className="split panel-foot" style={{ alignItems: 'center', color: 'var(--color-text)' }}>
-            <div>
-              <div style={{ fontWeight: 600 }}>{p.timezone}</div>
-              <div className="tiny muted">{p.timezoneNote}</div>
-            </div>
-            <div className="d text-md">
-              {me.timezone ? formatOffset(utcOffsetMinutes(me.timezone, new Date())) : p.timezoneUnknown}
-            </div>
-          </div>
         </section>
 
         <section className="panel">

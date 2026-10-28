@@ -95,7 +95,6 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
   const { backend } = useServices();
   const now = useNow();
   const log = useQuery('challengeLog', { challengeId: challenge.id }, ['challenge', 'activities']);
-  const members = useQuery('members', {}, ['members']);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -108,7 +107,6 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
   const started = now.getTime() >= Date.parse(challenge.startsAt);
   const senhoras = senhorasOf(challenge.members).filter((m) => m.response === 'accepted');
   const p = pace(period, challenge.goalMinutes, challenge.totalSeconds, now);
-  const zones = (members.data ?? []).map((m) => m.timezone).filter((z): z is string => z !== null);
 
   const left = !open ? strings.challenge.ended : !started ? strings.challenge.notStarted : strings.challenge.daysLeft(Math.max(1, daysLeft(period, now)));
   const periodText = formatPeriod(challenge.startDate, challenge.endDate);
@@ -250,7 +248,7 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
 
         {journey ? <JourneyRanking members={challenge.members} log={entries} now={now} /> : <Ranking members={challenge.members} log={entries} period={period} now={now} />}
 
-        {!journey && !chain && <Highlights log={entries} zones={zones} now={now} />}
+        {!journey && !chain && <Highlights log={entries} />}
 
         <ActivityLog challengeId={challenge.id} entries={entries} journey={!!journey} now={now} onChanged={log.reload} />
 
