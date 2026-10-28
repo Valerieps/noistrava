@@ -4,7 +4,7 @@ import type { ApiError, ApiResult } from '../../src/application/api-contract';
 import { SESSION_DAYS, type GoogleProfile } from '../application/members';
 import { grantedAccess } from '../../src/domain/strava';
 import { clearCookie, LOGIN_COOKIE, readCookie, SESSION_COOKIE, setCookie, STRAVA_COOKIE } from '../infrastructure/cookies';
-import { constantTimeEqual, encryptText, isValidTokenKey, randomToken, sha256 } from '../infrastructure/crypto';
+import { constantTimeEqual, encryptText, randomToken, sha256 } from '../infrastructure/crypto';
 import { devProfile, devSignInAllowed } from '../infrastructure/dev-sign-in';
 import {
   authorizationUrl,
@@ -15,9 +15,11 @@ import {
   profileFromIdToken,
 } from '../infrastructure/google-oauth';
 import { normalizeSearchQuery, parseRouteRequest, planRoute, searchPlaces, userAgent } from '../infrastructure/openstreetmap';
+import { parseWebhookEvent } from '../infrastructure/strava-api';
 import { exchangeStravaCode, stravaAuthorizationUrl } from '../infrastructure/strava-oauth';
 import type { Env } from './env';
 import { Group, SESSION_HASH_HEADER } from './group-object';
+import { disconnectStravaMember, handleStravaEvent, runStravaBackfills, stravaReady } from './strava-sync';
 
 export { Group };
 
@@ -111,7 +113,7 @@ async function callback(request: Request, env: Env, url: URL): Promise<Response>
 async function stravaConnect(request: Request, env: Env, url: URL, hash: string): Promise<Response> {
   const body = (await request.json().catch(() => null)) as { consent?: unknown; includePrivate?: unknown } | null;
   if (body?.consent !== true || typeof body.includePrivate !== 'boolean') return json({ error: 'invalid' }, 400);
-  if (!env.STRAVA_CLIENT_ID || !env.STRAVA_CLIENT_SECRET || !isValidTokenKey(env.STRAVA_TOKEN_KEY)) {
+  if (!stravaReady(env)) {
     console.error('Strava is not set up: STRAVA_CLIENT_SECRET missing or STRAVA_TOKEN_KEY not 32 bytes in base64');
     return json({ error: 'unavailable' }, 503);
   }
@@ -122,16 +124,16 @@ async function stravaConnect(request: Request, env: Env, url: URL, hash: string)
 }
 
 /** The redirect back from Strava. Any failure, even a thrown one, ends on the app with a message. */
-async function stravaCallback(request: Request, env: Env, url: URL): Promise<Response> {
+async function stravaCallback(request: Request, env: Env, url: URL, ctx: ExecutionContext): Promise<Response> {
   try {
-    return await finishStravaConnection(request, env, url);
+    return await finishStravaConnection(request, env, url, ctx);
   } catch (error) {
     console.error('Strava callback failed', error instanceof Error ? error.message : 'unknown error');
     return redirect('/?strava=erro', [clearCookie(STRAVA_COOKIE)]);
   }
 }
 
-async function finishStravaConnection(request: Request, env: Env, url: URL): Promise<Response> {
+async function finishStravaConnection(request: Request, env: Env, url: URL, ctx: ExecutionContext): Promise<Response> {
   const done = (result: string) => redirect(`/?strava=${result}`, [clearCookie(STRAVA_COOKIE)]);
   const cookies = request.headers.get('Cookie');
   const state = readCookie(cookies, STRAVA_COOKIE);
@@ -141,7 +143,7 @@ async function finishStravaConnection(request: Request, env: Env, url: URL): Pro
   const access = grantedAccess(url.searchParams.get('scope'));
   if (!access) return done('sem-permissao');
   const code = url.searchParams.get('code');
-  if (!code || !env.STRAVA_CLIENT_SECRET || !env.STRAVA_TOKEN_KEY) return done('erro');
+  if (!code || !stravaReady(env)) return done('erro');
 
   const tokens = await exchangeStravaCode({ code, clientId: env.STRAVA_CLIENT_ID, clientSecret: env.STRAVA_CLIENT_SECRET });
   if (!tokens) return done('erro');
@@ -152,8 +154,45 @@ async function finishStravaConnection(request: Request, env: Env, url: URL): Pro
     expiresAt: tokens.expiresAt,
     includePrivate: access.includePrivate,
   });
-  if (result.ok) return done('conectado');
-  return done(result.error === 'conflict' ? 'outra-conta' : 'erro');
+  if (!result.ok) return done(result.error === 'conflict' ? 'outra-conta' : 'erro');
+  // The webhook brings what happens from now on; this brings what the challenges already have.
+  ctx.waitUntil(runStravaBackfills(env, group(env)));
+  return done('conectado');
+}
+
+/**
+ * Strava's webhook (ADR-008), at an address that ends in a secret only Strava knows. The GET
+ * confirms the subscription; each POST is answered at once and handled after the response, since
+ * Strava waits only two seconds.
+ */
+async function stravaWebhook(request: Request, env: Env, url: URL, secret: string, ctx: ExecutionContext): Promise<Response> {
+  if (!stravaReady(env) || !env.STRAVA_WEBHOOK_SECRET || !constantTimeEqual(secret, env.STRAVA_WEBHOOK_SECRET)) {
+    return json({ error: 'not_found' }, 404);
+  }
+  if (request.method === 'GET') {
+    const challenge = url.searchParams.get('hub.challenge');
+    const token = url.searchParams.get('hub.verify_token') ?? '';
+    const verified = url.searchParams.get('hub.mode') === 'subscribe' && constantTimeEqual(token, env.STRAVA_WEBHOOK_SECRET);
+    return verified && challenge ? json({ 'hub.challenge': challenge }) : json({ error: 'forbidden' }, 403);
+  }
+  if (request.method !== 'POST') return json({ error: 'not_found' }, 404);
+  const event = parseWebhookEvent(await request.json().catch(() => null));
+  if (event) {
+    ctx.waitUntil(
+      handleStravaEvent(env, group(env), event).catch((error: unknown) => {
+        console.error('Strava event failed', error instanceof Error ? error.message : 'unknown error');
+      }),
+    );
+  }
+  return json({ ok: true });
+}
+
+/** "Desconectar o Strava" from the profile; the activities that came stay. */
+async function stravaDisconnect(env: Env, hash: string): Promise<Response> {
+  const athlete = (await group(env).stravaAthlete(hash)) as { ok: true; value: string | null } | { ok: false; error: 'unauthenticated' };
+  if (!athlete.ok) return json({ error: 'unauthenticated' }, 401);
+  if (athlete.value) await disconnectStravaMember(env, group(env), athlete.value);
+  return json({ value: null });
 }
 
 /**
@@ -182,12 +221,14 @@ async function places(request: Request, env: Env, url: URL, hash: string, kind: 
   }
 }
 
-async function api(request: Request, env: Env, url: URL): Promise<Response> {
+async function api(request: Request, env: Env, url: URL, ctx: ExecutionContext): Promise<Response> {
   const path = url.pathname;
 
   if (path === '/api/auth/login' && request.method === 'GET') return login(env, url);
   if (path === '/api/auth/callback' && request.method === 'GET') return callback(request, env, url);
-  if (path === '/api/strava/callback' && request.method === 'GET') return stravaCallback(request, env, url);
+  if (path === '/api/strava/callback' && request.method === 'GET') return stravaCallback(request, env, url, ctx);
+  const webhook = /^\/api\/strava\/webhook\/([^/]+)$/.exec(path);
+  if (webhook) return stravaWebhook(request, env, url, webhook[1], ctx);
 
   if (!sameOrigin(request, url)) return json({ error: 'forbidden' }, 403);
   const hash = await sessionHash(request);
@@ -214,6 +255,11 @@ async function api(request: Request, env: Env, url: URL): Promise<Response> {
     return stravaConnect(request, env, url, hash);
   }
 
+  if (path === '/api/strava/disconnect') {
+    if (!hash) return json({ error: 'unauthenticated' }, 401);
+    return stravaDisconnect(env, hash);
+  }
+
   const place = /^\/api\/places\/(search|route)$/.exec(path);
   if (place) {
     if (!hash) return json({ error: 'unauthenticated' }, 401);
@@ -232,18 +278,23 @@ async function api(request: Request, env: Env, url: URL): Promise<Response> {
   }
   const [, kind, name] = match;
   // RPC wraps results in a Disposable, which hides the union from narrowing; restore it.
-  const result = (kind === 'query' ? await group(env).query(hash, name, input) : await group(env).command(hash, name, input)) as ApiResult<unknown>;
+  const result = (kind === 'query' ? await group(env).query(hash, name, input) : await group(env).command(hash, name, input)) as ApiResult<unknown> & {
+    changed?: readonly string[];
+  };
+  // Accepting, creating or activating a challenge may need older Strava activities.
+  if (result.ok && result.changed?.includes('challenge') && stravaReady(env)) ctx.waitUntil(runStravaBackfills(env, group(env)));
   return result.ok ? json({ value: result.value }) : json({ error: result.error }, STATUS[result.error]);
 }
 
 export default {
-  async fetch(request, env, _ctx): Promise<Response> {
+  async fetch(request, env, ctx): Promise<Response> {
     const url = new URL(request.url);
-    if (url.pathname.startsWith('/api/')) return api(request, env, url);
+    if (url.pathname.startsWith('/api/')) return api(request, env, url, ctx);
     return env.ASSETS.fetch(request);
   },
 
   async scheduled(_controller, env, _ctx): Promise<void> {
     await group(env).tick();
+    if (stravaReady(env)) await runStravaBackfills(env, group(env));
   },
 } satisfies ExportedHandler<Env>;

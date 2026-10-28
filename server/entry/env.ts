@@ -14,6 +14,11 @@ export interface Env {
   /** 32 random bytes in base64: the AES-GCM key for the tokens at rest. */
   readonly STRAVA_TOKEN_KEY?: string;
   /**
+   * The last part of the webhook's address and its `hub.verify_token`, so only Strava, which
+   * knows it, reaches the webhook. Letters and digits, as `openssl rand -hex 32` makes.
+   */
+  readonly STRAVA_WEBHOOK_SECRET?: string;
+  /**
    * Optional: an e-mail or page where OpenStreetMap's operators can reach the group, added to the
    * User-Agent of the journey's place search and routing (ADR-009).
    */

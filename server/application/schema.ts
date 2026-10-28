@@ -117,6 +117,8 @@ export const MIGRATIONS: readonly (readonly string[])[] = [
   [`ALTER TABLE challenges ADD COLUMN creator_is_senhora INTEGER`],
   // 5: a chain's days, frozen when its result closes (docs/spec/desafio-corrente.md).
   [`ALTER TABLE challenges ADD COLUMN chain_result TEXT`],
+  // 6: from which date a Strava connection already has its activities (ADR-008).
+  [`ALTER TABLE strava_connections ADD COLUMN backfilled_since TEXT`],
 ];
 
 export function migrate(sql: Sql): void {

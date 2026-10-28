@@ -255,6 +255,55 @@ describe('activities from Strava', () => {
     service.importStravaActivity('a1', { stravaId: 's2', deleted: true });
     expect(mine()).toEqual([]);
   });
+
+  it('report no change when Strava sends the same activity again', () => {
+    service.importStravaActivity('a1', event);
+    expect(service.importStravaActivity('a1', event)).toEqual([]);
+  });
+
+  it('are backfilled once from the earliest open challenge that began, whatever I answered', () => {
+    expect(service.stravaBackfillsDue()).toEqual([]);
+    ok(service.command(BIA, 'challenge.create', { name: 'Rascunho', startDate: '2026-11-02', endDate: '2026-11-20', goalHours: 10, creatorIsSenhora: true, draft: true }));
+    expect(service.stravaBackfillsDue()).toEqual([]);
+
+    const challenge = create({ creatorIsSenhora: false });
+    expect(service.stravaBackfillsDue()).toEqual([{ athleteId: 'a1', since: challenge.startsAt }]);
+    expect(service.importStravaBackfill('a1', challenge.startsAt, [event, { ...event, stravaId: 's2', sport: 'Ride' }])).toEqual(['activities', 'challenge']);
+    expect(mine()).toHaveLength(2);
+    expect(service.stravaBackfillsDue()).toEqual([]);
+
+    ok(service.command(ANA, 'challenge.respond', { challengeId: challenge.id, accept: true }));
+    expect(current()?.totalSeconds).toBe(7200);
+  });
+
+  it('are backfilled again after reconnecting', () => {
+    const challenge = create();
+    service.importStravaBackfill('a1', challenge.startsAt, []);
+    service.connectStrava(ANA, { athleteId: 'a1', accessToken: 'x2', refreshToken: 'y2', expiresAt: '2026-12-01T00:00:00Z', includePrivate: true });
+    expect(service.stravaBackfillsDue()).toEqual([{ athleteId: 'a1', since: challenge.startsAt }]);
+  });
+
+  it('stop arriving after disconnecting, and the ones that came stay', () => {
+    service.importStravaActivity('a1', event);
+    expect(service.stravaCredentials('a1')).toEqual({ accessToken: 'x', refreshToken: 'y', expiresAt: '2026-12-01T00:00:00Z' });
+    expect(service.stravaAthlete(ANA)).toEqual({ ok: true, value: 'a1' });
+
+    expect(service.disconnectStrava('a1')).toEqual(['strava']);
+    expect(service.disconnectStrava('a1')).toEqual([]);
+    expect(service.stravaCredentials('a1')).toBeNull();
+    expect(service.stravaAthlete(ANA)).toEqual({ ok: true, value: null });
+    expect(service.query(ANA, 'strava', {})).toMatchObject({ ok: true, value: { connected: false } });
+    expect(service.importStravaActivity('a1', { ...event, stravaId: 's2' })).toEqual([]);
+    expect(mine()).toHaveLength(1);
+    create();
+    expect(service.stravaBackfillsDue()).toEqual([]);
+  });
+
+  it('keep the refreshed tokens', () => {
+    service.saveStravaTokens('a1', { accessToken: 'x2', refreshToken: 'y2', expiresAt: '2026-11-03T18:00:00Z' });
+    expect(service.stravaCredentials('a1')).toEqual({ accessToken: 'x2', refreshToken: 'y2', expiresAt: '2026-11-03T18:00:00Z' });
+    expect(service.stravaAthlete('h-nobody')).toEqual({ ok: false, error: 'unauthenticated' });
+  });
 });
 
 describe('edge cases of the rules', () => {
