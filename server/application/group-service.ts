@@ -49,6 +49,7 @@ import {
   type StravaActivityEvent,
   type StravaCredentials,
 } from './strava';
+import { awardBadges, tracking } from './tracking';
 
 type Input = Record<string, unknown>;
 
@@ -65,6 +66,7 @@ const QUERIES: { [N in QueryName]: Handler<Queries[N]['output'] | QueryError | n
   challengeLog: (ctx, actor, input) => challengeLog(ctx, actor, input),
   history: (ctx) => history(ctx),
   activities: (ctx, actor) => listMyActivities(ctx, actor),
+  tracking: (ctx, actor) => tracking(ctx, actor),
 };
 
 /** Every command the API runs; each checks the actor's role itself. */
@@ -118,12 +120,12 @@ export class GroupService {
 
   /** Called by the Worker for each Strava webhook event; returns the topics that changed. */
   importStravaActivity(athleteId: string, event: StravaActivityEvent): Topic[] {
-    return importStravaActivity(this.ctx, athleteId, event) ? ['activities', 'challenge'] : [];
+    return this.withBadges(importStravaActivity(this.ctx, athleteId, event)) ? ['activities', 'challenge'] : [];
   }
 
   /** The activities since a challenge's start, fetched by the Worker for a backfill that was due. */
   importStravaBackfill(athleteId: string, since: string, events: readonly StravaActivityEvent[]): Topic[] {
-    return importStravaBackfill(this.ctx, athleteId, since, events) ? ['activities', 'challenge'] : [];
+    return this.withBadges(importStravaBackfill(this.ctx, athleteId, since, events)) ? ['activities', 'challenge'] : [];
   }
 
   stravaBackfillsDue(): { athleteId: string; since: string }[] {
@@ -164,7 +166,17 @@ export class GroupService {
     if (!actor) return failure('unauthenticated');
     const handler = Object.hasOwn(COMMANDS, name) ? COMMANDS[name as CommandName] : undefined;
     if (!handler) return failure('not_found');
-    return this.ctx.sql.transaction(() => handler(this.ctx, actor, asInput(input)));
+    return this.ctx.sql.transaction(() => {
+      const result = handler(this.ctx, actor, asInput(input));
+      if (result.ok && result.changed.some((t) => t === 'activities' || t === 'challenge')) awardBadges(this.ctx);
+      return result;
+    });
+  }
+
+  /** Badges are earned whenever the activities, the hearts or the chains change. */
+  private withBadges(changed: boolean): boolean {
+    if (changed) this.ctx.sql.transaction(() => awardBadges(this.ctx));
+    return changed;
   }
 
   /**
@@ -173,7 +185,10 @@ export class GroupService {
    */
   tick(): Topic[] {
     this.ctx.sql.run('DELETE FROM sessions WHERE expires_at <= ?', this.ctx.clock.now().toISOString());
-    return runChallengeJobs(this.ctx) ? ['challenge', 'history'] : [];
+    const changed = runChallengeJobs(this.ctx);
+    // Also gives the badges of what the app had before they existed.
+    this.ctx.sql.transaction(() => awardBadges(this.ctx));
+    return changed ? ['challenge', 'history'] : [];
   }
 }
 

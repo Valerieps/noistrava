@@ -272,26 +272,34 @@ describe('activities from Strava', () => {
     expect(service.importStravaActivity('a1', event)).toEqual([]);
   });
 
-  it('are backfilled once from the earliest open challenge that began, whatever I answered', () => {
-    expect(service.stravaBackfillsDue()).toEqual([]);
-    ok(service.command(BIA, 'challenge.create', { name: 'Rascunho', startDate: '2026-11-02', endDate: '2026-11-20', goalHours: 10, creatorIsSenhora: true, draft: true }));
-    expect(service.stravaBackfillsDue()).toEqual([]);
+  /** 90 days before connecting, on Tuesday 3 Nov 2026 at noon. */
+  const TRACKED_SINCE = '2026-08-05T12:00:00.000Z';
 
-    const challenge = create({ creatorIsSenhora: false });
-    expect(service.stravaBackfillsDue()).toEqual([{ athleteId: 'a1', since: challenge.startsAt }]);
-    expect(service.importStravaBackfill('a1', challenge.startsAt, [event, { ...event, stravaId: 's2', sport: 'Ride' }])).toEqual(['activities', 'challenge']);
+  it('are backfilled once from 90 days before connecting, in or out of a challenge', () => {
+    expect(service.stravaBackfillsDue()).toEqual([{ athleteId: 'a1', since: TRACKED_SINCE }]);
+    const old = { ...event, stravaId: 's0', startedAt: '2026-09-01T08:00:00Z' };
+    expect(service.importStravaBackfill('a1', TRACKED_SINCE, [old, event])).toEqual(['activities', 'challenge']);
     expect(mine()).toHaveLength(2);
     expect(service.stravaBackfillsDue()).toEqual([]);
 
+    const challenge = create({ creatorIsSenhora: false });
+    expect(service.stravaBackfillsDue()).toEqual([]);
     ok(service.command(ANA, 'challenge.respond', { challengeId: challenge.id, accept: true }));
-    expect(current()?.totalSeconds).toBe(7200);
+    expect(current()?.totalSeconds).toBe(3600);
+  });
+
+  it('go back to the start of an earlier open challenge, whatever I answered', () => {
+    const challenge = create({ endDate: '2027-04-30', creatorIsSenhora: false });
+    clock.set('2027-03-01T12:00:00Z');
+    service.connectStrava(ANA, { athleteId: 'a1', accessToken: 'x', refreshToken: 'y', expiresAt: '2027-04-01T00:00:00Z', includePrivate: false });
+    expect(service.stravaBackfillsDue()).toEqual([{ athleteId: 'a1', since: challenge.startsAt }]);
   });
 
   it('are backfilled again after reconnecting', () => {
-    const challenge = create();
-    service.importStravaBackfill('a1', challenge.startsAt, []);
+    service.importStravaBackfill('a1', TRACKED_SINCE, []);
+    clock.set('2026-11-04T12:00:00Z');
     service.connectStrava(ANA, { athleteId: 'a1', accessToken: 'x2', refreshToken: 'y2', expiresAt: '2026-12-01T00:00:00Z', includePrivate: true });
-    expect(service.stravaBackfillsDue()).toEqual([{ athleteId: 'a1', since: challenge.startsAt }]);
+    expect(service.stravaBackfillsDue()).toEqual([{ athleteId: 'a1', since: '2026-08-06T12:00:00.000Z' }]);
   });
 
   it('stop arriving after disconnecting, and the ones that came stay', () => {

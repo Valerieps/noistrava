@@ -106,3 +106,16 @@ export function toLocalInput(iso: string | Date): string {
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
+
+/** "26 out", from a `YYYY-MM-DD` date. */
+export function formatShortDay(date: string): string {
+  const [y, m, d] = date.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(LOCALE, { day: 'numeric', month: 'short', timeZone: 'UTC' }).replace(' de ', ' ').replace('.', '');
+}
+
+/** "outubro", or "outubro de 2025" outside `currentYear`, from a `YYYY-MM` month. */
+export function formatMonth(month: string, currentYear: number): string {
+  const [y, m] = month.split('-').map(Number);
+  const options: Intl.DateTimeFormatOptions = y === currentYear ? { month: 'long', timeZone: 'UTC' } : { month: 'long', year: 'numeric', timeZone: 'UTC' };
+  return new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString(LOCALE, options);
+}

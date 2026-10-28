@@ -12,7 +12,6 @@ O que ainda não está pronto.
 | Feature | Fase | Spec | Observação |
 | --- | --- | --- | --- |
 | Jornada: postal de cada marco (foto e resumo do lugar), "Onde estamos" e números do caminho (países, rios) | 1 | `spec/desafio-horas.md` | Estão nos rascunhos; precisam de dados que o servidor não tem |
-| Acompanhamento individual: o meu ritmo, a minha contribuição e os selos | 2 | `spec/acompanhamento.md` | Tela no brief `rascunhos/perfil-acompanhamento.md`. Precisa antes que o Strava traga os últimos 90 dias e as atividades fora de desafio (`spec/strava.md`) |
 | Notificações | 2 | `spec/desafio-horas.md`, `spec/desafio-corrente.md` | Regras em aberto |
 
 ## O código ainda não segue o spec
@@ -63,6 +62,10 @@ O que ainda não está pronto.
 - [ ] Selos que faltam: a contagem de Consistente são as semanas seguidas com 3 dias ativos até
   agora, e a de Eclética, as modalidades do mês; o próximo selo é o de maior fração feita, com
   empate pela ordem da tabela (`spec/acompanhamento.md`, "Selos").
+- [ ] Acompanhamento: o calendário do mês fica no próprio perfil, no lugar das últimas 8 semanas,
+  com quatro tons (sem atividade, menos de 30 min, até 1 h, 1 h ou mais) e volta até o primeiro
+  mês com atividade; os "N dias" da volta contam entre as datas das duas atividades
+  (`spec/acompanhamento.md`, "O meu ritmo").
 
 ## Adiado
 
