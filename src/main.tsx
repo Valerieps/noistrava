@@ -4,8 +4,11 @@ import { httpBackend } from './infrastructure/http-backend';
 import { liveSocket } from './infrastructure/live-socket';
 import { App } from './ui/App';
 import { ServicesProvider } from './ui/backend-context';
+import { applyTheme, savedTheme } from './ui/theme/preference';
 import './ui/theme/tokens.css';
 import './ui/theme/global.css';
+
+applyTheme(savedTheme());
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

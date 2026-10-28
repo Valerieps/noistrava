@@ -64,7 +64,7 @@ export function App() {
   return (
     <div className="shell">
       <OfflineNotice />
-      <TopBar me={me.data} />
+      <TopBar />
       <Screen me={me.data} onSignOut={() => void signOut()} />
       <Navigation />
     </div>
@@ -92,20 +92,18 @@ function Navigation() {
 }
 
 const TAB_PATHS = ['/', '/historico', '/perfil'];
-const SETTINGS_PATHS = ['/configuracoes', '/integrantes', '/convites'];
+const SETTINGS_PATHS = ['/configuracoes', '/configuracoes/nome', '/configuracoes/strava', '/integrantes', '/convites'];
 
-/** The app's name and, for the admin, the way to the settings. Only on the tab screens. */
-function TopBar({ me }: { me: MeView }) {
+/** The app's name and the way to the settings. Only on the tab screens. */
+function TopBar() {
   const path = usePath();
   if (!TAB_PATHS.includes(path)) return null;
   return (
     <header className="top-bar">
       <span className="d top-bar-name">{strings.appName}</span>
-      {canManageGroup(me) && (
-        <Link to="/configuracoes" className="icon-button" aria-label={strings.nav.settings}>
-          <GearIcon />
-        </Link>
-      )}
+      <Link to="/configuracoes" className="icon-button" aria-label={strings.nav.settings}>
+        <GearIcon />
+      </Link>
     </header>
   );
 }
@@ -157,24 +155,24 @@ function Screen({ me, onSignOut }: { me: MeView; onSignOut: () => void }) {
         <MyActivities />
       </Sub>
     );
-  if (path === '/perfil/nome')
+  if (path === '/configuracoes/nome')
     return (
-      <Sub title={strings.profile.nameRow} back="/perfil">
+      <Sub title={strings.profile.nameRow} back="/configuracoes">
         <NameForm me={me} />
       </Sub>
     );
-  if (path === '/perfil/strava')
+  if (path === '/configuracoes/strava')
     return (
-      <Sub title={strings.profile.strava} back="/perfil">
+      <Sub title={strings.profile.strava} back="/configuracoes">
         <section className="panel">
           <StravaConnect />
         </section>
       </Sub>
     );
-  if (path === '/configuracoes' && canManageGroup(me))
+  if (path === '/configuracoes')
     return (
       <Sub title={strings.nav.settings} back="/">
-        <Settings />
+        <Settings me={me} />
       </Sub>
     );
   if (path === '/integrantes' && canManageGroup(me))

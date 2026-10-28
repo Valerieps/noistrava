@@ -8,7 +8,7 @@ Minhas atividades chegam sozinhas do Strava, sem eu precisar registrar.
 
 ## Conectar
 
-- Eu conecto o Strava pelo meu perfil, com um botão "Conectar com Strava". *(1)*
+- Eu conecto o Strava pelas configurações, com um botão "Conectar com Strava". *(1)*
 - Antes de conectar, eu aceito que o grupo veja o início, o tempo total e a modalidade das minhas
   atividades. Sem o aceite, eu não conecto e registro à mão. *(1)*
   Por quê: pelas regras do Strava, os dados de uma pessoa só podem ser mostrados a outras com o
@@ -31,5 +31,5 @@ Minhas atividades chegam sozinhas do Strava, sem eu precisar registrar.
 
 ## Desconectar
 
-- Eu desconecto o Strava pelo meu perfil, ou tirando o acesso do app no próprio Strava. *(1)*
+- Eu desconecto o Strava pelas configurações, ou tirando o acesso do app no próprio Strava. *(1)*
 - Ao desconectar, as atividades que já vieram continuam; as novas não chegam mais. *(1)*

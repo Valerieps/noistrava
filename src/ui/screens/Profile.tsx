@@ -1,5 +1,6 @@
 // "Perfil" (docs/spec/acompanhamento.md): my week, the next badge, the month calendar, my habits,
-// my badges and my part with the group, all shown to me only; then my account.
+// my badges and my part with the group, all shown to me only; then my activities. My name and the
+// Strava connection live in the settings.
 import { useState, type FormEvent } from 'react';
 import type { MeView, TrackingView } from '../../application/api-contract';
 import { formatDuration } from '../../domain/challenge/progress';
@@ -9,7 +10,7 @@ import { addDays } from '../../domain/time/zones';
 import { BADGES } from '../../domain/tracking/tracking';
 import { useServices } from '../backend-context';
 import { formatDateTime, formatMonth, formatShortDay, initial, sportName } from '../format';
-import { CheckIcon, ChevronIcon, GearIcon, PlusIcon } from '../icons';
+import { CheckIcon, ChevronIcon, PlusIcon } from '../icons';
 import { Link } from '../router';
 import { useQuery } from '../use-query';
 import { EarnedBadges, NextBadge } from './profile/Badges';
@@ -29,9 +30,6 @@ export function Profile({ me, onSignOut }: { me: MeView; onSignOut: () => void }
           {me.photoUrl ? <img src={me.photoUrl} alt="" referrerPolicy="no-referrer" /> : initial(me.name)}
         </div>
         <h1 className="d grow">{strings.profile.greeting(me.name)}</h1>
-        <a href="#conta" className="icon-button surface" aria-label={strings.profile.account}>
-          <GearIcon />
-        </a>
       </header>
 
       {t && (
@@ -53,7 +51,7 @@ export function Profile({ me, onSignOut }: { me: MeView; onSignOut: () => void }
         </>
       )}
 
-      <Account me={me} onSignOut={onSignOut} />
+      <Account onSignOut={onSignOut} />
     </div>
   );
 }
@@ -140,23 +138,14 @@ function Group({ contribution: c }: { contribution: TrackingView['contribution']
   );
 }
 
-function Account({ me, onSignOut }: { me: MeView; onSignOut: () => void }) {
+function Account({ onSignOut }: { onSignOut: () => void }) {
   const activities = useQuery('activities', {}, ['activities']);
-  const strava = useQuery('strava', {}, ['strava']);
   const p = strings.profile;
   return (
-    <nav id="conta" className="menu-list" aria-label={p.account}>
+    <nav className="menu-list" aria-label={p.activities}>
       <Link to="/perfil/atividades">
         {p.activities}
         <span className="muted">{activities.data?.length ?? ''}</span>
-      </Link>
-      <Link to="/perfil/nome">
-        {p.nameRow}
-        <span className="muted ellipsis">{me.name}</span>
-      </Link>
-      <Link to="/perfil/strava">
-        {p.strava}
-        {strava.data && <span className={`status-pill${strava.data.connected ? ' ok' : ''}`}>{strava.data.connected ? p.stravaConnected : p.stravaDisconnected}</span>}
       </Link>
       <button type="button" className="danger-text" onClick={onSignOut}>
         {strings.nav.signOut}
