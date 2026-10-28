@@ -32,6 +32,14 @@ export function StravaConnect() {
     setMessage(result.error === 'unavailable' ? strings.strava.unavailable : strings.genericError);
   }
 
+  async function disconnect() {
+    if (!window.confirm(strings.strava.disconnectConfirm)) return;
+    setBusy(true);
+    const result = await backend.stravaDisconnect();
+    setBusy(false);
+    setMessage(result.ok ? strings.strava.disconnected : strings.genericError);
+  }
+
   const notice = message && (
     <p className="notice" role="status">
       {message}
@@ -47,6 +55,9 @@ export function StravaConnect() {
         <p>
           {strings.strava.connected} {connection.data.includePrivate && strings.strava.connectedPrivate}
         </p>
+        <button type="button" className="secondary" onClick={() => void disconnect()} disabled={busy}>
+          {strings.strava.disconnect}
+        </button>
       </section>
     );
   }

@@ -14,6 +14,8 @@ export interface Backend {
    * navigates next. The server answers `unavailable` where Strava is not set up.
    */
   stravaConnect(includePrivate: boolean): Promise<ApiResult<string>>;
+  /** "Desconectar o Strava": new activities stop arriving; the ones that came stay. */
+  stravaDisconnect(): Promise<ApiResult<null>>;
   /** The journey's place search, through the server (ADR-009); `unavailable` when it is down. */
   searchPlaces(query: string): Promise<ApiResult<PlaceSuggestion[]>>;
   /**

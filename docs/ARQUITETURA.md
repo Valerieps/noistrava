@@ -76,7 +76,7 @@ app (celular) ──POST /api/query|command──► Worker ──RPC──► G
 | `sessions` | `token_hash`, `member_id`, `expires_at` | Só o SHA-256 do token; o cron apaga as vencidas |
 | `invites` | `email`, `invited_by`, `state` (`pending`, `accepted`, `revoked`) | Um por e-mail |
 | `members` (coluna da migração 3) | `timezone` | IANA, vinda do aparelho |
-| `strava_connections` | `member_id`, `athlete_id`, `access_token`, `refresh_token`, `expires_at`, `include_private`, `consented_at`, `active` | Tokens cifrados com AES-GCM (ADR-008) |
+| `strava_connections` | `member_id`, `athlete_id`, `access_token`, `refresh_token`, `expires_at`, `include_private`, `consented_at`, `active`, `backfilled_since` (migração 6) | Tokens cifrados com AES-GCM (ADR-008); desconectar apaga os tokens e põe `active = 0`. `backfilled_since`: desde quando a conexão já tem as atividades |
 | `activities` | `id`, `member_id`, `source` (`manual`, `strava`), `strava_id`, `started_at` (UTC), `timezone`, `duration_seconds`, `sport`, `edited_by_member`, `deleted` | `edited_by_member` faz a edição valer sobre o Strava; `deleted` impede que uma atividade do Strava volte |
 | `challenges` | `id`, `type` (`horas_colaborativas`, `corrente`), `name`, `creator_id`, `starts_at`, `ends_at`, `state` (`draft`, `open`, `succeeded`, `failed`, `cancelled`), `ended_at`, `closes_at`, `closed_at`, `config` (JSON), `creator_is_senhora` | `config`: as datas escolhidas, `goalMinutes` e, com jornada, `journey` com a rota simplificada, a distância e as paradas (ADR-009); num rascunho sem rota, `journeyPending`; na corrente, `goalMinutes` 0 e `chain` (quebras permitidas e mínimo por dia). `chain_result` (migração 5): os dias da corrente, gravados ao fechar. `closed_at` marca o resultado fechado. Um `draft` não tem integrantes nem convites: só o criador o vê, e ativá-lo recalcula o período e convida todas |
 | `challenge_members` | `challenge_id`, `member_id`, `response` (`pending`, `accepted`, `declined`), `responded_at` | Todas as integrantes ativas na criação; quem entra depois não tem linha e conta como `pending` |
@@ -99,7 +99,12 @@ app (celular) ──POST /api/query|command──► Worker ──RPC──► G
   recalcula os desafios abertos.
 - **Webhook do Strava:** o Worker responde na hora e busca a atividade na API depois
   (`ctx.waitUntil`); o resultado entra no `Group` por `importStravaActivity`, com as mesmas regras do
-  registro manual.
+  registro manual. Só o Worker decifra os tokens, e renova o de acesso quando falta pouco para
+  vencer; um token que o Strava recusa desconecta a pessoa.
+- **Atividades de antes da conexão:** o `Group` diz quais conexões ainda não têm as atividades desde
+  o início do desafio aberto mais antigo que já começou (`stravaBackfillsDue`); o Worker as busca
+  na lista do Strava e as entrega de uma vez (`importStravaBackfill`). Roda depois de conectar,
+  depois de um comando que muda um desafio e no cron, que repete o que falhou.
 
 ## Migrações
 

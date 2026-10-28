@@ -22,13 +22,14 @@ conferidas pelo `src/security.test.ts`, que roda em todo build.
   aceite de compartilhar com o grupo e os tokens, cifrados (ADR-008). Do Strava, só esses três
   campos de cada atividade: nunca título, mapa, distância nem fotos. Não há exportação.
 - Quem sai do grupo tem as atividades apagadas e os tokens do Strava apagados; os desafios
-  terminados guardam só os totais dela. Quando a pessoa desconecta o app no Strava, os tokens são
-  apagados na hora.
+  terminados guardam só os totais dela. Quando a pessoa desconecta, pelo perfil ou no próprio
+  Strava, os tokens são apagados na hora; pelo perfil, o app também tira o próprio acesso no Strava.
 - Para a jornada (ADR-009), o Worker manda ao OpenStreetMap só o texto da busca e as coordenadas
   dos lugares escolhidos, nunca dado de integrante. O navegador busca os tiles do mapa mandando só
   a origem do app como `Referer`, que o servidor de tiles exige.
-- O webhook do Strava não é assinado: o evento só avisa que algo mudou, e o servidor busca a
-  atividade na API com o token da própria pessoa (ADR-008).
+- O webhook do Strava não é assinado: ele fica num endereço que termina num segredo que só o
+  Strava conhece, o evento só avisa que algo mudou, e o servidor busca a atividade na API com o
+  token da própria pessoa (ADR-008).
 
 ## 2. Acesso e dados
 

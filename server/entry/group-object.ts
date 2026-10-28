@@ -5,7 +5,7 @@ import { DurableObject } from 'cloudflare:workers';
 import type { LiveMessage, Topic } from '../../src/application/api-contract';
 import { GroupService } from '../application/group-service';
 import type { GoogleProfile, SignInResult } from '../application/members';
-import type { NewStravaConnection, StravaActivityEvent } from '../application/strava';
+import type { NewStravaConnection, StravaActivityEvent, StravaCredentials } from '../application/strava';
 import { durableObjectSql } from '../infrastructure/durable-object-sql';
 import type { Env } from './env';
 
@@ -37,6 +37,33 @@ export class Group extends DurableObject<Env> {
   /** The Strava webhook's activity, already fetched by the Worker (ADR-008). */
   importStravaActivity(athleteId: string, event: StravaActivityEvent): void {
     const changed = this.service.importStravaActivity(athleteId, event);
+    if (changed.length > 0) this.broadcast(changed);
+  }
+
+  importStravaBackfill(athleteId: string, since: string, events: StravaActivityEvent[]): void {
+    const changed = this.service.importStravaBackfill(athleteId, since, events);
+    if (changed.length > 0) this.broadcast(changed);
+  }
+
+  stravaBackfillsDue(): { athleteId: string; since: string }[] {
+    return this.service.stravaBackfillsDue();
+  }
+
+  /** Still encrypted: only the Worker holds the key. */
+  stravaCredentials(athleteId: string): StravaCredentials | null {
+    return this.service.stravaCredentials(athleteId);
+  }
+
+  saveStravaTokens(athleteId: string, tokens: StravaCredentials): void {
+    this.service.saveStravaTokens(athleteId, tokens);
+  }
+
+  stravaAthlete(sessionHash: string) {
+    return this.service.stravaAthlete(sessionHash);
+  }
+
+  disconnectStrava(athleteId: string): void {
+    const changed = this.service.disconnectStrava(athleteId);
     if (changed.length > 0) this.broadcast(changed);
   }
 

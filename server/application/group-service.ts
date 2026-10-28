@@ -36,11 +36,18 @@ import type { Clock, IdGenerator, Sql } from './ports';
 import { migrate } from './schema';
 import {
   connectStrava,
+  disconnectStrava,
   importStravaActivity,
+  importStravaBackfill,
+  saveStravaTokens,
+  stravaAthlete,
+  stravaBackfillsDue,
   stravaConnection,
+  stravaCredentials,
   type ConnectStravaResult,
   type NewStravaConnection,
   type StravaActivityEvent,
+  type StravaCredentials,
 } from './strava';
 
 type Input = Record<string, unknown>;
@@ -112,6 +119,34 @@ export class GroupService {
   /** Called by the Worker for each Strava webhook event; returns the topics that changed. */
   importStravaActivity(athleteId: string, event: StravaActivityEvent): Topic[] {
     return importStravaActivity(this.ctx, athleteId, event) ? ['activities', 'challenge'] : [];
+  }
+
+  /** The activities since a challenge's start, fetched by the Worker for a backfill that was due. */
+  importStravaBackfill(athleteId: string, since: string, events: readonly StravaActivityEvent[]): Topic[] {
+    return importStravaBackfill(this.ctx, athleteId, since, events) ? ['activities', 'challenge'] : [];
+  }
+
+  stravaBackfillsDue(): { athleteId: string; since: string }[] {
+    return stravaBackfillsDue(this.ctx);
+  }
+
+  stravaCredentials(athleteId: string): StravaCredentials | null {
+    return stravaCredentials(this.ctx, athleteId);
+  }
+
+  saveStravaTokens(athleteId: string, tokens: StravaCredentials): void {
+    saveStravaTokens(this.ctx, athleteId, tokens);
+  }
+
+  /** The athlete of the signed-in member's connection; null when she has none. */
+  stravaAthlete(sessionHash: string): { ok: true; value: string | null } | { ok: false; error: 'unauthenticated' } {
+    const actor = this.memberForSession(sessionHash);
+    return actor ? { ok: true, value: stravaAthlete(this.ctx, actor) } : { ok: false, error: 'unauthenticated' };
+  }
+
+  /** From the profile, or Strava's deauthorization event; returns the topics that changed. */
+  disconnectStrava(athleteId: string): Topic[] {
+    return disconnectStrava(this.ctx, athleteId) ? ['strava'] : [];
   }
 
   query(sessionHash: string, name: string, input: unknown): ApiResult<unknown> {
