@@ -49,8 +49,10 @@ desafio.
 
 - Meu nome começa como o da conta Google, e eu posso mudar. Ele tem de 1 a 40 caracteres. *(1)*
 - A foto é a da conta Google e se atualiza a cada login. *(1)*
-- Meu fuso horário vem do aparelho e se atualiza sozinho quando eu abro o app. *(1)*
-  Por quê: o início e o fim de cada desafio dependem dos fusos das integrantes.
+- Meu fuso horário vem do aparelho e se atualiza sozinho quando eu abro o app. Ele não aparece
+  na tela. *(1)*
+  Por quê: o início e o fim de cada desafio dependem dos fusos das integrantes; ninguém precisa
+  ver o fuso para isso.
 
 ## Convites
 

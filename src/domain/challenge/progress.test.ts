@@ -5,7 +5,6 @@ import {
   daysLeft,
   formatDuration,
   formatGoal,
-  formatOffset,
   highlights,
   latestOvertake,
   localDate,
@@ -13,7 +12,6 @@ import {
   programmedSeconds,
   ranking,
   sportShares,
-  utcOffsetMinutes,
   type LoggedActivity,
 } from './progress';
 
@@ -30,13 +28,6 @@ describe('formatting', () => {
     expect(formatDuration(50 * 60)).toBe('0h50');
     expect(formatGoal(6000)).toBe('100h');
     expect(formatGoal(90)).toBe('1h30');
-  });
-
-  it('writes zone offsets', () => {
-    expect(formatOffset(-180)).toBe('GMT-3');
-    expect(formatOffset(330)).toBe('GMT+5:30');
-    expect(formatOffset(0)).toBe('GMT');
-    expect(utcOffsetMinutes('America/Sao_Paulo', new Date('2026-10-10T12:00:00Z'))).toBe(-180);
   });
 });
 
@@ -88,10 +79,9 @@ describe('ranking and highlights', () => {
     expect(ranking(members, log, 'constancy', now)[0]).toMatchObject({ name: 'Bia', value: 2 });
   });
 
-  it('finds the longest activity, the strongest day and the streak', () => {
+  it('finds the longest activity and the streak', () => {
     const h = highlights([...log, activity('a', '2026-10-09T10:00:00Z', 1)]);
     expect(h.longest?.durationSeconds).toBe(3 * HOUR);
-    expect(h.strongestDay).toEqual({ date: '2026-10-05', seconds: 3 * HOUR });
     expect(h.streakDays).toBe(2);
     expect(highlights([]).streakDays).toBe(0);
   });

@@ -130,8 +130,8 @@ O grupo soma horas de atividade para bater uma meta num período, com ou sem jor
   a diferença entre as duas. *(1)*
 - Há um ranking das Senhoras, por horas, por número de atividades ou por dias ativos, com quem
   subiu ou desceu nas últimas 24 horas e quem está na torcida. *(1)*
-- Sem jornada, há destaques: a maior atividade, o dia mais forte, a sequência de dias em que alguém
-  se mexeu, os fusos em ação e a parte de cada modalidade. *(1)*
+- Sem jornada, há destaques: a maior atividade, a sequência de dias em que alguém se mexeu e a
+  parte de cada modalidade. *(1)*
 - Com jornada, eu vejo a linha do caminho com as paradas e os marcos, e o ranking
   mostra quem levou o grupo mais longe, em km. *(1)*
 
