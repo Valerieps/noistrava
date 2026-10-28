@@ -1731,8 +1731,8 @@ ul.pills {
   border: 2px solid transparent;
 }
 
-/* Challenge screen, direction C: a brand-colored top and a white sheet (docs/rascunhos/desafio-visual-c.md).
-   Only the hours challenge uses these classes so far; .panel, .tile and .message stay as they are. */
+/* Challenge screen, direction C: a brand-colored top and a white sheet, for every challenge type and
+   state. Only the challenge screen uses these classes; .panel, .tile and .message stay as they are. */
 
 .top-bar:has(+ .hero-c) {
   border-bottom: 0;

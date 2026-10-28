@@ -34,10 +34,11 @@
   --color-heat-2: #cc6e98;
   --color-heat-3: #a82a5c;
 
-  /* The challenge screen: a brand-colored top and a white sheet (docs/rascunhos/desafio-visual-c.md) */
+  /* The challenge screen: a brand-colored top and a white sheet. The muted text stays at 4.5:1 or
+     more on the hero even over the white of its pattern (13% at most). */
   --color-hero: #c2185b;
   --color-on-hero: #ffffff;
-  --color-on-hero-muted: #fde3ee;
+  --color-on-hero-muted: #fff4f8;
   --color-sheet: #ffffff;
   --color-band: #f5f1f7;
   --color-hairline: #efeaf2;
