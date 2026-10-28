@@ -33,6 +33,8 @@ O que ainda não está pronto.
 - [ ] Sem fuso de ninguém, o período vale em UTC (`spec/desafio-horas.md`).
 - [ ] Com a meta batida antes do fim do período, contam só as atividades de antes desse momento
   (`spec/desafio-horas.md`).
+- [ ] O fundo do cabeçalho é escolhido no formulário do desafio, só pelo criador e só até o término,
+  entre cinco padrões fixos; sem escolha, listras (`spec/desafio-horas.md`).
 - [ ] Uma atividade dura no máximo 24 horas; no registro manual, a modalidade vem de uma lista e o
   início não pode estar no futuro (`spec/atividades.md`).
 - [ ] "No ritmo" é estar a até 1% da meta do programado; a reta final são os 5 últimos dias do

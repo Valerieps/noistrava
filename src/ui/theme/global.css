@@ -297,8 +297,52 @@ a {
   color: var(--color-text);
 }
 
-.striped {
+.striped,
+.banner-stripes {
   background: repeating-linear-gradient(135deg, var(--color-brand-soft) 0 14px, var(--color-ghost-track) 14px 28px);
+}
+
+/* The challenge header's patterns (BANNERS in the domain) */
+.banner-dots {
+  background: radial-gradient(circle, var(--color-brand-soft) 0 5px, transparent 5.5px) 0 0 / 22px 22px, var(--color-ghost-track);
+}
+
+.banner-checks {
+  background: repeating-conic-gradient(var(--color-accent-soft) 0 25%, var(--color-ghost-track) 0 50%) 0 0 / 32px 32px;
+}
+
+.banner-zigzag {
+  background:
+    linear-gradient(135deg, var(--color-brand-soft) 25%, transparent 25%) -12px 0 / 24px 24px,
+    linear-gradient(225deg, var(--color-brand-soft) 25%, transparent 25%) -12px 0 / 24px 24px,
+    linear-gradient(315deg, var(--color-brand-soft) 25%, transparent 25%) 0 0 / 24px 24px,
+    linear-gradient(45deg, var(--color-brand-soft) 25%, transparent 25%) 0 0 / 24px 24px,
+    var(--color-ghost-track);
+}
+
+.banner-grid {
+  background:
+    linear-gradient(var(--color-ghost) 1px, transparent 1px) 0 0 / 20px 20px,
+    linear-gradient(90deg, var(--color-ghost) 1px, transparent 1px) 0 0 / 20px 20px,
+    var(--color-accent-soft);
+}
+
+.banner-picker {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.banner-picker > button {
+  flex: 1;
+  width: auto;
+  min-height: 44px;
+  padding: 0;
+  border-radius: var(--radius-tile);
+  border: 2px solid transparent;
+}
+
+.banner-picker > button[aria-checked='true'] {
+  border-color: var(--color-brand);
 }
 
 /* Challenge hero */

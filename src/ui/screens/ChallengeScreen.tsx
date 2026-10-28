@@ -188,7 +188,7 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
     <>
       {journey ? (
         <header className="journey-header">
-          <div className="journey-badge striped" aria-hidden="true" />
+          <div className={`journey-badge banner-${challenge.banner}`} aria-hidden="true" />
           <div className="stack" style={{ gap: 2, minWidth: 0 }}>
             <h1 className="d hero-title" style={{ margin: 0, color: 'var(--color-text)' }}>
               {challenge.name}
@@ -200,7 +200,7 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
           <Options me={me} challenge={challenge} busy={busy} onLeave={leave} onCancel={cancel} onDelete={remove} />
         </header>
       ) : (
-        <header className="hero striped">
+        <header className={`hero banner-${challenge.banner}`}>
           <div className="hero-card">
             <h1 className="d hero-title" style={{ margin: 0, color: 'var(--color-text)' }}>
               {challenge.name}

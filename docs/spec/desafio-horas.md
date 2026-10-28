@@ -35,6 +35,9 @@ O grupo soma horas de atividade para bater uma meta num período, com ou sem jor
   "Jornada"). *(1)*
 - A meta é um número inteiro de horas, de 1 a 10.000. *(1)*
 - O início pode ser uma data que já passou; o término não. *(1)*
+- Eu escolho o fundo do cabeçalho do desafio entre cinco padrões simples: listras, bolinhas,
+  xadrez, zigue-zague e quadriculado. Se eu não escolher, fica com listras. O mesmo fundo aparece
+  no histórico. *(1)*
 - Ao criar já ativo, todas as integrantes recebem o convite para o desafio. *(1)*
 
 ## Rascunhos
@@ -134,8 +137,8 @@ O grupo soma horas de atividade para bater uma meta num período, com ou sem jor
 
 ## Editar, cancelar e apagar
 
-- O criador edita o nome, o início, o término, a meta e a jornada a qualquer momento antes do
-  término. Depois do término, nada muda. *(1)*
+- O criador edita o nome, o início, o término, a meta, a jornada e o fundo do cabeçalho a qualquer
+  momento antes do término. Depois do término, nada muda. *(1)*
 - Marcos já atingidos continuam atingidos, mesmo que a meta ou a rota mude. *(1)*
   Por quê: uma meta ou rota nova não deve apagar um marco que o grupo já celebrou.
 - O criador pode cancelar o desafio antes do término. Um desafio cancelado fica no histórico como

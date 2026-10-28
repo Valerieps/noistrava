@@ -1,10 +1,10 @@
 // Creating or editing a challenge (docs/spec/desafio-horas.md, "Criar" and "Editar"): the type,
 // the name, the goal in hours or a journey, or a chain's breaks (docs/spec/desafio-corrente.md),
-// the period, and whether the creator is a Senhora. A new challenge is saved as a draft, or opened at once while no other is open.
+// the period, the header's banner, and whether the creator is a Senhora. A new challenge is saved as a draft, or opened at once while no other is open.
 import { useEffect, useState, type FormEvent } from 'react';
 import type { ApiError, ChallengeSetupInput, ChallengeView } from '../../application/api-contract';
 import { CHAIN_MIN_MINUTES_MAX, maxBreaks } from '../../domain/challenge/chain';
-import { CHALLENGE_NAME_MAX_LENGTH, GOAL_HOURS_MAX, type ChallengeType, type Journey } from '../../domain/challenge/challenge';
+import { BANNERS, CHALLENGE_NAME_MAX_LENGTH, GOAL_HOURS_MAX, type Banner, type ChallengeType, type Journey } from '../../domain/challenge/challenge';
 import { strings } from '../../domain/strings';
 import { BackHeader } from '../App';
 import { useServices } from '../backend-context';
@@ -66,6 +66,7 @@ function Form({ challenge }: { challenge: ChallengeView | null }) {
   const [minMinutes, setMinMinutes] = useState(String(challenge?.chain?.minMinutesPerDay ?? 0));
   const chain = type === 'corrente';
   const breaksMax = startDate <= endDate ? maxBreaks(startDate, endDate) : 0;
+  const [banner, setBanner] = useState<Banner>(challenge?.banner ?? BANNERS[0]);
   const [senhora, setSenhora] = useState(isDraft ? challenge.creatorIsSenhora : true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -90,12 +91,12 @@ function Form({ challenge }: { challenge: ChallengeView | null }) {
     }
     setBusy(true);
     const setup: ChallengeSetupInput = chain
-      ? { type, name, startDate, endDate, chain: { allowedBreaks: Number(allowedBreaks), minMinutesPerDay: Number(minMinutes) } }
+      ? { type, name, banner, startDate, endDate, chain: { allowedBreaks: Number(allowedBreaks), minMinutesPerDay: Number(minMinutes) } }
       : !withJourney
-      ? { name, startDate, endDate, goalHours: Number(goalHours) }
+      ? { name, banner, startDate, endDate, goalHours: Number(goalHours) }
       : journey
-        ? { name, startDate, endDate, journey }
-        : { name, startDate, endDate, journeyPending: true };
+        ? { name, banner, startDate, endDate, journey }
+        : { name, banner, startDate, endDate, journeyPending: true };
     let result;
     if (!challenge) {
       result = await backend.command('challenge.create', { ...setup, creatorIsSenhora: senhora, draft: mode === 'draft' });
@@ -127,6 +128,12 @@ function Form({ challenge }: { challenge: ChallengeView | null }) {
             <span className="field-label">{f.name}</span>
             <input required maxLength={CHALLENGE_NAME_MAX_LENGTH} value={name} onChange={(e) => setName(e.target.value)} />
           </label>
+          <span className="field-label" id="banner-label">{f.banner}</span>
+          <div role="radiogroup" aria-labelledby="banner-label" className="banner-picker">
+            {BANNERS.map((b) => (
+              <button key={b} type="button" role="radio" aria-checked={banner === b} aria-label={f.banners[b]} title={f.banners[b]} className={`banner-${b}`} onClick={() => setBanner(b)} />
+            ))}
+          </div>
         </section>
 
         {creating && (

@@ -276,6 +276,8 @@ export const strings = {
     routeNeeded: 'Escolha a partida e a chegada e calcule a rota.',
     equivalent: 'Meta equivalente',
     perHour: 'Cada hora de atividade vale 5 km, em qualquer modalidade.',
+    banner: 'Fundo do cabeçalho',
+    banners: { stripes: 'Listras', dots: 'Bolinhas', checks: 'Xadrez', zigzag: 'Zigue-zague', grid: 'Quadriculado' },
     senhora: 'Eu também sou Senhora',
     create: 'Criar',
     activate: 'Ativar e convidar',

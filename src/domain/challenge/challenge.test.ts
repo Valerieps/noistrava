@@ -92,6 +92,13 @@ describe('challenge setup', () => {
     expect(parseDraftSetup({ ...base, goalHours: 10 })).toEqual(parseChallengeSetup({ ...base, goalHours: 10 }));
     expect(percentOfGoal(3600, 0)).toBe(0);
   });
+
+  it('keeps a known banner pattern and refuses any other', () => {
+    expect(parseChallengeSetup({ ...base, goalHours: 10, banner: 'dots' })?.banner).toBe('dots');
+    expect(parseChallengeSetup({ ...base, goalHours: 10 })).not.toHaveProperty('banner');
+    expect(parseChallengeSetup({ ...base, goalHours: 10, banner: 'url(x)' })).toBeNull();
+    expect(parseDraftSetup({ ...base, journeyPending: true, banner: 'grid' })?.banner).toBe('grid');
+  });
 });
 
 describe('progress', () => {

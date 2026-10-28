@@ -15,6 +15,14 @@ const PLACE_NAME_MAX_LENGTH = 120;
 export const MAX_STOPS = 20;
 const MAX_ROUTE_POINTS = 2_000;
 
+/** The patterns the header's banner may wear; the first is the default. */
+export const BANNERS = ['stripes', 'dots', 'checks', 'zigzag', 'grid'] as const;
+export type Banner = (typeof BANNERS)[number];
+
+export function isBanner(value: unknown): value is Banner {
+  return typeof value === 'string' && (BANNERS as readonly string[]).includes(value);
+}
+
 /** Collective hours (docs/spec/desafio-horas.md) or the chain (docs/spec/desafio-corrente.md). */
 export type ChallengeType = 'horas_colaborativas' | 'corrente';
 
@@ -53,6 +61,8 @@ export interface ChallengeConfig {
   readonly journeyPending?: true;
   /** Only in a chain, which has no goal in hours (`goalMinutes` is 0) nor journey. */
   readonly chain?: ChainConfig;
+  /** The header's pattern; left out, the first of `BANNERS`. */
+  readonly banner?: Banner;
 }
 
 export interface ChallengeSetup extends ChallengeConfig {
@@ -145,7 +155,14 @@ export function parseChallengeSetup(input: {
   goalHours?: unknown;
   journey?: unknown;
   chain?: unknown;
+  banner?: unknown;
 }): ChallengeSetup | null {
+  if (input.banner !== undefined && !isBanner(input.banner)) return null;
+  const setup = parseSetupWithoutBanner(input);
+  return setup && input.banner !== undefined ? { ...setup, banner: input.banner } : setup;
+}
+
+function parseSetupWithoutBanner(input: Parameters<typeof parseChallengeSetup>[0]): ChallengeSetup | null {
   if (typeof input.name !== 'string' || typeof input.startDate !== 'string' || typeof input.endDate !== 'string') return null;
   const name = normalizeChallengeName(input.name);
   if (!name || !isCalendarDate(input.startDate) || !isCalendarDate(input.endDate) || input.endDate < input.startDate) return null;

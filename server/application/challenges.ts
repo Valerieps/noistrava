@@ -6,6 +6,7 @@ import type { ChainView, ChallengeMemberView, ChallengeView, HistoryItemView, Lo
 import { CHAIN_CLOSE_HOURS, chainDays, chainSummary } from '../../src/domain/challenge/chain';
 import {
   activityCounts,
+  BANNERS,
   challengePeriod,
   closesAt,
   goalReached,
@@ -300,6 +301,7 @@ function view(ctx: Context, actor: Member, id: string): ChallengeView {
     creatorIsSenhora: row.creator_is_senhora === 1,
     journeyPending: config.journeyPending === true,
     chain: row.type === 'corrente' ? chainOf(ctx, row) : null,
+    banner: config.banner ?? BANNERS[0],
   };
 }
 
@@ -364,7 +366,7 @@ export function history(ctx: Context): HistoryItemView[] {
       )
       .map((r) => ({ memberId: r.member_id, name: r.name, totalSeconds: r.total_seconds }));
     const total = results.reduce((a, r) => a + r.totalSeconds, 0);
-    const { goalMinutes } = configOf(row);
+    const { goalMinutes, banner } = configOf(row);
     const chain = row.type === 'corrente' && row.chain_result !== null ? (JSON.parse(row.chain_result) as ChainView) : null;
     return {
       id: row.id,
@@ -379,6 +381,7 @@ export function history(ctx: Context): HistoryItemView[] {
       percent: percentOfGoal(total, goalMinutes),
       results,
       chain: chain && { allowedBreaks: chain.allowedBreaks, lost: chain.lost, saved: chain.saved },
+      banner: banner ?? BANNERS[0],
     };
   });
 }
