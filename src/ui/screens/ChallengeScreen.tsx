@@ -160,17 +160,16 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
   return (
     <>
       <header className={`hero-c hero-c-${challenge.banner}`}>
-        <div className="hero-c-label">
-          <span>{label}</span>
-          <div className="hero-c-tools">
-            {open && !chain && <ViewPicker view={view} onPick={pickView} />}
+        <div className="hero-c-head">
+          <div className="hero-c-label">
+            <span>{label}</span>
             <Options me={me} challenge={challenge} busy={busy} onLeave={leave} onCancel={cancel} onDelete={remove} />
           </div>
-        </div>
-        <h1 className="d hero-c-title">{challenge.name}</h1>
-        <div className="hero-c-by">
-          {journey && `${strings.journey.route(journey.start.name, journey.end.name)} · `}
-          {strings.challenge.createdBy(challenge.creatorName)}
+          <h1 className="d hero-c-title">{challenge.name}</h1>
+          <div className="hero-c-by">
+            {journey && `${strings.journey.route(journey.start.name, journey.end.name)} · `}
+            {strings.challenge.createdBy(challenge.creatorName)}
+          </div>
         </div>
         {!open ? (
           <ResultHero challenge={challenge} log={entries} />
@@ -179,6 +178,7 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
         ) : journey ? (
           <HeroProgress
             view={view}
+            picker={<ViewPicker view={view} onPick={pickView} />}
             numbers={numbers}
             of={strings.journey.heroOf(formatKm(journey.distanceMeters / 1000))}
             barNote={strings.journey.heroBarNote(formatDuration(challenge.totalSeconds), formatGoal(challenge.goalMinutes), challenge.percent)}
@@ -193,6 +193,7 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
         ) : (
           <HeroProgress
             view={view}
+            picker={<ViewPicker view={view} onPick={pickView} />}
             numbers={numbers}
             of={strings.challenge.heroOf(formatGoal(challenge.goalMinutes), programmedText)}
             programmedNote={programmedText && strings.challenge.heroProgrammed(programmedText)}

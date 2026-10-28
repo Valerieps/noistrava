@@ -106,6 +106,7 @@ const HERO_BOTTOM = 160;
 /** The big number and the figure under it (ring, bar or curve), drawn in white on the hero color. */
 export function HeroProgress({
   view,
+  picker,
   numbers,
   of,
   programmedNote,
@@ -118,6 +119,8 @@ export function HeroProgress({
   dateRange,
 }: {
   view: View;
+  /** The bar/ring/curve picker, drawn next to the figure it switches. */
+  picker: ReactNode;
   numbers: ProgressNumbers;
   /** "de 60h · programado hoje 42h35" */
   of: string;
@@ -143,13 +146,19 @@ export function HeroProgress({
     return (
       <div className="hero-c-total">
         <HeroRing numbers={numbers} />
-        {total}
+        <div className="hero-c-total-side">
+          {total}
+          {picker}
+        </div>
       </div>
     );
   }
   return (
     <div className="hero-c-figure">
-      {total}
+      <div className="hero-c-figure-head">
+        {total}
+        {picker}
+      </div>
       {view === 'bar' ? (
         <div className="stack" style={{ gap: 6 }}>
           <div className="hero-bar" aria-hidden="true">
