@@ -18,7 +18,7 @@ import { MonthCalendar } from './profile/MonthCalendar';
 
 const TOPICS = ['activities', 'challenge', 'history'] as const;
 
-export function Profile({ me, onSignOut }: { me: MeView; onSignOut: () => void }) {
+export function Profile({ me }: { me: MeView }) {
   const tracking = useQuery('tracking', {}, TOPICS);
   const t = tracking.data;
   const next = t?.badges.find((b) => b.key === t.nextBadge);
@@ -51,7 +51,7 @@ export function Profile({ me, onSignOut }: { me: MeView; onSignOut: () => void }
         </>
       )}
 
-      <Account onSignOut={onSignOut} />
+      <Account />
     </div>
   );
 }
@@ -138,7 +138,7 @@ function Group({ contribution: c }: { contribution: TrackingView['contribution']
   );
 }
 
-function Account({ onSignOut }: { onSignOut: () => void }) {
+function Account() {
   const activities = useQuery('activities', {}, ['activities']);
   const p = strings.profile;
   return (
@@ -147,9 +147,6 @@ function Account({ onSignOut }: { onSignOut: () => void }) {
         {p.activities}
         <span className="muted">{activities.data?.length ?? ''}</span>
       </Link>
-      <button type="button" className="danger-text" onClick={onSignOut}>
-        {strings.nav.signOut}
-      </button>
     </nav>
   );
 }

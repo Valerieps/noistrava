@@ -33,8 +33,8 @@ desafio.
 ## Integrantes
 
 - No topo das telas principais fica a barra com o nome do app e uma engrenagem, para todas, que
-  abre as configurações. Nelas eu mudo meu nome, conecto o Strava e escolho o tema. O admin também
-  vê ali a lista de integrantes e os convites. *(1)*
+  abre as configurações. Nelas eu mudo meu nome, conecto o Strava, escolho o tema e saio do app. O
+  admin também vê ali a lista de integrantes e os convites. *(1)*
 - O admin vê a lista do grupo, com nome, foto, e-mail e papéis. *(1)*
 - O admin remove uma integrante depois de confirmar. Ele não remove a si mesmo: outro admin faz
   isso. Assim sempre sobra um admin. *(1)*
