@@ -29,7 +29,7 @@ export function ActivityForm({ activityId }: { activityId: string | null }) {
   if (activityId && !activity) {
     return (
       <>
-        <BackHeader title={title} to="/perfil" />
+        <BackHeader title={title} to="/perfil/atividades" />
         {activities.data && (
           <div className="screen">
             <p className="notice" role="alert">

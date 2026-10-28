@@ -411,7 +411,8 @@ describe('activities from Strava (ADR-008)', () => {
     const ana = await connected();
     await hook(activityEvent('create'));
     await settle();
-    expect(calls.slice(-2)).toEqual(['POST /oauth/token refresh_token', 'GET /api/v3/activities/1001 Bearer fresh-access']);
+    expect(calls).toContain('POST /oauth/token refresh_token');
+    expect(calls.at(-1)).toBe('GET /api/v3/activities/1001 Bearer fresh-access');
     expect(await mine(ana)).toHaveLength(1);
     const [stored] = app.durableObject.db.prepare('SELECT access_token, refresh_token, expires_at FROM strava_connections').all();
     expect(stored).toMatchObject({ expires_at: '2027-01-01T00:00:00.000Z' });
@@ -442,7 +443,7 @@ describe('activities from Strava (ADR-008)', () => {
     expect(calls).toEqual([]);
   });
 
-  it('come from the start of a challenge already running, when connecting', async () => {
+  it('come from 90 days before connecting, a running challenge included', async () => {
     const calls = fakeStrava([ride, { ...ride, id: 1003, start_date: '2026-11-02T07:00:00Z', elapsed_time: 1800 }]);
     const { ana } = await group();
     await value(command(ana, 'challenge.create', week));
@@ -451,7 +452,7 @@ describe('activities from Strava (ADR-008)', () => {
 
     await connect(ana);
     const list = (network.mock.calls as [string][]).map(([url]) => new URL(url)).find((url) => url.pathname === '/api/v3/athlete/activities');
-    expect(list?.searchParams.get('after')).toBe(String(Date.parse('2026-11-02T00:00:00Z') / 1000 - 1));
+    expect(list?.searchParams.get('after')).toBe(String(Date.parse('2026-08-05T12:00:00Z') / 1000 - 1));
     expect(await total(ana)).toBe(5400);
 
     // The cron finds nothing left to bring.

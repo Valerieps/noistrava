@@ -28,6 +28,11 @@
   --color-land: #f7f2f8;
   --color-danger: #b3261e;
   --color-scrim: rgba(20, 12, 28, 0.45);
+  /* The month calendar's four tones, from no activity to the most time */
+  --color-heat-0: #ebe6f0;
+  --color-heat-1: #efc3d5;
+  --color-heat-2: #cc6e98;
+  --color-heat-3: #a82a5c;
 
   --font-sans: Figtree, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-display: 'Bricolage Grotesque', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -82,5 +87,9 @@
     --color-land: #1d1726;
     --color-danger: #f2b8b5;
     --color-scrim: rgba(0, 0, 0, 0.6);
+    --color-heat-0: #2c2337;
+    --color-heat-1: #5a2944;
+    --color-heat-2: #a83f6e;
+    --color-heat-3: #ff5c8f;
   }
 }

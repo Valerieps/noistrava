@@ -84,6 +84,7 @@ app (celular) ──POST /api/query|command──► Worker ──RPC──► G
 | `reactions` | `activity_id`, `challenge_id`, `member_id` | Um coração por pessoa por atividade |
 | `challenge_milestones` | `challenge_id`, `milestone`, `reached_at` | Marco atingido não volta atrás |
 | `challenge_results` | `challenge_id`, `member_id`, `name`, `total_seconds` | Gravado ao fechar o desafio |
+| `member_badges` | `member_id`, `badge`, `earned_at` (migração 7) | Os selos ganhos. O acompanhamento é calculado das atividades a cada leitura (`src/domain/tracking/tracking.ts`); só os selos ficam gravados, porque um selo ganho não se perde quando a atividade que o deu é editada ou apagada |
 
 ## Fluxo de eventos
 
@@ -101,8 +102,12 @@ app (celular) ──POST /api/query|command──► Worker ──RPC──► G
   (`ctx.waitUntil`); o resultado entra no `Group` por `importStravaActivity`, com as mesmas regras do
   registro manual. Só o Worker decifra os tokens, e renova o de acesso quando falta pouco para
   vencer; um token que o Strava recusa desconecta a pessoa.
-- **Atividades de antes da conexão:** o `Group` diz quais conexões ainda não têm as atividades desde
-  o início do desafio aberto mais antigo que já começou (`stravaBackfillsDue`); o Worker as busca
+- **Selos:** depois de cada comando que muda atividades ou desafios, de cada importação do Strava e
+  no cron, `awardBadges` grava os selos que cada integrante acabou de ganhar, com a data da
+  atividade, do coração ou da corrente que o deu. O cron também dá os selos do que já existia.
+- **Atividades de antes da conexão:** o `Group` diz quais conexões ainda não têm as atividades dos
+  90 dias antes de conectar, ou desde o início do desafio aberto mais antigo que já começou, se for
+  antes (`stravaBackfillsDue`); o Worker as busca
   na lista do Strava e as entrega de uma vez (`importStravaBackfill`). Roda depois de conectar,
   depois de um comando que muda um desafio e no cron, que repete o que falhou.
 

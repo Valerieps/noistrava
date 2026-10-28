@@ -119,6 +119,15 @@ export const MIGRATIONS: readonly (readonly string[])[] = [
   [`ALTER TABLE challenges ADD COLUMN chain_result TEXT`],
   // 6: from which date a Strava connection already has its activities (ADR-008).
   [`ALTER TABLE strava_connections ADD COLUMN backfilled_since TEXT`],
+  // 7: the badges each member earned; one earned stays, whatever happens to its activity.
+  [
+    `CREATE TABLE member_badges (
+      member_id TEXT NOT NULL REFERENCES members(id),
+      badge TEXT NOT NULL,
+      earned_at TEXT NOT NULL,
+      PRIMARY KEY (member_id, badge)
+    )`,
+  ],
 ];
 
 export function migrate(sql: Sql): void {

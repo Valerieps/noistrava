@@ -13,9 +13,11 @@ import { Drafts } from './screens/Drafts';
 import { History } from './screens/History';
 import { Invites } from './screens/Invites';
 import { Members } from './screens/Members';
-import { Profile } from './screens/Profile';
+import { MyActivities, NameForm, Profile } from './screens/Profile';
+import { BadgesScreen } from './screens/profile/Badges';
 import { Settings } from './screens/Settings';
 import { SignIn } from './screens/SignIn';
+import { StravaConnect } from './screens/StravaConnect';
 import { useQuery } from './use-query';
 
 /** The app's screens: the challenge, the history and the profile, with a top bar and a bottom navigation. */
@@ -71,7 +73,7 @@ export function App() {
 
 function Navigation() {
   const path = usePath();
-  const section = path.startsWith('/historico') ? '/historico' : path === '/perfil' ? '/perfil' : SETTINGS_PATHS.includes(path) ? null : '/';
+  const section = path.startsWith('/historico') ? '/historico' : path.startsWith('/perfil') ? '/perfil' : SETTINGS_PATHS.includes(path) ? null : '/';
   const tabs = [
     { path: '/', label: strings.nav.challenge, icon: <FlagIcon /> },
     { path: '/historico', label: strings.nav.history, icon: <ClockIcon /> },
@@ -143,6 +145,32 @@ function Screen({ me, onSignOut }: { me: MeView; onSignOut: () => void }) {
   const path = usePath();
   if (path === '/historico') return <History />;
   if (path === '/perfil') return <Profile me={me} onSignOut={onSignOut} />;
+  if (path === '/perfil/selos')
+    return (
+      <Sub title={strings.tracking.badgesTitle} back="/perfil">
+        <BadgesScreen />
+      </Sub>
+    );
+  if (path === '/perfil/atividades')
+    return (
+      <Sub title={strings.profile.activities} back="/perfil">
+        <MyActivities />
+      </Sub>
+    );
+  if (path === '/perfil/nome')
+    return (
+      <Sub title={strings.profile.nameRow} back="/perfil">
+        <NameForm me={me} />
+      </Sub>
+    );
+  if (path === '/perfil/strava')
+    return (
+      <Sub title={strings.profile.strava} back="/perfil">
+        <section className="panel">
+          <StravaConnect />
+        </section>
+      </Sub>
+    );
   if (path === '/configuracoes' && canManageGroup(me))
     return (
       <Sub title={strings.nav.settings} back="/">

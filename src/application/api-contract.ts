@@ -4,6 +4,7 @@ import type { ActivitySource } from '../domain/activity';
 import type { ChainConfig, ChainDayState } from '../domain/challenge/chain';
 import type { Banner, ChallengeResponse, ChallengeState, ChallengeType, Journey, Place } from '../domain/challenge/challenge';
 import type { Role } from '../domain/group/roles';
+import type { BadgeStatus, BadgeKey, Rhythm } from '../domain/tracking/tracking';
 
 export interface MemberView {
   readonly id: string;
@@ -171,6 +172,22 @@ export interface RouteInput {
   stops: Place[];
 }
 
+/** My tracking on the profile (docs/spec/acompanhamento.md); nobody else's is ever shown. */
+export interface TrackingView extends Rhythm {
+  /** Every badge; one earned once stays earned, with its first date. */
+  readonly badges: readonly BadgeStatus[];
+  readonly nextBadge: BadgeKey | null;
+  readonly contribution: {
+    /** My part of the open collective-hours challenge I am a Senhora of. */
+    readonly current: { readonly name: string; readonly percent: number } | null;
+    readonly asSenhora: number;
+    readonly won: number;
+    readonly heartsGiven: number;
+    readonly heartsReceived: number;
+    readonly pulledDays: number;
+  };
+}
+
 export interface ActivityInput {
   /** ISO 8601 with an offset or Z. */
   startedAt: string;
@@ -195,6 +212,8 @@ export interface Queries {
   history: { input: Record<string, never>; output: HistoryItemView[] };
   /** My own activities, newest first. */
   activities: { input: Record<string, never>; output: ActivityView[] };
+  /** My own rhythm, contribution and badges. */
+  tracking: { input: Record<string, never>; output: TrackingView };
 }
 
 /** Writes: `POST /api/command/<name>`. Each runs alone, in one transaction. */

@@ -21,9 +21,10 @@
   an event is only a hint: the Worker fetches the activity from the API with the athlete's own token
   and never stores the event's content. `create` and `update` refetch, `delete` removes,
   deauthorization deletes the tokens and marks the connection inactive.
-- **Backfill:** the Worker fetches the member's activities from the start of the earliest open
-  challenge that already began (`after=`), whatever she answered to it, so accepting late finds
-  them already there. The connection remembers that date (`backfilled_since`), so this runs once
+- **Backfill:** the Worker fetches the member's activities from 90 days before she connected, for
+  her tracking (phase 2), or from the start of the earliest open challenge that already began, if
+  that is earlier (`after=`), whatever she answered to it, so accepting late finds them already
+  there. The connection remembers that date (`backfilled_since`), so this runs once
   per connection and again only for an earlier start. It is checked after connecting, after a
   command that changes a challenge, and on the cron, which retries a failed one.
 - **Tokens in use:** only the Worker decrypts them; an access token close to expiring is refreshed

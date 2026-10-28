@@ -27,18 +27,18 @@ No meu perfil, eu acompanho o meu ritmo e ganho selos, para manter a constância
   Por quê: perder um dia não zera nada; só uma semana inteira parada quebra a sequência.
 - Eu vejo os 7 dias da semana em andamento, com os dias ativos marcados, e o tempo da semana até
   agora. *(2)*
-- Eu vejo as horas de cada uma das minhas últimas 8 semanas, a atual incluída, com uma linha no meu
-  normal. *(2)*
-- Eu vejo um calendário do mês com os meus dias ativos, mais forte nos dias com mais tempo, e
-  posso voltar aos meses anteriores. *(2)*
+- Eu vejo, no próprio perfil, um calendário do mês com os meus dias ativos, mais forte nos dias
+  com mais tempo, e posso voltar aos meses anteriores até o primeiro em que tive atividade. Os
+  tons são quatro: sem atividade, menos de 30 minutos, de 30 minutos a 1 hora, e 1 hora ou mais. *(2)*
 - Eu vejo o meu tempo desta semana comparado com a minha média das 4 semanas completas anteriores
   (contando as semanas paradas como zero), como "20% acima do seu normal". Essa média é o meu
-  normal. Sem nenhuma atividade nessas 4 semanas, a comparação e a linha do normal não aparecem. *(2)*
+  normal. Sem nenhuma atividade nessas 4 semanas, a comparação não aparece. *(2)*
 - Eu vejo o meu dia da semana e o meu período do dia mais frequentes nos últimos 90 dias. Os
   períodos são madrugada (0h às 6h), manhã (6h às 12h), tarde (12h às 18h) e noite (18h às 24h). *(2)*
 - Eu vejo as modalidades do mês e o tempo em cada uma. *(2)*
 - Quando eu volto depois de 14 dias ou mais sem atividade, o perfil mostra "primeira atividade
-  depois de N dias" até o fim daquela semana. *(2)*
+  depois de N dias" até o fim daquela semana. N são os dias entre a data da atividade anterior e a
+  da volta. *(2)*
 
 ## A minha contribuição
 

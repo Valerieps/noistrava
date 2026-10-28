@@ -29,7 +29,11 @@ interface ConnectionRow {
   include_private: number;
   active: number;
   backfilled_since: string | null;
+  consented_at: string;
 }
+
+/** How far back connecting brings my activities (docs/spec/strava.md). */
+export const STRAVA_BACKFILL_DAYS = 90;
 
 export function stravaConnection(ctx: Context, actor: Member): StravaConnectionView {
   const [row] = ctx.sql.all<ConnectionRow>('SELECT * FROM strava_connections WHERE member_id = ?', actor.id);
@@ -208,21 +212,24 @@ export function disconnectStrava(ctx: Context, athleteId: string): boolean {
 
 /**
  * The connections that still miss activities: the webhook only brings what happens after
- * connecting, so each one needs the activities since the start of the earliest open challenge
- * that already began. Open challenges count whatever the member answered, so accepting late
- * finds her activities already here.
+ * connecting, so each one needs the 90 days before connecting, for the tracking, and the
+ * activities since the start of the earliest open challenge that already began, if that is
+ * earlier. Open challenges count whatever the member answered, so accepting late finds her
+ * activities already here.
  */
 export function stravaBackfillsDue(ctx: Context): { athleteId: string; since: string }[] {
   const now = ctx.clock.now().getTime();
-  const starts = ctx.sql
+  const earliestStart = ctx.sql
     .all<{ starts_at: string }>("SELECT starts_at FROM challenges WHERE state = 'open'")
-    .map((row) => row.starts_at)
-    .filter((start) => Date.parse(start) <= now)
-    .sort((a, b) => Date.parse(a) - Date.parse(b));
-  const since = starts[0];
-  if (!since) return [];
+    .map((row) => Date.parse(row.starts_at))
+    .filter((start) => start <= now)
+    .sort((a, b) => a - b)[0];
   return ctx.sql
     .all<ConnectionRow>('SELECT * FROM strava_connections WHERE active = 1')
-    .filter((row) => !row.backfilled_since || Date.parse(since) < Date.parse(row.backfilled_since))
-    .map((row) => ({ athleteId: row.athlete_id, since }));
+    .map((row) => {
+      const tracked = Date.parse(row.consented_at) - STRAVA_BACKFILL_DAYS * 24 * 60 * 60 * 1000;
+      return { row, since: new Date(earliestStart !== undefined ? Math.min(tracked, earliestStart) : tracked).toISOString() };
+    })
+    .filter(({ row, since }) => !row.backfilled_since || Date.parse(since) < Date.parse(row.backfilled_since))
+    .map(({ row, since }) => ({ athleteId: row.athlete_id, since }));
 }

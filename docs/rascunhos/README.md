@@ -9,4 +9,3 @@ Quando a tela de um rascunho fica pronta, o rascunho é apagado: o código passa
 
 | Rascunho | Status |
 | --- | --- |
-| [perfil-acompanhamento.md](perfil-acompanhamento.md) | Direção escolhida (D com o calendário da A); falta construir |
