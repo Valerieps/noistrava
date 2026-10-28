@@ -1,5 +1,5 @@
 // "Configurações", from the gear in the top bar: my name, the Strava connection and the theme for
-// everyone; the members and the invites for the admin.
+// everyone; the members and the invites for the admin; and signing out.
 import { useState } from 'react';
 import type { MeView } from '../../application/api-contract';
 import { canManageGroup } from '../../domain/group/roles';
@@ -9,7 +9,7 @@ import { Link } from '../router';
 import { saveTheme, savedTheme, THEME_CHOICES, type ThemeChoice } from '../theme/preference';
 import { useQuery } from '../use-query';
 
-export function Settings({ me }: { me: MeView }) {
+export function Settings({ me, onSignOut }: { me: MeView; onSignOut: () => void }) {
   const strava = useQuery('strava', {}, ['strava']);
   const p = strings.profile;
   const s = strings.settings;
@@ -38,6 +38,11 @@ export function Settings({ me }: { me: MeView }) {
           </Link>
         </nav>
       )}
+      <nav className="menu-list" aria-label={strings.nav.signOut}>
+        <button type="button" className="danger-text" onClick={onSignOut}>
+          {strings.nav.signOut}
+        </button>
+      </nav>
     </>
   );
 }

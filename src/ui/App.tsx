@@ -142,7 +142,7 @@ function Sub({ title, back, children }: { title: string; back: string; children:
 function Screen({ me, onSignOut }: { me: MeView; onSignOut: () => void }) {
   const path = usePath();
   if (path === '/historico') return <History />;
-  if (path === '/perfil') return <Profile me={me} onSignOut={onSignOut} />;
+  if (path === '/perfil') return <Profile me={me} />;
   if (path === '/perfil/selos')
     return (
       <Sub title={strings.tracking.badgesTitle} back="/perfil">
@@ -172,7 +172,7 @@ function Screen({ me, onSignOut }: { me: MeView; onSignOut: () => void }) {
   if (path === '/configuracoes')
     return (
       <Sub title={strings.nav.settings} back="/">
-        <Settings me={me} />
+        <Settings me={me} onSignOut={onSignOut} />
       </Sub>
     );
   if (path === '/integrantes' && canManageGroup(me))
