@@ -17,7 +17,7 @@ import { ActivityLog } from './challenge/ActivityLog';
 import { ChainHero, ChainPanel } from './challenge/ChainPanel';
 import { Highlights } from './challenge/Highlights';
 import { JourneyMap } from './challenge/JourneyMap';
-import { HeroProgress, PaceNote, useProgressView, ViewPicker, type ProgressNumbers } from './challenge/ProgressPanel';
+import { ProgressFigure, PaceNote, useProgressView, ViewPicker, type ProgressNumbers } from './challenge/ProgressPanel';
 import { JourneyRanking, Ranking, senhorasOf } from './challenge/Ranking';
 import { HowWeGotThere, ResultHero, ToleranceNote } from './challenge/Result';
 
@@ -175,8 +175,12 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
           <ResultHero challenge={challenge} log={entries} />
         ) : chain ? (
           <ChainHero chain={chain} />
-        ) : journey ? (
-          <HeroProgress
+        ) : null}
+      </header>
+
+      <div className="sheet">
+        {open && !chain && (journey ? (
+          <ProgressFigure
             view={view}
             picker={<ViewPicker view={view} onPick={pickView} />}
             numbers={numbers}
@@ -191,7 +195,7 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
             dateRange={dateRange}
           />
         ) : (
-          <HeroProgress
+          <ProgressFigure
             view={view}
             picker={<ViewPicker view={view} onPick={pickView} />}
             numbers={numbers}
@@ -203,10 +207,7 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
             now={now}
             dateRange={dateRange}
           />
-        )}
-      </header>
-
-      <div className="sheet">
+        ))}
         {journey && <JourneyMap challenge={challenge} programmedMeters={open ? secondsToKm(p.programmedSeconds) * 1000 : 0} />}
         {error && (
           <div className="sheet-section">

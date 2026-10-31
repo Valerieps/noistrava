@@ -2011,13 +2011,6 @@ button:disabled {
   font-size: var(--text-sm);
 }
 
-.hero-c-total {
-  display: flex;
-  align-items: center;
-  gap: var(--space-5);
-  margin-top: var(--space-3);
-}
-
 .hero-c-number {
   font-size: 40px;
   font-weight: 800;
@@ -2029,26 +2022,6 @@ button:disabled {
   color: var(--color-on-hero-muted);
   font-size: 14px;
   line-height: 1.35;
-}
-
-.hero-ring {
-  position: relative;
-  width: 132px;
-  height: 132px;
-  flex: none;
-}
-
-.hero-ring svg {
-  display: block;
-}
-
-.hero-ring-center {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  font-size: var(--text-xl);
-  font-weight: 800;
 }
 
 .sheet {
@@ -2281,41 +2254,88 @@ button:disabled {
   height: 28px;
 }
 
-/* The view picker and the bar and curve figures, in white on the hero */
-/* The view picker sits on the right of the number, just above the bar or the curve */
-.hero-c-figure-head {
+/* The progress, first on the sheet: the number with the view picker on its right, and the bar, the
+   ring or the curve under it, in the brand color */
+.progress-head {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: var(--space-3);
 }
 
-.hero-c-figure-head > :first-child {
+.progress-head > :first-child {
   min-width: 0;
 }
 
-/* With the ring, the picker goes under the number, beside the ring */
-.hero-c-total-side {
+.progress-number {
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.progress-number.big {
+  font-size: 48px;
+}
+
+.progress-of {
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.progress-km {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-3);
-  min-width: 0;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--space-2);
 }
 
-.hero-c .segmented {
-  background: rgba(255, 255, 255, 0.18);
-  border-color: transparent;
+.progress-bar {
+  position: relative;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand-soft);
 }
 
-.hero-c .segmented button {
-  background: transparent;
-  color: var(--color-on-hero);
+.progress-bar-programmed,
+.progress-bar-effective {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand);
 }
 
-.hero-c .segmented button[aria-checked='true'] {
-  background: #ffffff;
-  color: var(--color-hero);
+.progress-bar-programmed {
+  opacity: 0.35;
+}
+
+.progress-notes {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+.progress-ring {
+  position: relative;
+  align-self: center;
+  width: 132px;
+  height: 132px;
+}
+
+.progress-ring svg {
+  display: block;
+}
+
+.progress-ring-center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: var(--text-xl);
+  font-weight: 800;
 }
 
 .hero-c-figure {
@@ -2325,50 +2345,12 @@ button:disabled {
   margin-top: var(--space-3);
 }
 
-.hero-bar {
-  position: relative;
-  height: 8px;
-  border-radius: var(--radius-pill);
-  background: rgba(255, 255, 255, 0.22);
-}
-
-.hero-bar-programmed,
-.hero-bar-effective {
-  position: absolute;
-  inset: 0 auto 0 0;
-  border-radius: var(--radius-pill);
-}
-
-.hero-bar-programmed {
-  background: rgba(255, 255, 255, 0.45);
-}
-
-.hero-bar-effective {
-  background: #ffffff;
-}
-
-.hero-bar-notes {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--space-2);
-  color: var(--color-on-hero-muted);
-  font-size: var(--text-xs);
-}
-
 /* Journey on the sheet: the km in the hero, the map flush at the top, the rail list */
 .hero-c-km {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   column-gap: var(--space-2);
-}
-
-.hero-c-number.big {
-  font-size: 48px;
-}
-
-.hero-c-total .hero-c-number.big {
-  font-size: 40px;
 }
 
 .sheet > .map {
