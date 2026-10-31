@@ -370,6 +370,12 @@ export const strings = {
     edited: 'editada',
     stravaConnected: 'Conectado',
     stravaDisconnected: 'Conectar',
+    stravaSync: 'Puxar atividades do Strava',
+    stravaSyncing: 'Puxando…',
+    stravaSyncChanged: 'Pronto, as atividades do Strava foram atualizadas.',
+    stravaSyncNothing: 'Tudo em dia: nenhuma atividade nova no Strava.',
+    stravaSyncDisconnected: 'O Strava não está conectado. Conecte de novo nas configurações.',
+    stravaSyncUnavailable: 'O Strava não respondeu. Tente de novo daqui a pouco.',
   },
 
   settings: {

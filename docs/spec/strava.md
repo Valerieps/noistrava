@@ -20,6 +20,11 @@ Minhas atividades chegam sozinhas do Strava, sem eu precisar registrar.
 ## O que chega
 
 - Uma atividade nova, editada ou apagada no Strava chega ao app em poucos minutos. *(1)*
+- Se uma atividade não chegou sozinha, eu aperto "Puxar atividades do Strava" no meu perfil, e o
+  app busca de novo as minhas atividades do mesmo período que trouxe ao conectar. O botão só
+  aparece com o Strava conectado. *(1)*
+  Por quê: a conexão com o Strava pode falhar, e sem o botão eu teria que registrar à mão uma
+  atividade que já está no Strava.
 - O tempo que conta é o tempo total da atividade no Strava. *(1)*
 - Ao conectar, e ao entrar num desafio já começado, o app traz as minhas atividades desde o início do
   desafio. Atividades de antes do período não vêm. *(1)*

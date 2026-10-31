@@ -461,6 +461,22 @@ describe('activities from Strava (ADR-008)', () => {
     expect(calls).toEqual([]);
   });
 
+  it('come again when I pull them from the profile, for one the webhook missed', async () => {
+    const activities = [ride];
+    fakeStrava(activities);
+    const ana = await connected();
+    expect(await mine(ana)).toHaveLength(1);
+
+    expect(await error(send('/api/strava/sync', { body: {} }))).toEqual({ status: 401, body: { error: 'unauthenticated' } });
+    expect(await value(send('/api/strava/sync', { session: ana, body: {} }))).toEqual({ changed: false });
+    activities.push({ ...ride, id: 1002, start_date: '2026-11-04T08:00:00Z' });
+    expect(await value(send('/api/strava/sync', { session: ana, body: {} }))).toEqual({ changed: true });
+    expect(await mine(ana)).toHaveLength(2);
+
+    await value(send('/api/strava/disconnect', { session: ana, body: {} }));
+    expect(await error(send('/api/strava/sync', { session: ana, body: {} }))).toEqual({ status: 409, body: { error: 'conflict' } });
+  });
+
   it('stop arriving when I disconnect from the profile, and the ones that came stay', async () => {
     const calls = fakeStrava([ride]);
     const ana = await connected();

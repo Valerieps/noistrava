@@ -30,6 +30,7 @@ export function httpBackend(): Backend {
     devSignIn: (email, name) => post('/api/auth/dev', { email, name }),
     stravaConnect: (includePrivate) => post('/api/strava/connect', { consent: true, includePrivate }),
     stravaDisconnect: () => post('/api/strava/disconnect', {}),
+    stravaSync: () => post('/api/strava/sync', {}),
     searchPlaces: (query) => post('/api/places/search', { query }),
     planRoute: (input) => post('/api/places/route', input),
     signInUrl: '/api/auth/login',
