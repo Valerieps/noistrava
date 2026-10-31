@@ -22,54 +22,76 @@ export function Profile({ me }: { me: MeView }) {
   const tracking = useQuery('tracking', {}, TOPICS);
   const t = tracking.data;
   const next = t?.badges.find((b) => b.key === t.nextBadge);
+  const band = <div className="sheet-band" />;
 
   return (
-    <div className="screen profile">
-      <header className="profile-head">
-        <div className="profile-photo" aria-hidden="true">
-          {me.photoUrl ? <img src={me.photoUrl} alt="" referrerPolicy="no-referrer" /> : initial(me.name)}
+    <>
+      <header className="hero-c hero-c-dots">
+        <div className="hero-c-head">
+          <div className="hero-who">
+            <Photo me={me} />
+            <div className="stack" style={{ gap: 2, minWidth: 0 }}>
+              <h1 className="d hero-who-name">{strings.profile.greeting(me.name)}</h1>
+              {t && <span className="hero-who-sub">{strings.tracking.thisWeek(`${formatShortDay(t.week.start)} a ${formatShortDay(addDays(t.week.start, 6))}`)}</span>}
+            </div>
+          </div>
         </div>
-        <h1 className="d grow">{strings.profile.greeting(me.name)}</h1>
+        {t && <WeekHero tracking={t} />}
       </header>
 
-      {t && (
-        <>
-          <WeekCard tracking={t} />
-          {next && <NextBadge badge={next} />}
-          <MonthCalendar days={t.days} today={t.today} />
-          <Habits tracking={t} />
-          <section className="panel">
-            <div className="split" style={{ alignItems: 'baseline' }}>
-              <h2 className="d text-md">{strings.tracking.badgesTitle}</h2>
-              <Link to="/perfil/selos" className="small strong-link">
-                {strings.tracking.badgesCount(t.badges.filter((b) => b.earnedAt !== null).length, BADGES.length)}
-              </Link>
-            </div>
-            <EarnedBadges badges={t.badges} />
-          </section>
-          <Group contribution={t.contribution} />
-        </>
-      )}
-
-      <Account />
-    </div>
+      <div className="sheet">
+        {t && (
+          <>
+            {next && (
+              <>
+                <NextBadge badge={next} />
+                {band}
+              </>
+            )}
+            <MonthCalendar days={t.days} today={t.today} />
+            {band}
+            <Habits tracking={t} />
+            {band}
+            <section className="sheet-section">
+              <div className="sheet-head">
+                <h2 className="d">{strings.tracking.badgesTitle}</h2>
+                <Link to="/perfil/selos" className="sheet-head-link">
+                  {strings.tracking.badgesCount(t.badges.filter((b) => b.earnedAt !== null).length, BADGES.length)}
+                </Link>
+              </div>
+              <EarnedBadges badges={t.badges} />
+            </section>
+            {band}
+            <Group contribution={t.contribution} />
+            {band}
+          </>
+        )}
+        <Account />
+      </div>
+    </>
   );
 }
 
-function WeekCard({ tracking: t }: { tracking: TrackingView }) {
+/** My photo, or my initial, in a white circle on the hero. */
+export function Photo({ me, size = 56 }: { me: MeView; size?: number }) {
+  return (
+    <span className="hero-photo" style={{ width: size, height: size }} aria-hidden="true">
+      {me.photoUrl ? <img src={me.photoUrl} alt="" referrerPolicy="no-referrer" /> : initial(me.name)}
+    </span>
+  );
+}
+
+function WeekHero({ tracking: t }: { tracking: TrackingView }) {
   const s = strings.tracking;
-  const end = addDays(t.week.start, 6);
   const activeNames = s.weekdays.filter((_, i) => t.week.activeDays[i]);
   return (
-    <section className="week-card">
-      <div className="week-card-top">
-        <span>{s.thisWeek(`${formatShortDay(t.week.start)} a ${formatShortDay(end)}`)}</span>
-        {t.streakWeeks > 0 && <span className="week-card-chip">{s.streak(t.streakWeeks)}</span>}
-      </div>
-      <div className="stack" style={{ gap: 4 }}>
-        <span className="d week-card-total">{formatDuration(t.week.seconds)}</span>
-        {t.comparePercent !== null && t.normalSeconds !== null && <span>{s.compare(t.comparePercent, formatDuration(t.normalSeconds))}</span>}
-        {t.comebackDays !== null && <span className="week-card-note">{s.comeback(t.comebackDays)}</span>}
+    <>
+      <div className="week-hero-total">
+        <div className="stack" style={{ gap: 4, minWidth: 0 }}>
+          <span className="d week-hero-number">{formatDuration(t.week.seconds)}</span>
+          {t.comparePercent !== null && t.normalSeconds !== null && <span className="week-hero-note">{s.compare(t.comparePercent, formatDuration(t.normalSeconds))}</span>}
+        </div>
+        {t.streakWeeks > 0 && <span className="week-hero-chip">{s.streak(t.streakWeeks)}</span>}
       </div>
       <ol className="week-days" aria-label={s.weekDaysLabel(activeNames)}>
         {s.weekdayInitials.map((initialLetter, i) => {
@@ -83,7 +105,8 @@ function WeekCard({ tracking: t }: { tracking: TrackingView }) {
           );
         })}
       </ol>
-    </section>
+      {t.comebackDays !== null && <p className="week-hero-comeback">{s.comeback(t.comebackDays)}</p>}
+    </>
   );
 }
 
@@ -91,8 +114,8 @@ function Habits({ tracking: t }: { tracking: TrackingView }) {
   const s = strings.tracking;
   const month = formatMonth(t.today.slice(0, 7), Number(t.today.slice(0, 4)));
   return (
-    <section className="panel">
-      <h2 className="d text-md">{s.habitsTitle}</h2>
+    <section className="sheet-section">
+      <h2 className="d">{s.habitsTitle}</h2>
       <p style={{ margin: 0, lineHeight: 1.5 }}>
         {t.favoriteWeekday !== null && t.favoritePeriod !== null && (
           <>
@@ -103,9 +126,9 @@ function Habits({ tracking: t }: { tracking: TrackingView }) {
         {s.monthSummary(month, t.month.activeDays, t.month.sports.length)}
       </p>
       {t.month.sports.length > 0 && (
-        <ul className="pills">
+        <ul className="sheet-pills">
           {t.month.sports.map((sport, i) => (
-            <li key={sport.sport} className={`pill${i === 0 ? ' strong' : ''}`}>
+            <li key={sport.sport} className={i === 0 ? 'strong' : undefined}>
               {sportName(sport.sport)} {formatDuration(sport.seconds)}
             </li>
           ))}
@@ -124,9 +147,9 @@ function Group({ contribution: c }: { contribution: TrackingView['contribution']
     [s.pulled, String(c.pulledDays)],
   ];
   return (
-    <section className="panel">
-      <h2 className="d text-md">{s.groupTitle}</h2>
-      <dl className="group-rows">
+    <section className="sheet-section" style={{ paddingBottom: 0 }}>
+      <h2 className="d">{s.groupTitle}</h2>
+      <dl className="sheet-pairs">
         {rows.map(([label, value]) => (
           <div key={label}>
             <dt>{label}</dt>
@@ -144,10 +167,11 @@ function Account() {
   const p = strings.profile;
   return (
     <>
-      <nav className="menu-list" aria-label={p.activities}>
-        <Link to="/perfil/atividades">
-          {p.activities}
-          <span className="muted">{activities.data?.length ?? ''}</span>
+      <nav className="sheet-menu" aria-label={p.activities}>
+        <Link to="/perfil/atividades" className="sheet-menu-row strong">
+          <span>{p.activities}</span>
+          <span className="sheet-menu-value">{activities.data?.length ?? ''}</span>
+          <ChevronIcon />
         </Link>
       </nav>
       {strava.data?.connected && <StravaSync />}
@@ -191,16 +215,25 @@ export function MyActivities() {
   const p = strings.profile;
   const list = activities.data ?? [];
   return (
-    <section className="panel">
-      <Link to="/atividade/nova" className="button secondary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+    <section className="sheet-section">
+      <Link
+        to="/atividade/nova"
+        className="button secondary"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 6,
+        }}
+      >
         <PlusIcon />
         {strings.challenge.register}
       </Link>
       {activities.data && list.length === 0 && <p className="muted small">{p.activitiesEmpty}</p>}
-      <ul className="list stack" style={{ gap: 0 }}>
+      <ul className="sheet-list-plain">
         {list.map((a) => (
           <li key={a.id}>
-            <Link to={`/atividade/${encodeURIComponent(a.id)}`} className="split" style={{ padding: '10px 0', textDecoration: 'none', color: 'inherit', borderBottom: '1px solid var(--color-border)', alignItems: 'center' }}>
+            <Link to={`/atividade/${encodeURIComponent(a.id)}`} className="sheet-link-row">
               <span className="grow">
                 <b>{sportName(a.sport)}</b>
                 <br />
@@ -236,7 +269,7 @@ export function NameForm({ me }: { me: MeView }) {
   }
 
   return (
-    <form className="panel" onSubmit={rename}>
+    <form className="sheet-section" onSubmit={rename}>
       <label>
         <span className="field-label">{p.nameLabel}</span>
         <input required maxLength={NAME_MAX_LENGTH} value={name} onChange={(e) => setName(e.target.value)} />

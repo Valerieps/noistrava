@@ -8,41 +8,66 @@ import { ChevronIcon } from '../icons';
 import { Link } from '../router';
 import { saveTheme, savedTheme, THEME_CHOICES, type ThemeChoice } from '../theme/preference';
 import { useQuery } from '../use-query';
+import { Photo } from './Profile';
+
+/** My photo and name, on the settings' hero. */
+export function SettingsHero({ me }: { me: MeView }) {
+  return (
+    <div className="hero-who">
+      <Photo me={me} size={52} />
+      <span className="d hero-who-name compact ellipsis">{me.name}</span>
+    </div>
+  );
+}
 
 export function Settings({ me, onSignOut }: { me: MeView; onSignOut: () => void }) {
   const strava = useQuery('strava', {}, ['strava']);
   const p = strings.profile;
   const s = strings.settings;
+  const band = <div className="sheet-band" />;
   return (
     <>
-      <nav className="menu-list" aria-label={s.account}>
-        <Link to="/configuracoes/nome">
-          {p.nameRow}
-          <span className="muted ellipsis">{me.name}</span>
+      <nav className="sheet-menu" aria-labelledby="settings-account">
+        <h2 id="settings-account" className="sheet-menu-label">
+          {s.account}
+        </h2>
+        <Link to="/configuracoes/nome" className="sheet-menu-row">
+          <span>{p.nameRow}</span>
+          <span className="sheet-menu-value ellipsis">{me.name}</span>
+          <ChevronIcon />
         </Link>
-        <Link to="/configuracoes/strava">
-          {p.strava}
+        <Link to="/configuracoes/strava" className="sheet-menu-row">
+          <span>{p.strava}</span>
           {strava.data && <span className={`status-pill${strava.data.connected ? ' ok' : ''}`}>{strava.data.connected ? p.stravaConnected : p.stravaDisconnected}</span>}
+          <ChevronIcon />
         </Link>
       </nav>
+      {band}
       <ThemePicker />
       {canManageGroup(me) && (
-        <nav className="menu-list" aria-label={s.group}>
-          <Link to="/integrantes">
-            {strings.nav.members}
-            <ChevronIcon />
-          </Link>
-          <Link to="/convites">
-            {strings.nav.invites}
-            <ChevronIcon />
-          </Link>
-        </nav>
+        <>
+          {band}
+          <nav className="sheet-menu" aria-labelledby="settings-group">
+            <h2 id="settings-group" className="sheet-menu-label">
+              {s.group}
+            </h2>
+            <Link to="/integrantes" className="sheet-menu-row">
+              <span>{strings.nav.members}</span>
+              <ChevronIcon />
+            </Link>
+            <Link to="/convites" className="sheet-menu-row">
+              <span>{strings.nav.invites}</span>
+              <ChevronIcon />
+            </Link>
+          </nav>
+        </>
       )}
-      <nav className="menu-list" aria-label={strings.nav.signOut}>
-        <button type="button" className="danger-text" onClick={onSignOut}>
+      {band}
+      <div className="sheet-menu">
+        <button type="button" className="sheet-menu-row danger" onClick={onSignOut}>
           {strings.nav.signOut}
         </button>
-      </nav>
+      </div>
     </>
   );
 }
@@ -57,11 +82,13 @@ function ThemePicker() {
   }
 
   return (
-    <section className="panel">
-      <h2 className="d text-md">{s.theme}</h2>
-      <div role="radiogroup" aria-label={s.theme} className="segmented" style={{ alignSelf: 'stretch' }}>
+    <section className="sheet-menu theme-picker">
+      <h2 id="settings-theme" className="sheet-menu-label">
+        {s.theme}
+      </h2>
+      <div role="radiogroup" aria-labelledby="settings-theme" className="sheet-segmented">
         {THEME_CHOICES.map((choice) => (
-          <button key={choice} type="button" role="radio" aria-checked={theme === choice} onClick={() => pick(choice)} style={{ flex: 1, width: 'auto', borderRadius: 'var(--radius-pill)', fontWeight: 600 }}>
+          <button key={choice} type="button" role="radio" aria-checked={theme === choice} onClick={() => pick(choice)}>
             {s.themes[choice]}
           </button>
         ))}

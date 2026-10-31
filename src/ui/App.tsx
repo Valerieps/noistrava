@@ -15,7 +15,7 @@ import { Invites } from './screens/Invites';
 import { Members } from './screens/Members';
 import { MyActivities, NameForm, Profile } from './screens/Profile';
 import { BadgesScreen } from './screens/profile/Badges';
-import { Settings } from './screens/Settings';
+import { Settings, SettingsHero } from './screens/Settings';
 import { SignIn } from './screens/SignIn';
 import { StravaConnect } from './screens/StravaConnect';
 import { useQuery } from './use-query';
@@ -139,41 +139,61 @@ function Sub({ title, back, children }: { title: string; back: string; children:
   );
 }
 
+/** A screen reached from the profile or the settings: a short hero with the way back, then the sheet. */
+function SheetSub({ title, back, hero, children }: { title: string; back: string; hero?: ReactNode; children: ReactNode }) {
+  return (
+    <>
+      <header className="hero-c hero-c-dots hero-c-short">
+        <div className="hero-c-head">
+          <div className="hero-c-back">
+            <Link to={back} className="icon-button" aria-label={strings.nav.back}>
+              <BackIcon />
+            </Link>
+            <h1 className="d">{title}</h1>
+          </div>
+          {hero}
+        </div>
+      </header>
+      <div className="sheet">{children}</div>
+    </>
+  );
+}
+
 function Screen({ me, onSignOut }: { me: MeView; onSignOut: () => void }) {
   const path = usePath();
   if (path === '/historico') return <History />;
   if (path === '/perfil') return <Profile me={me} />;
   if (path === '/perfil/selos')
     return (
-      <Sub title={strings.tracking.badgesTitle} back="/perfil">
+      <SheetSub title={strings.tracking.badgesTitle} back="/perfil">
         <BadgesScreen />
-      </Sub>
+      </SheetSub>
     );
   if (path === '/perfil/atividades')
     return (
-      <Sub title={strings.profile.activities} back="/perfil">
+      <SheetSub title={strings.profile.activities} back="/perfil">
         <MyActivities />
-      </Sub>
+      </SheetSub>
     );
   if (path === '/configuracoes/nome')
     return (
-      <Sub title={strings.profile.nameRow} back="/configuracoes">
+      <SheetSub title={strings.profile.nameRow} back="/configuracoes">
         <NameForm me={me} />
-      </Sub>
+      </SheetSub>
     );
   if (path === '/configuracoes/strava')
     return (
-      <Sub title={strings.profile.strava} back="/configuracoes">
-        <section className="panel">
+      <SheetSub title={strings.profile.strava} back="/configuracoes">
+        <div className="sheet-section">
           <StravaConnect />
-        </section>
-      </Sub>
+        </div>
+      </SheetSub>
     );
   if (path === '/configuracoes')
     return (
-      <Sub title={strings.nav.settings} back="/">
+      <SheetSub title={strings.nav.settings} back="/" hero={<SettingsHero me={me} />}>
         <Settings me={me} onSignOut={onSignOut} />
-      </Sub>
+      </SheetSub>
     );
   if (path === '/integrantes' && canManageGroup(me))
     return (
