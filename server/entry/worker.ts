@@ -19,7 +19,7 @@ import { parseWebhookEvent } from '../infrastructure/strava-api';
 import { exchangeStravaCode, stravaAuthorizationUrl } from '../infrastructure/strava-oauth';
 import type { Env } from './env';
 import { Group, SESSION_HASH_HEADER } from './group-object';
-import { disconnectStravaMember, handleStravaEvent, runStravaBackfills, stravaReady } from './strava-sync';
+import { disconnectStravaMember, handleStravaEvent, runStravaBackfills, stravaReady, syncStravaMember } from './strava-sync';
 
 export { Group };
 
@@ -196,6 +196,29 @@ async function stravaDisconnect(env: Env, hash: string): Promise<Response> {
 }
 
 /**
+ * "Puxar do Strava" from the profile, when an activity did not arrive. Answers whether anything
+ * changed; `conflict` when I am not connected (or Strava refused the app, which disconnects me);
+ * `unavailable` when Strava is not set up here or did not answer.
+ */
+async function stravaSync(env: Env, hash: string): Promise<Response> {
+  const window = (await group(env).stravaSyncWindow(hash)) as
+    | { ok: true; value: { athleteId: string; since: string } | null }
+    | { ok: false; error: 'unauthenticated' };
+  if (!window.ok) return json({ error: 'unauthenticated' }, 401);
+  if (!window.value) return json({ error: 'conflict' }, STATUS.conflict);
+  if (!stravaReady(env)) return json({ error: 'unavailable' }, STATUS.unavailable);
+  try {
+    const result = await syncStravaMember(env, group(env), window.value.athleteId, window.value.since);
+    if (result === 'disconnected') return json({ error: 'conflict' }, STATUS.conflict);
+    if (result === 'unavailable') return json({ error: 'unavailable' }, STATUS.unavailable);
+    return json({ value: result });
+  } catch (error) {
+    console.error('Strava sync failed', error instanceof Error ? error.message : 'unknown error');
+    return json({ error: 'unavailable' }, STATUS.unavailable);
+  }
+}
+
+/**
  * The journey's place search and driving route (ADR-009), for any member: only someone creating a
  * challenge calls them, one call per search or route she asks for. A failure of the public server
  * answers `unavailable`, and the creator tries again later.
@@ -258,6 +281,11 @@ async function api(request: Request, env: Env, url: URL, ctx: ExecutionContext):
   if (path === '/api/strava/disconnect') {
     if (!hash) return json({ error: 'unauthenticated' }, 401);
     return stravaDisconnect(env, hash);
+  }
+
+  if (path === '/api/strava/sync') {
+    if (!hash) return json({ error: 'unauthenticated' }, 401);
+    return stravaSync(env, hash);
   }
 
   const place = /^\/api\/places\/(search|route)$/.exec(path);

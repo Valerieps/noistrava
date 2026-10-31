@@ -81,6 +81,28 @@ export async function runStravaBackfills(env: StravaEnv, group: GroupStub): Prom
 }
 
 /**
+ * "Puxar do Strava" from the profile: lists my activities in the window again, for when the
+ * webhook missed one. Answers whether anything changed, `disconnected` when Strava refused the
+ * app, and `unavailable` when Strava did not answer.
+ */
+export async function syncStravaMember(
+  env: StravaEnv,
+  group: GroupStub,
+  athleteId: string,
+  since: string,
+): Promise<{ changed: boolean } | 'disconnected' | 'unavailable'> {
+  const token = await accessToken(env, group, athleteId);
+  if (!token) return (await group.stravaCredentials(athleteId)) ? 'unavailable' : 'disconnected';
+  const activities = await listStravaActivities(token, since);
+  if (activities === 'unauthorized') {
+    await group.disconnectStrava(athleteId);
+    return 'disconnected';
+  }
+  if (!activities) return 'unavailable';
+  return { changed: Boolean(await group.importStravaBackfill(athleteId, since, activities)) };
+}
+
+/**
  * "Desconectar o Strava" from the profile: the app's access is removed on Strava too, when Strava
  * answers; the connection here goes either way.
  */

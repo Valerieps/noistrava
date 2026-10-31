@@ -40,9 +40,11 @@ export class Group extends DurableObject<Env> {
     if (changed.length > 0) this.broadcast(changed);
   }
 
-  importStravaBackfill(athleteId: string, since: string, events: StravaActivityEvent[]): void {
+  /** Whether any activity came, changed or left. */
+  importStravaBackfill(athleteId: string, since: string, events: StravaActivityEvent[]): boolean {
     const changed = this.service.importStravaBackfill(athleteId, since, events);
     if (changed.length > 0) this.broadcast(changed);
+    return changed.length > 0;
   }
 
   stravaBackfillsDue(): { athleteId: string; since: string }[] {
@@ -60,6 +62,10 @@ export class Group extends DurableObject<Env> {
 
   stravaAthlete(sessionHash: string) {
     return this.service.stravaAthlete(sessionHash);
+  }
+
+  stravaSyncWindow(sessionHash: string) {
+    return this.service.stravaSyncWindow(sessionHash);
   }
 
   disconnectStrava(athleteId: string): void {

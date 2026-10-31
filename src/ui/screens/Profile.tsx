@@ -163,15 +163,49 @@ function Group({ contribution: c }: { contribution: TrackingView['contribution']
 
 function Account() {
   const activities = useQuery('activities', {}, ['activities']);
+  const strava = useQuery('strava', {}, ['strava']);
   const p = strings.profile;
   return (
-    <nav className="sheet-menu" aria-label={p.activities}>
-      <Link to="/perfil/atividades" className="sheet-menu-row strong">
-        <span>{p.activities}</span>
-        <span className="sheet-menu-value">{activities.data?.length ?? ''}</span>
-        <ChevronIcon />
-      </Link>
-    </nav>
+    <>
+      <nav className="sheet-menu" aria-label={p.activities}>
+        <Link to="/perfil/atividades" className="sheet-menu-row strong">
+          <span>{p.activities}</span>
+          <span className="sheet-menu-value">{activities.data?.length ?? ''}</span>
+          <ChevronIcon />
+        </Link>
+      </nav>
+      {strava.data?.connected && <StravaSync />}
+    </>
+  );
+}
+
+/** "Puxar atividades do Strava": for when an activity did not arrive on its own. */
+function StravaSync() {
+  const { backend } = useServices();
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const p = strings.profile;
+
+  async function sync() {
+    setBusy(true);
+    setMessage(null);
+    const result = await backend.stravaSync();
+    setBusy(false);
+    if (result.ok) setMessage(result.value.changed ? p.stravaSyncChanged : p.stravaSyncNothing);
+    else setMessage(result.error === 'conflict' ? p.stravaSyncDisconnected : p.stravaSyncUnavailable);
+  }
+
+  return (
+    <section className="sheet-section">
+      <button type="button" className="secondary" onClick={sync} disabled={busy}>
+        {busy ? p.stravaSyncing : p.stravaSync}
+      </button>
+      {message && (
+        <p className="small muted" role="status" style={{ margin: 0 }}>
+          {message}
+        </p>
+      )}
+    </section>
   );
 }
 

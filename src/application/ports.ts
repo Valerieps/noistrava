@@ -16,6 +16,11 @@ export interface Backend {
   stravaConnect(includePrivate: boolean): Promise<ApiResult<string>>;
   /** "Desconectar o Strava": new activities stop arriving; the ones that came stay. */
   stravaDisconnect(): Promise<ApiResult<null>>;
+  /**
+   * "Puxar do Strava", when an activity did not arrive: brings my activities again. `conflict` when
+   * I am not connected, `unavailable` when Strava did not answer.
+   */
+  stravaSync(): Promise<ApiResult<{ changed: boolean }>>;
   /** The journey's place search, through the server (ADR-009); `unavailable` when it is down. */
   searchPlaces(query: string): Promise<ApiResult<PlaceSuggestion[]>>;
   /**
