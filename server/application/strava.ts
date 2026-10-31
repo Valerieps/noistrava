@@ -218,18 +218,33 @@ export function disconnectStrava(ctx: Context, athleteId: string): boolean {
  * activities already here.
  */
 export function stravaBackfillsDue(ctx: Context): { athleteId: string; since: string }[] {
+  const earliestStart = earliestOpenStart(ctx);
+  return ctx.sql
+    .all<ConnectionRow>('SELECT * FROM strava_connections WHERE active = 1')
+    .map((row) => ({ row, since: backfillSince(row, earliestStart) }))
+    .filter(({ row, since }) => !row.backfilled_since || Date.parse(since) < Date.parse(row.backfilled_since))
+    .map(({ row, since }) => ({ athleteId: row.athlete_id, since }));
+}
+
+/**
+ * "Puxar do Strava" from the profile, when an activity did not arrive: my whole backfill window
+ * again, even when it was already brought. Null when I am not connected.
+ */
+export function stravaSyncWindow(ctx: Context, actor: Member): { athleteId: string; since: string } | null {
+  const [row] = ctx.sql.all<ConnectionRow>('SELECT * FROM strava_connections WHERE member_id = ? AND active = 1', actor.id);
+  return row ? { athleteId: row.athlete_id, since: backfillSince(row, earliestOpenStart(ctx)) } : null;
+}
+
+function earliestOpenStart(ctx: Context): number | undefined {
   const now = ctx.clock.now().getTime();
-  const earliestStart = ctx.sql
+  return ctx.sql
     .all<{ starts_at: string }>("SELECT starts_at FROM challenges WHERE state = 'open'")
     .map((row) => Date.parse(row.starts_at))
     .filter((start) => start <= now)
     .sort((a, b) => a - b)[0];
-  return ctx.sql
-    .all<ConnectionRow>('SELECT * FROM strava_connections WHERE active = 1')
-    .map((row) => {
-      const tracked = Date.parse(row.consented_at) - STRAVA_BACKFILL_DAYS * 24 * 60 * 60 * 1000;
-      return { row, since: new Date(earliestStart !== undefined ? Math.min(tracked, earliestStart) : tracked).toISOString() };
-    })
-    .filter(({ row, since }) => !row.backfilled_since || Date.parse(since) < Date.parse(row.backfilled_since))
-    .map(({ row, since }) => ({ athleteId: row.athlete_id, since }));
+}
+
+function backfillSince(row: ConnectionRow, earliestStart: number | undefined): string {
+  const tracked = Date.parse(row.consented_at) - STRAVA_BACKFILL_DAYS * 24 * 60 * 60 * 1000;
+  return new Date(earliestStart !== undefined ? Math.min(tracked, earliestStart) : tracked).toISOString();
 }

@@ -43,6 +43,7 @@ import {
   stravaAthlete,
   stravaBackfillsDue,
   stravaConnection,
+  stravaSyncWindow,
   stravaCredentials,
   type ConnectStravaResult,
   type NewStravaConnection,
@@ -144,6 +145,12 @@ export class GroupService {
   stravaAthlete(sessionHash: string): { ok: true; value: string | null } | { ok: false; error: 'unauthenticated' } {
     const actor = this.memberForSession(sessionHash);
     return actor ? { ok: true, value: stravaAthlete(this.ctx, actor) } : { ok: false, error: 'unauthenticated' };
+  }
+
+  /** "Puxar do Strava": the signed-in member's athlete and window; null when she is not connected. */
+  stravaSyncWindow(sessionHash: string): { ok: true; value: { athleteId: string; since: string } | null } | { ok: false; error: 'unauthenticated' } {
+    const actor = this.memberForSession(sessionHash);
+    return actor ? { ok: true, value: stravaSyncWindow(this.ctx, actor) } : { ok: false, error: 'unauthenticated' };
   }
 
   /** From the profile, or Strava's deauthorization event; returns the topics that changed. */
