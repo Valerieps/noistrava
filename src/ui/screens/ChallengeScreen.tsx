@@ -245,7 +245,7 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
         {!journey && (
           <>
             {band}
-            <Ranking members={challenge.members} log={entries} period={period} now={now} />
+            <Ranking members={challenge.members} log={entries} period={period} now={now} meId={me.id} />
           </>
         )}
         {band}

@@ -128,6 +128,7 @@ export const strings = {
     ranking: {
       title: 'Ranking das Senhoras',
       sheetTitle: 'Ranking',
+      you: 'você',
       sheetTabs: { hours: 'Horas', activities: 'Atividades', constancy: 'Dias ativos' },
       kindLabel: 'Ordenar o ranking por',
       tabs: { hours: 'Horas', activities: 'Atividades', constancy: 'Constância' },
