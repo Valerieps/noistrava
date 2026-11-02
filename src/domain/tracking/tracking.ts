@@ -51,6 +51,14 @@ export function localTime(instant: string | Date, timeZone: string): LocalTime {
   return { date: `${get('year')}-${get('month')}-${get('day')}`, hour: Number(get('hour')) % 24 };
 }
 
+/**
+ * The month the calendar shows: the one the user navigated to, as long as it was picked in the
+ * current month; once the month turns (the app left open), it follows today again.
+ */
+export function visibleMonth(picked: { readonly from: string; readonly month: string } | null, current: string): string {
+  return picked && picked.from === current ? picked.month : current;
+}
+
 /** 0 for Monday to 6 for Sunday. */
 export function weekday(date: CalendarDate): number {
   const [y, m, d] = date.split('-').map(Number);
