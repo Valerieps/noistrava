@@ -4,7 +4,7 @@
 import { useState, type FormEvent } from 'react';
 import type { MeView, TrackingView } from '../../application/api-contract';
 import { formatDuration } from '../../domain/challenge/progress';
-import { NAME_MAX_LENGTH } from '../../domain/group/profile';
+import { firstName, NAME_MAX_LENGTH } from '../../domain/group/profile';
 import { strings } from '../../domain/strings';
 import { addDays } from '../../domain/time/zones';
 import { BADGES, type WeekCompare } from '../../domain/tracking/tracking';
@@ -31,7 +31,7 @@ export function Profile({ me }: { me: MeView }) {
           <div className="hero-who">
             <Photo me={me} />
             <div className="stack" style={{ gap: 2, minWidth: 0 }}>
-              <h1 className="d hero-who-name">{strings.profile.greeting(me.name)}</h1>
+              <h1 className="d hero-who-name">{strings.profile.greeting(firstName(me.name))}</h1>
               {t && <span className="hero-who-sub">{strings.tracking.thisWeek(`${formatShortDay(t.week.start)} a ${formatShortDay(addDays(t.week.start, 6))}`)}</span>}
             </div>
           </div>
