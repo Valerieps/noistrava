@@ -1,6 +1,6 @@
-// "Perfil" (docs/spec/acompanhamento.md): my week, the next badge, the month calendar, my habits,
-// my badges and my part with the group, all shown to me only; then my activities. My name and the
-// Strava connection live in the settings.
+// "Perfil" (docs/spec/acompanhamento.md): my week, the Índice de Aproveitamento, the next badge, the
+// month calendar, my habits, my badges and my part with the group, all shown to me only; then my
+// activities. My name and the Strava connection live in the settings.
 import { useState, type FormEvent } from 'react';
 import type { MeView, TrackingView } from '../../application/api-contract';
 import { formatDuration } from '../../domain/challenge/progress';
@@ -15,6 +15,7 @@ import { Link } from '../router';
 import { useQuery } from '../use-query';
 import { EarnedBadges, NextBadge } from './profile/Badges';
 import { MonthCalendar } from './profile/MonthCalendar';
+import { WindowIndex } from './profile/WindowIndex';
 
 const TOPICS = ['activities', 'challenge', 'history'] as const;
 
@@ -42,6 +43,12 @@ export function Profile({ me }: { me: MeView }) {
       <div className="sheet">
         {t && (
           <>
+            {t.days.length > 0 && (
+              <>
+                <WindowIndex days={t.days} today={t.today} />
+                {band}
+              </>
+            )}
             {next && (
               <>
                 <NextBadge badge={next} />

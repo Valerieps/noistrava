@@ -2637,3 +2637,48 @@ button:disabled {
   outline: 2px solid var(--color-brand);
   outline-offset: 2px;
 }
+
+/* Índice de Aproveitamento on the profile */
+.index-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.index-info {
+  color: var(--color-text-muted);
+}
+
+.index-info-text {
+  margin: 0;
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-band);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.index-now {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  line-height: 1.4;
+}
+
+.index-percent {
+  flex: none;
+  font-size: var(--text-xl);
+  font-weight: 800;
+}
+
+.index-percent.green {
+  color: var(--color-ok-ink);
+}
+
+.index-percent.yellow {
+  color: var(--color-accent-ink);
+}
+
+.index-percent.red {
+  color: var(--color-danger);
+}

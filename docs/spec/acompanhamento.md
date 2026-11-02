@@ -22,6 +22,27 @@ No meu perfil, eu acompanho o meu ritmo e ganho selos, para manter a constância
 
 ## O meu ritmo
 
+- O primeiro item do meu perfil é o meu Índice de Aproveitamento: dos últimos 30 dias, a
+  porcentagem de dias que mantiveram a janela de benefícios do exercício. Um dia ativo mantém a
+  janela, e uma pausa de até 2 dias sem atividade também. Uma pausa de 3 dias ou mais perde todos
+  os seus dias, não só os que passaram do segundo. Uma pausa que começou antes dos 30 dias conta
+  pelo tamanho inteiro; uma que ainda está aberta hoje, pelo tamanho até hoje. Antes do meu
+  primeiro dia ativo, nada conta: com menos de 30 dias de app, o índice é sobre os dias desde o
+  primeiro. *(2)*
+  Por quê: o exercício gera uma janela de benefícios que declina devagar nas primeiras 48h; depois
+  de 3 dias, a maior parte das adaptações metabólicas volta para perto de zero. O mesmo volume
+  concentrado num fim de semana aproveita menos do que espalhado pela semana.
+- Eu vejo o índice num gráfico: um ponto por dia dos últimos 30 (desde o meu primeiro dia ativo),
+  cada um com o índice daquele dia, como ele era naquele dia. O fundo mostra as zonas: verde de
+  85% a 100%, amarela de 60% a 84%, vermelha abaixo de 60%. Ao lado do título, um botão explica o
+  índice. Acima do gráfico, o índice de hoje e uma mensagem da zona dele:
+  - verde: "Perfeito! Você aproveitou o descanso sem deixar os ganhos caírem."
+  - amarela: "Sua linha caiu um pouco por causa dos N dias de pausa. Um novo treino hoje recoloca
+    você na zona verde!", com N a maior pausa que perdeu dias da janela;
+  - vermelha: "Atenção: pausas longas fazem o corpo recomeçar do zero. Tente espalhar seus treinos
+    ao longo da semana!"
+
+  Sem nenhuma atividade, o índice não aparece. *(2)*
 - Eu vejo quantas semanas ativas seguidas eu tenho. A semana em andamento só entra na conta quando
   já tem atividade; enquanto ela não tem, a sequência continua a da semana anterior. *(2)*
   Por quê: perder um dia não zera nada; só uma semana inteira parada quebra a sequência.
