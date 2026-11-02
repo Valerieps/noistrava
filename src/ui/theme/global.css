@@ -1525,20 +1525,22 @@ button:disabled {
   box-shadow: inset 0 0 0 2.5px var(--color-text);
 }
 
-.level-0 {
-  background: var(--color-heat-0);
+.month-day.window-active {
+  display: grid;
+  place-items: center;
 }
 
-.level-1 {
-  background: var(--color-heat-1);
+.window-active {
+  background: var(--color-window-active);
+  color: var(--color-on-window-active);
 }
 
-.level-2 {
-  background: var(--color-heat-2);
+.window-kept {
+  background: var(--color-window-kept);
 }
 
-.level-3 {
-  background: var(--color-heat-3);
+.window-lost {
+  background: var(--color-window-lost);
 }
 
 .month-legend {
@@ -1556,12 +1558,14 @@ button:disabled {
   border-radius: var(--space-1);
 }
 
-.month-swatch.level-0 {
-  margin-left: var(--space-1);
+.month-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
 }
 
-.month-swatch.level-3 {
-  margin-right: var(--space-1);
+.month-legend-item + .month-legend-item {
+  margin-left: var(--space-2);
 }
 
 .sheet-head-link {

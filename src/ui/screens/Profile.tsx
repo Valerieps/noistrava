@@ -43,6 +43,8 @@ export function Profile({ me }: { me: MeView }) {
       <div className="sheet">
         {t && (
           <>
+            <MonthCalendar days={t.days} today={t.today} />
+            {band}
             {t.days.length > 0 && (
               <>
                 <WindowIndex days={t.days} today={t.today} />
@@ -55,8 +57,6 @@ export function Profile({ me }: { me: MeView }) {
                 {band}
               </>
             )}
-            <MonthCalendar days={t.days} today={t.today} />
-            {band}
             <Habits tracking={t} />
             {band}
             <section className="sheet-section">

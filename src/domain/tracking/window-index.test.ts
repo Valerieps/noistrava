@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { addDays } from '../time/zones';
-import { indexSeries, indexZone } from './window-index';
+import { indexSeries, indexZone, windowStates } from './window-index';
 
 /** The active days of a timeline, `x` for an active day and `.` for a pause, ending on `today`. */
 function days(timeline: string, today: string): string[] {
@@ -43,6 +43,43 @@ describe('indexSeries', () => {
   it('shows each day as known that day', () => {
     const series = indexSeries(days('xxxx...', TODAY), TODAY);
     expect(series.map((p) => p.percent)).toEqual([100, 100, 100, 100, 100, 100, 57]);
+  });
+});
+
+describe('windowStates', () => {
+  /** The states of a timeline ending on `today`: `x` active, `k` kept, `l` lost, `-` before the first active day. */
+  const states = (timeline: string, today = TODAY) => {
+    const map = windowStates(days(timeline, today), today);
+    const start = addDays(today, -(timeline.length - 1));
+    const marks = { active: 'x', kept: 'k', lost: 'l' } as const;
+    return [...timeline]
+      .map((_, i) => {
+        const state = map.get(addDays(start, i));
+        return state ? marks[state] : '-';
+      })
+      .join('');
+  };
+
+  it('keeps a pause of up to 2 days and loses every day of a longer one', () => {
+    expect(states('x..x...x....x')).toBe('xkkxlllxllllx');
+  });
+
+  it('judges a pause still open today by its length so far', () => {
+    expect(states('xx..')).toBe('xxkk');
+    expect(states('xx...')).toBe('xxlll');
+  });
+
+  it('leaves out the days before my first active day', () => {
+    expect(states('...x.x')).toBe('---xkx');
+    expect(windowStates([], TODAY).size).toBe(0);
+  });
+
+  it('carries a pause across the month boundary', () => {
+    // 30 Oct active, then 31 Oct, 1 Nov and 2 Nov idle: a pause of 3 that spans both months.
+    const map = windowStates(['2026-10-30'], '2026-11-02');
+    expect(['2026-10-31', '2026-11-01', '2026-11-02'].map((d) => map.get(d))).toEqual(['lost', 'lost', 'lost']);
+    const kept = windowStates(['2026-10-30', '2026-11-02'], '2026-11-02');
+    expect(['2026-10-31', '2026-11-01'].map((d) => kept.get(d))).toEqual(['kept', 'kept']);
   });
 });
 

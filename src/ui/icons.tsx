@@ -198,3 +198,56 @@ export function InfoIcon() {
     </svg>
   );
 }
+
+type SportFamily = 'run' | 'walk' | 'ride' | 'swim' | 'strength' | 'mind' | 'water' | 'ball' | 'climb' | 'other';
+
+const SPORT_FAMILIES: Record<Exclude<SportFamily, 'other'>, readonly string[]> = {
+  run: ['Run', 'TrailRun', 'VirtualRun'],
+  walk: ['Walk', 'Hike', 'Snowshoe'],
+  ride: ['Ride', 'MountainBikeRide', 'GravelRide', 'EBikeRide', 'EMountainBikeRide', 'VirtualRide', 'Velomobile', 'Handcycle'],
+  swim: ['Swim'],
+  strength: ['WeightTraining', 'Workout', 'HighIntensityIntervalTraining', 'Crossfit', 'Elliptical', 'StairStepper'],
+  mind: ['Yoga', 'Pilates'],
+  water: ['Rowing', 'VirtualRow', 'Kayaking', 'Canoeing', 'Surfing', 'Kitesurf', 'Windsurf', 'StandUpPaddling', 'Sail'],
+  ball: ['Soccer', 'Tennis', 'Badminton', 'Pickleball', 'Racquetball', 'Squash', 'TableTennis', 'Golf'],
+  climb: ['RockClimbing'],
+};
+
+function sportFamily(sport: string): SportFamily {
+  for (const [family, sports] of Object.entries(SPORT_FAMILIES)) if (sports.includes(sport)) return family as SportFamily;
+  return 'other';
+}
+
+const SPORT_PATHS: Record<SportFamily, string> = {
+  run: 'M14 3.5a1.5 1.5 0 1 1 0 3a1.5 1.5 0 0 1 0-3zM7 21l3.5-6 3 2.5V21M10.5 15l2-6.5 3.5 3h3M12.5 8.5l-4 1-2 3',
+  walk: 'M12.5 3.5a1.5 1.5 0 1 1 0 3a1.5 1.5 0 0 1 0-3zM9 21l2.5-6.5 2.5 2.5v4M11.5 14.5l1-6 2.5 3h2.5M12.5 8.5l-3 2.5v3',
+  ride: 'M6 14a3.5 3.5 0 1 1 0 7a3.5 3.5 0 0 1 0-7zM18 14a3.5 3.5 0 1 1 0 7a3.5 3.5 0 0 1 0-7zM6 17.5l3.5-7h6.5l2 7M9.5 10.5l3 7H6M14 6.5h2.5',
+  swim: 'M3 17c1.5 1 3 1 4.5 0s3-1 4.5 0 3 1 4.5 0 3-1 4.5 0M16 6a1.5 1.5 0 1 1 0 3a1.5 1.5 0 0 1 0-3zM6 13.5l4.5-4.5 3.5 3.5',
+  strength: 'M6.5 7v10M3.5 10v4M17.5 7v10M20.5 10v4M6.5 12h11',
+  mind: 'M12 3.5a1.5 1.5 0 1 1 0 3a1.5 1.5 0 0 1 0-3zM12 9v6M6 11.5l6-2.5 6 2.5M5 19l7-4 7 4',
+  water: 'M3 18c2 1.5 4 1.5 6 0s4-1.5 6 0 4 1.5 6 0M7 15L17 4M15 4.5l3 3',
+  ball: 'M12 3a9 9 0 1 1 0 18a9 9 0 0 1 0-18zM5.6 5.6a9 9 0 0 1 0 12.8M18.4 5.6a9 9 0 0 0 0 12.8',
+  climb: 'M3 20l6-11 4 6 3-4 5 9z',
+  other: 'M3 12h4l2-5 4 10 2-5h6',
+};
+
+/** An activity's sport, by family: running, cycling, swimming, strength and so on. */
+export function SportIcon({ sport, size = 16 }: { sport: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" {...common} strokeLinecap="round" strokeLinejoin="round">
+      <path d={SPORT_PATHS[sportFamily(sport)]} />
+    </svg>
+  );
+}
+
+/** "Vários": a day with two or more different sports. */
+export function SeveralSportsIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <circle cx="8" cy="8" r="3" />
+      <circle cx="16" cy="8" r="3" />
+      <circle cx="8" cy="16" r="3" />
+      <circle cx="16" cy="16" r="3" />
+    </svg>
+  );
+}

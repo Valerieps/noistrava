@@ -72,8 +72,8 @@ O que ainda não está pronto.
   agora, e a de Eclética, as modalidades do mês; o próximo selo é o de maior fração feita, com
   empate pela ordem da tabela (`spec/acompanhamento.md`, "Selos").
 - [ ] Acompanhamento: o calendário do mês fica no próprio perfil, no lugar das últimas 8 semanas,
-  com quatro tons (sem atividade, menos de 30 min, até 1 h, 1 h ou mais) e volta até o primeiro
-  mês com atividade; os "N dias" da volta contam entre as datas das duas atividades
+  e volta até o primeiro mês com atividade; os "N dias" da volta contam entre as datas das duas
+  atividades
   (`spec/acompanhamento.md`, "O meu ritmo").
 - [ ] Lembrete: o texto da notificação; desligado, todos os dias, às 20h até eu mudar; vale para
   qualquer integrante; chega uma vez por dia, até uma hora depois da hora escolhida; desligar vale

@@ -28,6 +28,48 @@ export interface IndexPoint {
   readonly longestPause: number;
 }
 
+/** A day of the window: active, kept by a short pause, or lost in a long one. */
+export type WindowState = 'active' | 'kept' | 'lost';
+
+export interface WindowDay {
+  readonly date: CalendarDate;
+  readonly state: WindowState;
+  /** The whole length of the pause the day is in; 0 for an active day. */
+  readonly pause: number;
+}
+
+/**
+ * Each day from the first active day on or after `from` up to `to`, as known on `to`: a pause still
+ * open on `to` is judged by its length so far. The days before that first active day are left out.
+ */
+export function windowDays(active: ReadonlySet<CalendarDate>, from: CalendarDate, to: CalendarDate): WindowDay[] {
+  const days: WindowDay[] = [];
+  let pause: CalendarDate[] = [];
+  const closePause = () => {
+    const state = pause.length > MAX_PAUSE_DAYS ? 'lost' : 'kept';
+    for (const date of pause) days.push({ date, state, pause: pause.length });
+    pause = [];
+  };
+  let started = false;
+  for (let d = from; d <= to; d = addDays(d, 1)) {
+    if (active.has(d)) {
+      started = true;
+      closePause();
+      days.push({ date: d, state: 'active', pause: 0 });
+    } else if (started) pause.push(d);
+  }
+  closePause();
+  return days;
+}
+
+/** The window state of every day from my first active day up to `today`, as known today. */
+export function windowStates(activeDays: readonly CalendarDate[], today: CalendarDate): Map<CalendarDate, WindowState> {
+  const active = new Set(activeDays.filter((d) => d <= today));
+  if (active.size === 0) return new Map();
+  const first = [...active].sort()[0];
+  return new Map(windowDays(active, first, today).map((d) => [d.date, d.state]));
+}
+
 /**
  * The index on `date`, as known that day: over the 30 days up to it, or since my first active day
  * when that is later. A pause is judged by its whole length, even when it began before the
@@ -41,25 +83,11 @@ function indexOn(active: ReadonlySet<CalendarDate>, first: CalendarDate, date: C
 
   let kept = 0;
   let longestPause = 0;
-  let pause = 0;
-  let pauseInWindow = 0;
-  const closePause = () => {
-    if (pause > MAX_PAUSE_DAYS) {
-      if (pauseInWindow > 0) longestPause = Math.max(longestPause, pause);
-    } else kept += pauseInWindow;
-    pause = 0;
-    pauseInWindow = 0;
-  };
-  for (let d = from; d <= date; d = addDays(d, 1)) {
-    if (active.has(d)) {
-      closePause();
-      if (d >= windowStart) kept++;
-    } else {
-      pause++;
-      if (d >= windowStart) pauseInWindow++;
-    }
+  for (const day of windowDays(active, from, date)) {
+    if (day.date < windowStart) continue;
+    if (day.state === 'lost') longestPause = Math.max(longestPause, day.pause);
+    else kept++;
   }
-  closePause();
 
   const counted = daysBetween(windowStart, date) + 1;
   return { date, percent: Math.round((kept / counted) * 100), longestPause };
