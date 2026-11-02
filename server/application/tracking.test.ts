@@ -38,8 +38,19 @@ describe('tracking', () => {
   it('shows only my own activities, in or out of a challenge', () => {
     log(ANA, '2026-11-02T10:00:00Z', 60);
     log(BIA, '2026-11-03T10:00:00Z', 90);
-    expect(tracking(ANA)).toMatchObject({ streakWeeks: 1, week: { start: '2026-11-02', seconds: 3600 }, days: [{ date: '2026-11-02', seconds: 3600 }] });
+    expect(tracking(ANA)).toMatchObject({ streakWeeks: 1, week: { start: '2026-11-02', seconds: 3600 }, days: [{ date: '2026-11-02', seconds: 3600, sports: ['Run'] }] });
     expect(tracking(BIA).week.seconds).toBe(5400);
+  });
+
+  it('gives each active day its distinct sports', () => {
+    log(ANA, '2026-11-02T08:00:00Z', 30, 'Yoga');
+    log(ANA, '2026-11-02T18:00:00Z', 30, 'Run');
+    log(ANA, '2026-11-02T19:00:00Z', 10, 'Run');
+    log(ANA, '2026-11-03T10:00:00Z', 20, 'Swim');
+    expect(tracking(ANA).days).toEqual([
+      { date: '2026-11-02', seconds: 4200, sports: ['Run', 'Yoga'] },
+      { date: '2026-11-03', seconds: 1200, sports: ['Swim'] },
+    ]);
   });
 
   it('keeps a badge after I delete the activity that gave it', () => {

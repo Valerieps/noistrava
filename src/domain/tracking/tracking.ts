@@ -79,14 +79,6 @@ export function dayPeriod(hour: number): DayPeriod {
   return PERIODS[Math.floor(hour / 6)];
 }
 
-/** How strong a day of the month calendar is: 0 without activity, then up to 3 by its time. */
-export function dayLevel(seconds: number): 0 | 1 | 2 | 3 {
-  if (seconds <= 0) return 0;
-  if (seconds < 30 * 60) return 1;
-  if (seconds < 60 * 60) return 2;
-  return 3;
-}
-
 interface Located extends TrackedActivity {
   readonly local: LocalTime;
 }
@@ -101,6 +93,8 @@ function locate(activities: readonly TrackedActivity[]): Located[] {
 export interface DayTotal {
   readonly date: CalendarDate;
   readonly seconds: number;
+  /** The day's distinct sports, sorted. */
+  readonly sports: readonly string[];
 }
 
 export interface Rhythm {
@@ -126,7 +120,7 @@ export interface Rhythm {
   readonly month: { readonly activeDays: number; readonly sports: readonly { readonly sport: string; readonly seconds: number }[] };
   /** The days without activity before my comeback this week; null when there was none. */
   readonly comebackDays: number | null;
-  /** Every active day and its time, oldest first. */
+  /** Every active day, its time and its sports, oldest first. */
   readonly days: readonly DayTotal[];
 }
 
@@ -163,9 +157,11 @@ export function rhythm(activities: readonly TrackedActivity[], now: Date, timeZo
   const thisWeek = weekStart(today);
 
   const byDay = new Map<CalendarDate, number>();
+  const sportsByDay = new Map<CalendarDate, Set<string>>();
   const byWeek = new Map<CalendarDate, number>();
   for (const a of located) {
     byDay.set(a.local.date, (byDay.get(a.local.date) ?? 0) + a.durationSeconds);
+    sportsByDay.set(a.local.date, (sportsByDay.get(a.local.date) ?? new Set<string>()).add(a.sport));
     const week = weekStart(a.local.date);
     byWeek.set(week, (byWeek.get(week) ?? 0) + a.durationSeconds);
   }
@@ -227,7 +223,9 @@ export function rhythm(activities: readonly TrackedActivity[], now: Date, timeZo
       sports: [...sports.entries()].map(([sport, seconds]) => ({ sport, seconds })).sort((a, b) => b.seconds - a.seconds || a.sport.localeCompare(b.sport)),
     },
     comebackDays,
-    days: [...byDay.entries()].map(([date, seconds]) => ({ date, seconds })).sort((a, b) => a.date.localeCompare(b.date)),
+    days: [...byDay.entries()]
+      .map(([date, seconds]) => ({ date, seconds, sports: [...(sportsByDay.get(date) ?? [])].sort() }))
+      .sort((a, b) => a.date.localeCompare(b.date)),
   };
 }
 

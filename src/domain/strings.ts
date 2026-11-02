@@ -468,9 +468,9 @@ export const strings = {
     nextMonth: 'Próximo mês',
     activeDays: (n: number) => (n === 1 ? '1 dia ativo' : `${n} dias ativos`),
     emptyMonth: 'Nenhuma atividade neste mês ainda.',
-    less: 'menos',
-    more: 'mais tempo',
-    dayLabel: (day: string, time: string | null) => (time ? `${day}: ${time}` : `${day}: sem atividade`),
+    windowStates: { active: 'ativo', kept: 'na janela', lost: 'pausa longa' },
+    dayLabel: (day: string, time: string | null, state: string | null) =>
+      `${day}: ${time ?? 'sem atividade'}${state && state !== 'ativo' ? `, ${state}` : ''}`,
     habitsTitle: 'Seu jeito',
     habitDays: ['às segundas', 'às terças', 'às quartas', 'às quintas', 'às sextas', 'aos sábados', 'aos domingos'],
     habitPeriods: { dawn: 'de madrugada', morning: 'de manhã', afternoon: 'à tarde', night: 'à noite' },

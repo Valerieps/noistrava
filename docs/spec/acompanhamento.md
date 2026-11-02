@@ -22,7 +22,8 @@ No meu perfil, eu acompanho o meu ritmo e ganho selos, para manter a constância
 
 ## O meu ritmo
 
-- O primeiro item do meu perfil é o meu Índice de Aproveitamento: dos últimos 30 dias, a
+- O primeiro item do meu perfil é o calendário do mês, e o segundo é o meu Índice de
+  Aproveitamento: dos últimos 30 dias, a
   porcentagem de dias que mantiveram a janela de benefícios do exercício. Um dia ativo mantém a
   janela, e uma pausa de até 2 dias sem atividade também. Uma pausa de 3 dias ou mais perde todos
   os seus dias, não só os que passaram do segundo. Uma pausa que começou antes dos 30 dias conta
@@ -48,10 +49,23 @@ No meu perfil, eu acompanho o meu ritmo e ganho selos, para manter a constância
   Por quê: perder um dia não zera nada; só uma semana inteira parada quebra a sequência.
 - Eu vejo os 7 dias da semana em andamento, com os dias ativos marcados, e o tempo da semana até
   agora. *(2)*
-- Eu vejo, no próprio perfil, um calendário do mês com os meus dias ativos, mais forte nos dias
-  com mais tempo. Ele sempre abre no mês atual, mesmo sem atividade (aí diz que não há atividade
-  neste mês ainda), e posso voltar aos meses anteriores até o primeiro em que tive atividade. Os
-  tons são quatro: sem atividade, menos de 30 minutos, de 30 minutos a 1 hora, e 1 hora ou mais. *(2)*
+- Eu vejo, no próprio perfil, um calendário do mês com a minha janela de benefícios, pela mesma
+  regra do índice. Ele sempre abre no mês atual, mesmo sem atividade (aí diz que não há atividade
+  neste mês ainda), e posso voltar aos meses anteriores até o primeiro em que tive atividade. Cada
+  dia que já passou, hoje incluído, é um destes: *(2)*
+  - **ativo**: beringela, com o ícone da modalidade; com duas ou mais modalidades diferentes no
+    dia, o ícone de "vários";
+  - **na janela**: um dia de uma pausa de 1 ou 2 dias, também a que está aberta hoje, num
+    beringela mais claro, sem ícone;
+  - **pausa longa**: todos os dias de uma pausa de 3 dias ou mais, também a que está aberta e já
+    chegou a 3 dias, em cinza;
+  - os dias antes do meu primeiro dia ativo ficam sem cor.
+
+  A cor nunca muda pela modalidade nem pelo tempo do dia. Os dias que ainda vão chegar ficam
+  tracejados, e hoje tem um contorno. A legenda diz: ativo · na janela · pausa longa. Para quem
+  usa leitor de tela, cada dia diz o tempo e o estado.
+  Por quê: o calendário mostra onde a janela se manteve e onde se perdeu, que é o que o índice
+  conta.
 - O meu normal é a média do meu tempo nas 4 semanas completas anteriores, contando as semanas
   paradas como zero. Sem nenhuma atividade nessas 4 semanas, eu não tenho normal e nenhuma
   comparação aparece. *(2)*

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { badgeStatuses, dayLevel, localTime, nextBadge, rhythm, visibleMonth, weekStart, type BadgeStatus, type TrackedActivity } from './tracking';
+import { badgeStatuses, localTime, nextBadge, rhythm, visibleMonth, weekStart, type BadgeStatus, type TrackedActivity } from './tracking';
 
 const at = (startedAt: string, minutes = 60, sport = 'Run', timezone = 'UTC'): TrackedActivity => ({ startedAt, timezone, durationSeconds: minutes * 60, sport });
 
@@ -11,10 +11,6 @@ describe('dates', () => {
     expect(localTime('2026-10-27T02:00:00Z', 'America/Sao_Paulo')).toEqual({ date: '2026-10-26', hour: 23 });
     expect(weekStart('2026-11-01')).toBe('2026-10-26');
     expect(weekStart('2026-10-26')).toBe('2026-10-26');
-  });
-
-  it('tones the calendar by time', () => {
-    expect([0, 600, 1800, 3600].map(dayLevel)).toEqual([0, 1, 2, 3]);
   });
 });
 
@@ -79,10 +75,11 @@ describe('rhythm', () => {
     expect(rhythm([at('2026-10-20T10:00:00Z'), at('2026-10-27T10:00:00Z')], NOW, 'UTC').comebackDays).toBeNull();
   });
 
-  it('adds up each active day', () => {
-    expect(rhythm([at('2026-10-27T10:00:00Z', 20), at('2026-10-27T18:00:00Z', 20), at('2026-10-01T10:00:00Z', 5)], NOW, 'UTC').days).toEqual([
-      { date: '2026-10-01', seconds: 300 },
-      { date: '2026-10-27', seconds: 2400 },
+  it('adds up each active day, with its distinct sports', () => {
+    const list = [at('2026-10-27T10:00:00Z', 20, 'Yoga'), at('2026-10-27T18:00:00Z', 20), at('2026-10-27T19:00:00Z', 10), at('2026-10-01T10:00:00Z', 5)];
+    expect(rhythm(list, NOW, 'UTC').days).toEqual([
+      { date: '2026-10-01', seconds: 300, sports: ['Run'] },
+      { date: '2026-10-27', seconds: 3000, sports: ['Run', 'Yoga'] },
     ]);
   });
 });
