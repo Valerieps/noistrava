@@ -425,13 +425,9 @@ export const strings = {
     /** The notification itself; public/sw.js shows it (src/app-identity.test.ts checks they match). */
     notificationTitle: 'Senhoras',
     notificationBody: 'Fabrício, já registrou suas atividades? 🏃‍♀️',
-    enabled: 'Receber o lembrete',
-    days: 'Dias',
+    /** Accessible name of the time field, which has no visible label. */
     time: 'Hora',
-    thisDevice: 'Chega neste aparelho.',
-    notThisDevice: 'O lembrete está ligado, mas não chega neste aparelho.',
     addThisDevice: 'Receber também aqui',
-    devices: (n: number) => (n === 1 ? 'Ligado em 1 aparelho.' : `Ligado em ${n} aparelhos.`),
     noDays: 'Escolha pelo menos um dia.',
     blocked: 'As notificações estão bloqueadas para o Senhoras neste aparelho. Libere nas configurações do navegador e tente de novo.',
     unsupported: 'Este navegador não recebe notificações. No iPhone, adicione o Senhoras à tela de início e abra por lá.',
@@ -439,9 +435,8 @@ export const strings = {
   },
 
   windowReminder: {
-    title: 'Lembrete da janela',
-    about: 'Avisa no dia em que a sua janela de benefícios fecha se você não se exercitar, com o seu Índice de Aproveitamento nos dois casos.',
-    enabled: 'Receber o lembrete da janela',
+    title: 'Janela Metabólica',
+    about: 'Avisa no dia em que a sua janela metabólica fecha se você não se exercitar, com o seu Índice de Aproveitamento nos dois casos.',
     notificationTitle: 'Sua janela fecha hoje ⏳',
     /** `rises`: the index today, if I exercise, is above yesterday's. */
     notificationBody: (ifActive: number, ifNot: number, rises: boolean) =>
