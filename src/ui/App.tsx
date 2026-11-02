@@ -126,10 +126,10 @@ function OfflineNotice() {
 }
 
 /** A screen reached from another one, with a way back. */
-export function BackHeader({ title, to }: { title: string; to: string }) {
+export function BackHeader({ title, to, back = false }: { title: string; to: string; back?: boolean }) {
   return (
     <header className="back-header">
-      <Link to={to} className="icon-button" aria-label={strings.nav.back}>
+      <Link to={to} back={back} className="icon-button" aria-label={strings.nav.back}>
         <BackIcon />
       </Link>
       <h1 className="d">{title}</h1>
@@ -147,13 +147,26 @@ function Sub({ title, back, children }: { title: string; back: string; children:
 }
 
 /** A screen reached from the profile or the settings: a short hero with the way back, then the sheet. */
-function SheetSub({ title, back, hero, children }: { title: string; back: string; hero?: ReactNode; children: ReactNode }) {
+function SheetSub({
+  title,
+  back,
+  backInHistory = false,
+  hero,
+  children,
+}: {
+  title: string;
+  back: string;
+  /** Return to the previous screen instead, with `back` as the fallback. */
+  backInHistory?: boolean;
+  hero?: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <>
       <header className="hero-c hero-c-dots hero-c-short">
         <div className="hero-c-head">
           <div className="hero-c-back">
-            <Link to={back} className="icon-button" aria-label={strings.nav.back}>
+            <Link to={back} back={backInHistory} className="icon-button" aria-label={strings.nav.back}>
               <BackIcon />
             </Link>
             <h1 className="d">{title}</h1>
@@ -184,7 +197,7 @@ function Screen({ me, onSignOut }: { me: MeView; onSignOut: () => void }) {
     );
   if (path === '/perfil/modelos')
     return (
-      <SheetSub title={strings.templates.title} back="/perfil">
+      <SheetSub title={strings.templates.title} back="/perfil" backInHistory={new URLSearchParams(window.location.search).get('de') === 'registro'}>
         <ActivityTemplates />
       </SheetSub>
     );
