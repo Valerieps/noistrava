@@ -23,6 +23,9 @@ O que ainda não está pronto.
 
 ## Revisar as lacunas que o agente decidiu
 
+- [ ] Atividades modelo: hoje só vem preenchido se a hora já chegou; senão, o dia anterior da
+  atividade modelo. Sem dias marcados, vale qualquer dia. Cada atividade modelo tem um nome livre
+  (até 40 letras), e a pessoa tem no máximo 30 (`spec/atividades.md`).
 - [ ] A meta é um número inteiro de horas, de 1 a 10.000 (`spec/desafio-horas.md`).
 - [ ] O início pode estar no passado; o término não (`spec/desafio-horas.md`).
 - [ ] No rascunho, dá para mudar se eu sou Senhora até ativar (`spec/desafio-horas.md`).

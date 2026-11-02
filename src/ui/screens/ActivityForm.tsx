@@ -1,13 +1,14 @@
 // Logging an activity by hand, or editing and deleting one of mine (docs/spec/atividades.md). On a
-// Strava activity only the total time changes.
+// Strava activity only the total time changes. A new one may start from an activity template.
 import { useState, type FormEvent } from 'react';
-import type { ActivityView, ApiError } from '../../application/api-contract';
+import type { ActivityTemplateView, ActivityView, ApiError } from '../../application/api-contract';
 import { MANUAL_SPORTS, MAX_DURATION_SECONDS } from '../../domain/activity';
+import { templateDate } from '../../domain/activity-template';
 import { strings } from '../../domain/strings';
 import { BackHeader } from '../App';
 import { useServices } from '../backend-context';
 import { deviceTimezone, sportName, toLocalInput } from '../format';
-import { navigate } from '../router';
+import { Link, navigate } from '../router';
 import { useQuery } from '../use-query';
 
 function errorText(error: ApiError): string {
@@ -51,6 +52,7 @@ function Form({ activity, title }: { activity: ActivityView | null; title: strin
   const [hours, setHours] = useState(String(Math.floor(initialMinutes / 60)));
   const [minutes, setMinutes] = useState(String(initialMinutes % 60));
   const [sport, setSport] = useState(activity?.sport ?? MANUAL_SPORTS[0]);
+  const [templateId, setTemplateId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const f = strings.activityForm;
@@ -58,6 +60,16 @@ function Form({ activity, title }: { activity: ActivityView | null; title: strin
   const durationSeconds = (Number(hours) * 60 + Number(minutes)) * 60;
   const sports: string[] = [...MANUAL_SPORTS];
   if (activity && !sports.includes(activity.sport)) sports.push(activity.sport);
+
+  /** Fills the form from a template: its latest day up to now, its time, total time and sport. */
+  function pick(template: ActivityTemplateView) {
+    setTemplateId(template.id);
+    setStart(`${templateDate(template, new Date(), deviceTimezone() ?? 'UTC')}T${template.time}`);
+    setHours(String(Math.floor(template.durationSeconds / 3600)));
+    setMinutes(String(Math.round((template.durationSeconds % 3600) / 60)));
+    setSport(template.sport);
+    setError(null);
+  }
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -96,6 +108,7 @@ function Form({ activity, title }: { activity: ActivityView | null; title: strin
     <>
       <BackHeader title={title} to="/" />
       <form className="screen" onSubmit={submit}>
+        {!activity && <TemplatePicker selected={templateId} onPick={pick} />}
         <section className="panel">
           {fromStrava && <p className="small muted" style={{ margin: 0 }}>{f.stravaNote}</p>}
           <label>
@@ -143,5 +156,42 @@ function Form({ activity, title }: { activity: ActivityView | null; title: strin
         )}
       </form>
     </>
+  );
+}
+
+/** The templates to start from, or a way to create the first one. */
+function TemplatePicker({ selected, onPick }: { selected: string | null; onPick: (template: ActivityTemplateView) => void }) {
+  const templates = useQuery('activityTemplates', {}, ['templates']);
+  const f = strings.activityForm;
+  if (!templates.data) return null;
+  if (templates.data.length === 0) {
+    return (
+      <Link to="/modelo/novo" className="small">
+        {f.createTemplate}
+      </Link>
+    );
+  }
+  return (
+    <section className="panel">
+      <div className="template-picker-head">
+        <span className="field-label">{f.templates}</span>
+        <Link to="/perfil/modelos" className="small">
+          {f.manageTemplates}
+        </Link>
+      </div>
+      <div className="template-picker">
+        {templates.data.map((template) => (
+          <button
+            key={template.id}
+            type="button"
+            className="quiet"
+            aria-pressed={selected === template.id}
+            onClick={() => onPick(template)}
+          >
+            {template.name}
+          </button>
+        ))}
+      </div>
+    </section>
   );
 }

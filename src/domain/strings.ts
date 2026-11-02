@@ -324,6 +324,36 @@ export const strings = {
     invalid: 'Confira o início (não pode estar no futuro), o tempo (até 24 horas) e a modalidade.',
     closed: 'Essa atividade está num desafio que já fechou e não muda mais.',
     notFound: 'Essa atividade não existe mais.',
+    templates: 'Atividade modelo',
+    manageTemplates: 'Gerenciar',
+    createTemplate: 'Cadastrar atividades modelo para registrar mais rápido',
+  },
+
+  templates: {
+    title: 'Atividades modelo',
+    about: 'Cadastre as atividades que você repete. Na hora de registrar, é só escolher uma e confirmar: o app preenche o dia mais recente, a hora e o tempo.',
+    add: 'Nova atividade modelo',
+    empty: 'Nenhuma atividade modelo ainda.',
+    newTitle: 'Nova atividade modelo',
+    editTitle: 'Editar atividade modelo',
+    name: 'Nome',
+    namePlaceholder: 'Ex.: Natação do clube',
+    days: 'Dias',
+    noDays: 'Sem dias marcados, o app sugere hoje.',
+    time: 'Hora',
+    save: 'Salvar',
+    delete: 'Excluir atividade modelo',
+    deleteConfirm: 'Excluir esta atividade modelo? As atividades já registradas continuam.',
+    invalid: 'Confira o nome (até 40 letras), a hora, o tempo (até 24 horas) e a modalidade.',
+    tooMany: 'Você já tem atividades modelo demais. Exclua uma para criar outra.',
+    notFound: 'Essa atividade modelo não existe mais.',
+    /** "seg e qua", "todo dia", "qualquer dia". */
+    daysLabel: (days: readonly number[]): string => {
+      if (days.length === 0) return 'qualquer dia';
+      if (days.length === 7) return 'todo dia';
+      const names = days.map((d) => ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom'][d]);
+      return names.length === 1 ? names[0] : `${names.slice(0, -1).join(', ')} e ${names[names.length - 1]}`;
+    },
   },
 
   drafts: {
@@ -368,6 +398,7 @@ export const strings = {
     saved: 'Nome salvo.',
     activities: 'Minhas atividades',
     activitiesEmpty: 'Nenhuma atividade ainda.',
+    templates: 'Atividades modelo',
     manual: 'manual',
     strava: 'Strava',
     edited: 'editada',

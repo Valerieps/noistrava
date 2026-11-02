@@ -9,6 +9,7 @@ Um termo, um sentido. Estes nomes valem para os textos da interface e para as do
 - **Acompanhamento:** as métricas e os selos do meu perfil, que só eu vejo. (`spec/acompanhamento.md`)
 - **Admin:** integrante que convida, remove, dá papéis e apaga desafios. Sempre há pelo menos um. (`spec/acesso-e-membros.md`)
 - **Atividade:** um exercício de uma pessoa, com início, tempo total e modalidade; vem do Strava ou do registro manual. Pertence à pessoa, não ao desafio. (`spec/atividades.md`)
+- **Atividade modelo:** uma atividade que eu repito, cadastrada antes com modalidade, tempo, dias e hora, para registrar à mão só escolhendo e confirmando. (`spec/atividades.md`)
 - **Convite:** permissão para um e-mail entrar no grupo; pendente, aceito ou revogado. (`spec/acesso-e-membros.md`)
 - **Corrente:** tipo de desafio em que todo dia do período precisa de pelo menos uma Senhora ativa. (`spec/desafio-corrente.md`)
 - **Criador:** a integrante que criou o desafio e pode editá-lo até o término. Pode ser Senhora ou não. (`spec/desafio-horas.md`)

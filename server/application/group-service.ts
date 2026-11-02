@@ -2,6 +2,7 @@
 // so a command runs alone and inside one transaction (ADR-004).
 import type { ApiResult, CommandName, Commands, QueryName, Queries, Topic } from '../../src/application/api-contract';
 import { createActivity, deleteActivity, listMyActivities, updateActivity } from './activities';
+import { createTemplate, deleteTemplate, listMyTemplates, updateTemplate } from './activity-templates';
 import {
   activateChallenge,
   cancelChallenge,
@@ -68,6 +69,7 @@ const QUERIES: { [N in QueryName]: Handler<Queries[N]['output'] | QueryError | n
   challengeLog: (ctx, actor, input) => challengeLog(ctx, actor, input),
   history: (ctx) => history(ctx),
   activities: (ctx, actor) => listMyActivities(ctx, actor),
+  activityTemplates: (ctx, actor) => listMyTemplates(ctx, actor),
   tracking: (ctx, actor) => tracking(ctx, actor),
   reminder: (ctx, actor) => reminder(ctx, actor),
 };
@@ -83,6 +85,9 @@ const COMMANDS: { [N in CommandName]: Handler<CommandResult<Commands[N]['output'
   'activity.create': createActivity,
   'activity.update': updateActivity,
   'activity.delete': deleteActivity,
+  'activityTemplate.create': createTemplate,
+  'activityTemplate.update': updateTemplate,
+  'activityTemplate.delete': deleteTemplate,
   'challenge.create': createChallenge,
   'challenge.edit': editChallenge,
   'challenge.activate': activateChallenge,
