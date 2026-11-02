@@ -177,6 +177,16 @@ describe('answering the invite', () => {
 });
 
 describe('log and hearts', () => {
+  it('carries each photo into the log, null when there is none', () => {
+    service.signIn({ ...profile('bia@example.com', 'Bia'), picture: 'https://lh3.googleusercontent.com/bia' }, 'h-bia2', []);
+    const { id } = create();
+    ok(service.command('h-bia2', 'challenge.respond', { challengeId: id, accept: true }));
+    log(ANA, '2026-11-02T08:00:00Z', 1);
+    log('h-bia2', '2026-11-02T09:00:00Z', 1);
+    const entries = ok<LogEntryView[]>(service.query(ANA, 'challengeLog', { challengeId: id }));
+    expect(entries.map((e) => [e.memberName, e.photoUrl])).toEqual(expect.arrayContaining([['Ana', null], ['Bia', 'https://lh3.googleusercontent.com/bia']]));
+  });
+
   it('lets anyone, torcida included, put and take a heart on a logged activity', () => {
     const { id } = create();
     const activity = log(ANA, '2026-11-02T08:00:00Z', 1);

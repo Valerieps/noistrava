@@ -5,7 +5,8 @@ import { useState } from 'react';
 import type { ChallengeMemberView, LogEntryView } from '../../../application/api-contract';
 import { daysElapsed, formatDuration, latestOvertake, ranking, secondsToKm, type Period, type RankingKind } from '../../../domain/challenge/progress';
 import { strings } from '../../../domain/strings';
-import { formatKm, initial } from '../../format';
+import { Avatar } from '../../Avatar';
+import { formatKm } from '../../format';
 import { ChevronIcon } from '../../icons';
 
 const KINDS: RankingKind[] = ['hours', 'activities', 'constancy'];
@@ -27,14 +28,6 @@ function Footer({ members, rows, className = 'panel-foot' }: { members: readonly
   if (pending.length) parts.push(strings.challenge.ranking.pending(pending.join(', ')));
   if (parts.length === 0) return null;
   return <div className={className}>{parts.join(' ')}</div>;
-}
-
-function Avatar({ name, photoUrl, lead }: { name: string; photoUrl: string | null; lead: boolean }) {
-  return (
-    <div className={`initial${lead ? ' lead' : ''}`} aria-hidden="true">
-      {photoUrl ? <img src={photoUrl} alt="" referrerPolicy="no-referrer" /> : initial(name)}
-    </div>
-  );
 }
 
 function Move({ move }: { move: number }) {
