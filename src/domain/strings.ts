@@ -444,7 +444,9 @@ export const strings = {
     groupTitle: 'Com o grupo',
     myPart: (name: string) => `Minha parte em ${name}`,
     asSenhora: 'Desafios como Senhora',
-    asSenhoraValue: (n: number, won: number) => `${n}, ${won === 1 ? '1 vencido' : `${won} vencidos`}`,
+    // "1, 0 vencidos" reads as the decimal 1,0, so the count and the wins are split by a dot.
+    asSenhoraValue: (n: number, won: number) =>
+      `${n} · ${won === 0 ? 'nenhum vencido' : won === 1 ? '1 vencido' : `${won} vencidos`}`,
     hearts: 'Corações dados · recebidos',
     pulled: 'Dias em que puxei o grupo',
     badges: {
