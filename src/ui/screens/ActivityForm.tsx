@@ -8,7 +8,8 @@ import { strings } from '../../domain/strings';
 import { BackHeader } from '../App';
 import { useServices } from '../backend-context';
 import { deviceTimezone, sportName, toLocalInput } from '../format';
-import { Link, navigate } from '../router';
+import { PlusIcon } from '../icons';
+import { goBack, Link } from '../router';
 import { useQuery } from '../use-query';
 
 function errorText(error: ApiError): string {
@@ -19,8 +20,7 @@ function errorText(error: ApiError): string {
 }
 
 function back() {
-  if (window.history.length > 1) window.history.back();
-  else navigate('/', { replace: true });
+  goBack('/');
 }
 
 export function ActivityForm({ activityId }: { activityId: string | null }) {
@@ -30,7 +30,7 @@ export function ActivityForm({ activityId }: { activityId: string | null }) {
   if (activityId && !activity) {
     return (
       <>
-        <BackHeader title={title} to="/perfil/atividades" />
+        <BackHeader title={title} to="/perfil/atividades" back />
         {activities.data && (
           <div className="screen">
             <p className="notice" role="alert">
@@ -106,7 +106,7 @@ function Form({ activity, title }: { activity: ActivityView | null; title: strin
 
   return (
     <>
-      <BackHeader title={title} to="/" />
+      <BackHeader title={title} to="/" back />
       <form className="screen" onSubmit={submit}>
         {!activity && <TemplatePicker selected={templateId} onPick={pick} />}
         <section className="panel">
@@ -166,16 +166,23 @@ function TemplatePicker({ selected, onPick }: { selected: string | null; onPick:
   if (!templates.data) return null;
   if (templates.data.length === 0) {
     return (
-      <Link to="/modelo/novo" className="small">
-        {f.createTemplate}
-      </Link>
+      <section className="panel">
+        <span className="field-label">{f.templates}</span>
+        <p className="small muted" style={{ margin: 0 }}>
+          {f.createTemplate}
+        </p>
+        <Link to="/modelo/novo" className="button secondary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+          <PlusIcon />
+          {strings.templates.add}
+        </Link>
+      </section>
     );
   }
   return (
     <section className="panel">
       <div className="template-picker-head">
         <span className="field-label">{f.templates}</span>
-        <Link to="/perfil/modelos" className="small">
+        <Link to="/perfil/modelos?de=registro" className="small">
           {f.manageTemplates}
         </Link>
       </div>

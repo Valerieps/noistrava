@@ -23,11 +23,23 @@ export function usePath(): string {
   return path;
 }
 
-export function Link({ to, ...rest }: { to: string } & Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href' | 'onClick'>) {
+/** Returns to the previous screen, or goes to `fallback` when the app was opened right here. */
+export function goBack(fallback: string): void {
+  if (window.history.length > 1) window.history.back();
+  else navigate(fallback, { replace: true });
+}
+
+/** A link inside the app. With `back`, it returns to the previous screen and `to` is only the fallback. */
+export function Link({
+  to,
+  back = false,
+  ...rest
+}: { to: string; back?: boolean } & Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href' | 'onClick'>) {
   const onClick = (event: MouseEvent<HTMLAnchorElement>) => {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
     event.preventDefault();
-    navigate(to);
+    if (back) goBack(to);
+    else navigate(to);
   };
   return <a {...rest} href={to} onClick={onClick} />;
 }

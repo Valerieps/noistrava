@@ -11,7 +11,7 @@ import { BackHeader } from '../App';
 import { useServices } from '../backend-context';
 import { sportName } from '../format';
 import { ChevronIcon, PlusIcon } from '../icons';
-import { Link, navigate } from '../router';
+import { goBack, Link } from '../router';
 import { useQuery } from '../use-query';
 
 const WEEKDAYS: readonly Weekday[] = [0, 1, 2, 3, 4, 5, 6];
@@ -63,8 +63,7 @@ function errorText(error: ApiError): string {
 }
 
 function back() {
-  if (window.history.length > 1) window.history.back();
-  else navigate('/perfil/modelos', { replace: true });
+  goBack('/perfil/modelos');
 }
 
 export function ActivityTemplateForm({ templateId }: { templateId: string | null }) {
@@ -74,7 +73,7 @@ export function ActivityTemplateForm({ templateId }: { templateId: string | null
   if (templateId && !template) {
     return (
       <>
-        <BackHeader title={title} to="/perfil/modelos" />
+        <BackHeader title={title} to="/perfil/modelos" back />
         {templates.data && (
           <div className="screen">
             <p className="notice" role="alert">
@@ -135,7 +134,7 @@ function Form({ template, title }: { template: ActivityTemplateView | null; titl
 
   return (
     <>
-      <BackHeader title={title} to="/perfil/modelos" />
+      <BackHeader title={title} to="/perfil/modelos" back />
       <form className="screen" onSubmit={submit}>
         <section className="panel">
           <label>
