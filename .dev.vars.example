@@ -13,6 +13,9 @@ STRAVA_WEBHOOK_SECRET=
 # Optional: an e-mail or page for OpenStreetMap's operators, sent in the User-Agent of the
 # journey's place search and routing (ADR-009).
 OSM_CONTACT=
+# Optional: the reminder's push key (ADR-012), made by `node scripts/vapid-key.mjs mailto:you@example.com`.
+# Without it, the reminder cannot be turned on.
+VAPID_KEY=
 # 1 turns on the test sign-in (any invited e-mail, no Google) on localhost only (ADR-007).
 # Never in wrangler.jsonc. With it, you can try the app before Google Cloud is set up.
 DEV_SIGN_IN=1

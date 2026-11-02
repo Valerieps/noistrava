@@ -33,6 +33,7 @@ import {
   type SignInResult,
 } from './members';
 import type { Clock, IdGenerator, Sql } from './ports';
+import { reminder, remindersDue, removePushSubscription, setReminder, subscribePush, unsubscribePush } from './reminders';
 import { migrate } from './schema';
 import {
   connectStrava,
@@ -68,6 +69,7 @@ const QUERIES: { [N in QueryName]: Handler<Queries[N]['output'] | QueryError | n
   history: (ctx) => history(ctx),
   activities: (ctx, actor) => listMyActivities(ctx, actor),
   tracking: (ctx, actor) => tracking(ctx, actor),
+  reminder: (ctx, actor) => reminder(ctx, actor),
 };
 
 /** Every command the API runs; each checks the actor's role itself. */
@@ -88,6 +90,9 @@ const COMMANDS: { [N in CommandName]: Handler<CommandResult<Commands[N]['output'
   'challenge.cancel': cancelChallenge,
   'challenge.delete': deleteChallenge,
   'reaction.set': setReaction,
+  'reminder.set': setReminder,
+  'push.subscribe': subscribePush,
+  'push.unsubscribe': unsubscribePush,
 };
 
 export class GroupService {
@@ -156,6 +161,15 @@ export class GroupService {
   /** From the profile, or Strava's deauthorization event; returns the topics that changed. */
   disconnectStrava(athleteId: string): Topic[] {
     return disconnectStrava(this.ctx, athleteId) ? ['strava'] : [];
+  }
+
+  /** Called by the Worker's cron: the devices due the reminder now, already marked as sent. */
+  remindersDue(): string[] {
+    return remindersDue(this.ctx);
+  }
+
+  removePushSubscription(endpoint: string): void {
+    removePushSubscription(this.ctx, endpoint);
   }
 
   query(sessionHash: string, name: string, input: unknown): ApiResult<unknown> {

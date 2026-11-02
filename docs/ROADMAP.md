@@ -12,7 +12,7 @@ O que ainda não está pronto.
 | Feature | Fase | Spec | Observação |
 | --- | --- | --- | --- |
 | Jornada: postal de cada marco (foto e resumo do lugar), "Onde estamos" e números do caminho (países, rios) | 1 | `spec/desafio-horas.md` | Estão nos rascunhos; precisam de dados que o servidor não tem |
-| Notificações | 2 | `spec/desafio-horas.md`, `spec/desafio-corrente.md` | Regras em aberto |
+| Notificações do desafio (o lembrete do Fabrício já existe) | 2 | `spec/notificacoes.md`, `spec/desafio-horas.md`, `spec/desafio-corrente.md` | Regras em aberto |
 
 ## O código ainda não segue o spec
 
@@ -67,6 +67,11 @@ O que ainda não está pronto.
   com quatro tons (sem atividade, menos de 30 min, até 1 h, 1 h ou mais) e volta até o primeiro
   mês com atividade; os "N dias" da volta contam entre as datas das duas atividades
   (`spec/acompanhamento.md`, "O meu ritmo").
+- [ ] Lembrete: o texto da notificação; desligado, todos os dias, às 20h até eu mudar; vale para
+  qualquer integrante; chega uma vez por dia, até uma hora depois da hora escolhida; desligar vale
+  para todos os aparelhos; num aparelho compartilhado, vale quem ligou por último; abre numa tela
+  própria pelo sininho, não num menu suspenso; o Edge no Windows não recebe (ADR-012)
+  (`spec/notificacoes.md`).
 
 ## Adiado
 

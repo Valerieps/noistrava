@@ -14,8 +14,20 @@ export const ALLOWED_ORIGINS: readonly string[] = [];
 export const IMAGE_ORIGINS: readonly string[] = ['https://lh3.googleusercontent.com', 'https://tile.openstreetmap.org'];
 
 /**
- * The only servers the Worker (server/) calls: Google sign-in, Strava (ADR-008), and OpenStreetMap
- * place search and driving routes for the journey (ADR-009). Add an API here with an ADR.
+ * The push services the Worker sends the reminder through (ADR-012): Chrome and Android, Firefox,
+ * and Safari on the iPhone and the Mac. A browser whose push service is not here cannot turn the
+ * reminder on.
+ */
+export const PUSH_ORIGINS: readonly string[] = [
+  'https://fcm.googleapis.com',
+  'https://updates.push.services.mozilla.com',
+  'https://web.push.apple.com',
+];
+
+/**
+ * The only servers the Worker (server/) calls: Google sign-in, Strava (ADR-008), OpenStreetMap
+ * place search and driving routes for the journey (ADR-009), and the push services (ADR-012). Add
+ * an API here with an ADR.
  */
 export const SERVER_ORIGINS: readonly string[] = [
   'https://accounts.google.com',
@@ -23,4 +35,5 @@ export const SERVER_ORIGINS: readonly string[] = [
   'https://www.strava.com',
   'https://nominatim.openstreetmap.org',
   'https://routing.openstreetmap.de',
+  ...PUSH_ORIGINS,
 ];

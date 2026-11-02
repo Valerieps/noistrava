@@ -23,6 +23,11 @@ export interface Env {
    * User-Agent of the journey's place search and routing (ADR-009).
    */
   readonly OSM_CONTACT?: string;
+  /**
+   * The reminder's push key (ADR-012): `{"subject", "jwk"}` as `node scripts/vapid-key.mjs` makes.
+   * Without it, the reminder cannot be turned on and no push goes out.
+   */
+  readonly VAPID_KEY?: string;
   /** "1" turns on the test sign-in on localhost (ADR-007). Only ever set in `.dev.vars`. */
   readonly DEV_SIGN_IN?: string;
 }

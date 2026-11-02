@@ -7,6 +7,7 @@ import { isValidTimezone } from '../../src/domain/time/zones';
 import { eraseMemberActivities } from './activities';
 import { settleAll } from './challenges';
 import { failure, nowIso, type CommandResult, type Context } from './context';
+import { eraseMemberReminder } from './reminders';
 
 export const SESSION_DAYS = 180;
 
@@ -203,6 +204,7 @@ export function removeMember(ctx: Context, actor: Member, input: { memberId?: un
   ctx.sql.run('DELETE FROM sessions WHERE member_id = ?', target.id);
   eraseMemberActivities(ctx, target.id);
   ctx.sql.run('DELETE FROM strava_connections WHERE member_id = ?', target.id);
+  eraseMemberReminder(ctx, target.id);
   settleAll(ctx);
   return { ok: true, value: null, changed: ['members', 'activities', 'challenge'], disconnect: [target.id] };
 }

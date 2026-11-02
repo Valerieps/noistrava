@@ -19,6 +19,7 @@ import { parseWebhookEvent } from '../infrastructure/strava-api';
 import { exchangeStravaCode, stravaAuthorizationUrl } from '../infrastructure/strava-oauth';
 import type { Env } from './env';
 import { Group, SESSION_HASH_HEADER } from './group-object';
+import { sendReminders, vapidPublicKey } from './reminders';
 import { disconnectStravaMember, handleStravaEvent, runStravaBackfills, stravaReady, syncStravaMember } from './strava-sync';
 
 export { Group };
@@ -288,6 +289,13 @@ async function api(request: Request, env: Env, url: URL, ctx: ExecutionContext):
     return stravaSync(env, hash);
   }
 
+  // The key the app subscribes to pushes with (ADR-012); `unavailable` where VAPID_KEY is not set.
+  if (path === '/api/push/key') {
+    if (!hash || !(await group(env).query(hash, 'me', {})).ok) return json({ error: 'unauthenticated' }, 401);
+    const key = await vapidPublicKey(env);
+    return key ? json({ value: key }) : json({ error: 'unavailable' }, 503);
+  }
+
   const place = /^\/api\/places\/(search|route)$/.exec(path);
   if (place) {
     if (!hash) return json({ error: 'unauthenticated' }, 401);
@@ -323,6 +331,7 @@ export default {
 
   async scheduled(_controller, env, _ctx): Promise<void> {
     await group(env).tick();
+    await sendReminders(env, group(env));
     if (stravaReady(env)) await runStravaBackfills(env, group(env));
   },
 } satisfies ExportedHandler<Env>;

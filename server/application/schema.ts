@@ -128,6 +128,22 @@ export const MIGRATIONS: readonly (readonly string[])[] = [
       PRIMARY KEY (member_id, badge)
     )`,
   ],
+  // 8: the reminder to log the activities, and the devices that receive it (ADR-012).
+  [
+    `CREATE TABLE reminders (
+      member_id TEXT PRIMARY KEY REFERENCES members(id),
+      enabled INTEGER NOT NULL,
+      days TEXT NOT NULL,
+      time TEXT NOT NULL,
+      last_sent_on TEXT
+    )`,
+    `CREATE TABLE push_subscriptions (
+      endpoint TEXT PRIMARY KEY,
+      member_id TEXT NOT NULL REFERENCES members(id),
+      created_at TEXT NOT NULL
+    )`,
+    `CREATE INDEX push_subscriptions_member ON push_subscriptions(member_id)`,
+  ],
 ];
 
 export function migrate(sql: Sql): void {

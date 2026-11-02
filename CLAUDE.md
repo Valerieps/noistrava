@@ -105,7 +105,7 @@ Each step rereads the whole conversation, so long sessions and back-and-forth co
 - `wrangler.jsonc` - the Worker: assets, Durable Object, cron, vars. Secrets via `wrangler secret put`; locally in `.dev.vars` (see `.dev.vars.example`).
 - `public/` - static files: manifest, icons, `_headers`.
 - `network-policy.ts` - the servers the app (`ALLOWED_ORIGINS`, `IMAGE_ORIGINS`) and the Worker (`SERVER_ORIGINS`) may talk to.
-- `scripts/` - `check-docs.mjs` (run by CI) and `setup-repo.mjs` (once per new repository).
+- `scripts/` - `check-docs.mjs` (run by CI), `setup-repo.mjs` (once per new repository) and `vapid-key.mjs` (the reminder's push key, ADR-012).
 
 ## Commands
 - `npm ci` - install exactly what the lockfile pins
