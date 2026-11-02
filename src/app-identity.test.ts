@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { strings } from './domain/strings';
 
 /** The app identity files (manifest, icons, theme-color) follow the palette in tokens.css. */
 
@@ -42,5 +43,11 @@ describe('app identity', () => {
       expect(icon).toBeDefined();
       expect(read(`public/${icon!.src}`)).toContain(token(light, 'color-brand'));
     }
+  });
+
+  it('shows the reminder text of strings.ts in the service worker', () => {
+    const worker = read('public/sw.js');
+    expect(worker).toContain(`const TITLE = '${strings.reminder.notificationTitle}';`);
+    expect(worker).toContain(`const BODY = '${strings.reminder.notificationBody}';`);
   });
 });

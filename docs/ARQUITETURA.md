@@ -33,8 +33,8 @@ app (celular) ──POST /api/query|command──► Worker ──RPC──► G
 - `server/application/`: os casos de uso do servidor. Síncronos, dependem só das portas `Sql`,
   `Clock` e `IdGenerator`; os testes rodam sobre `node:sqlite`.
 - `server/infrastructure/` e `server/entry/`: Cloudflare, Google, cookies. Finos.
-- A interface chama `Backend` e `LiveUpdates` (portas em `src/application/ports.ts`), nunca a rede
-  direto.
+- A interface chama `Backend`, `LiveUpdates` e `PushDevice` (portas em `src/application/ports.ts`),
+  nunca a rede direto.
 
 ## Invariantes
 
@@ -84,6 +84,8 @@ app (celular) ──POST /api/query|command──► Worker ──RPC──► G
 | `reactions` | `activity_id`, `challenge_id`, `member_id` | Um coração por pessoa por atividade |
 | `challenge_milestones` | `challenge_id`, `milestone`, `reached_at` | Marco atingido não volta atrás |
 | `challenge_results` | `challenge_id`, `member_id`, `name`, `total_seconds` | Gravado ao fechar o desafio |
+| `reminders` | `member_id`, `enabled`, `days` (JSON, 0 = segunda), `time` (`HH:MM`), `last_sent_on` (migração 8) | O lembrete de cada integrante; `last_sent_on` é a data local do último envio |
+| `push_subscriptions` | `endpoint`, `member_id` (migração 8) | Um aparelho que recebe o lembrete: só o endereço do serviço de push (ADR-012) |
 | `member_badges` | `member_id`, `badge`, `earned_at` (migração 7) | Os selos ganhos. O acompanhamento é calculado das atividades a cada leitura (`src/domain/tracking/tracking.ts`); só os selos ficam gravados, porque um selo ganho não se perde quando a atividade que o deu é editada ou apagada |
 
 ## Fluxo de eventos
@@ -96,8 +98,8 @@ app (celular) ──POST /api/query|command──► Worker ──RPC──► G
   tarde ou baixar a meta pode terminar o desafio com sucesso na hora.
 - **Cron (`tick`, a cada 5 minutos):** termina sem sucesso o desafio cujo `ends_at` passou e fecha o
   que passou do `closes_at`, gravando `challenge_results`. Cancelar fecha na hora.
-- **Integrante removida:** apaga as atividades dela, os corações e a conexão com o Strava, e
-  recalcula os desafios abertos.
+- **Integrante removida:** apaga as atividades dela, os corações, a conexão com o Strava e o
+  lembrete com os aparelhos, e recalcula os desafios abertos.
 - **Webhook do Strava:** o Worker responde na hora e busca a atividade na API depois
   (`ctx.waitUntil`); o resultado entra no `Group` por `importStravaActivity`, com as mesmas regras do
   registro manual. Só o Worker decifra os tokens, e renova o de acesso quando falta pouco para
@@ -105,6 +107,10 @@ app (celular) ──POST /api/query|command──► Worker ──RPC──► G
 - **Selos:** depois de cada comando que muda atividades ou desafios, de cada importação do Strava e
   no cron, `awardBadges` grava os selos que cada integrante acabou de ganhar, com a data da
   atividade, do coração ou da corrente que o deu. O cron também dá os selos do que já existia.
+- **Lembrete (ADR-012):** no cron, depois do `tick`, o `Group` diz quais aparelhos estão na hora do
+  lembrete (`remindersDue`) e já grava o envio do dia; o Worker assina e manda um push vazio para
+  cada um, e esquece o aparelho que o serviço de push diz que sumiu (404 ou 410). O service worker
+  (`public/sw.js`) mostra o texto fixo. Sem o segredo `VAPID_KEY`, nada sai.
 - **Atividades de antes da conexão:** o `Group` diz quais conexões ainda não têm as atividades dos
   90 dias antes de conectar, ou desde o início do desafio aberto mais antigo que já começou, se for
   antes (`stravaBackfillsDue`); o Worker as busca

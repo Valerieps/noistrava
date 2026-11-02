@@ -73,6 +73,14 @@ export class Group extends DurableObject<Env> {
     if (changed.length > 0) this.broadcast(changed);
   }
 
+  remindersDue(): string[] {
+    return this.service.remindersDue();
+  }
+
+  removePushSubscription(endpoint: string): void {
+    this.service.removePushSubscription(endpoint);
+  }
+
   query(sessionHash: string, name: string, input: unknown) {
     return this.service.query(sessionHash, name, input);
   }

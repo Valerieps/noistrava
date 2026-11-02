@@ -1,6 +1,7 @@
 // Cloudflare Worker: the app's files, the API, the live connection and the cron (ADR-004).
 // Secrets are not here: set GOOGLE_CLIENT_SECRET and BOOTSTRAP_ADMIN_EMAILS with
-// `npx wrangler secret put <NAME>`, and locally in .dev.vars (see .dev.vars.example).
+// `npx wrangler secret put <NAME>`, and locally in .dev.vars (see .dev.vars.example). VAPID_KEY,
+// for the reminder's pushes (ADR-012), comes from `node scripts/vapid-key.mjs`.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "noistrava",

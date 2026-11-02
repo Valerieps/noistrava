@@ -95,6 +95,7 @@ describe('security rules', () => {
     expect(config).not.toMatch(/STRAVA_CLIENT_SECRET"\s*:/);
     expect(config).not.toMatch(/STRAVA_TOKEN_KEY"\s*:/);
     expect(config).not.toMatch(/STRAVA_WEBHOOK_SECRET"\s*:/);
+    expect(config).not.toMatch(/VAPID_KEY"\s*:/);
   });
 
   it('allowed origins are bare https origins', () => {

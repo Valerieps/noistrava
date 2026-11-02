@@ -4,6 +4,7 @@ import type { ActivitySource } from '../domain/activity';
 import type { ChainConfig, ChainDayState } from '../domain/challenge/chain';
 import type { Banner, ChallengeResponse, ChallengeState, ChallengeType, Journey, Place } from '../domain/challenge/challenge';
 import type { Role } from '../domain/group/roles';
+import type { ReminderSettings } from '../domain/reminder';
 import type { BadgeStatus, BadgeKey, Rhythm } from '../domain/tracking/tracking';
 
 export interface MemberView {
@@ -196,6 +197,11 @@ export interface ActivityInput {
   sport: string;
 }
 
+/** My reminder to log the activities, and on how many of my devices it arrives. */
+export interface ReminderView extends ReminderSettings {
+  readonly devices: number;
+}
+
 /** Reads: `POST /api/query/<name>`. They never change anything. */
 export interface Queries {
   me: { input: Record<string, never>; output: MeView };
@@ -214,6 +220,7 @@ export interface Queries {
   activities: { input: Record<string, never>; output: ActivityView[] };
   /** My own rhythm, contribution and badges. */
   tracking: { input: Record<string, never>; output: TrackingView };
+  reminder: { input: Record<string, never>; output: ReminderView };
 }
 
 /** Writes: `POST /api/command/<name>`. Each runs alone, in one transaction. */
@@ -242,13 +249,17 @@ export interface Commands {
   /** Admins; a draft, its creator. */
   'challenge.delete': { input: { challengeId: string }; output: null };
   'reaction.set': { input: { challengeId: string; activityId: string; heart: boolean }; output: null };
+  'reminder.set': { input: ReminderSettings; output: ReminderView };
+  /** This device receives my reminder; the address must belong to a push service of `PUSH_ORIGINS`. */
+  'push.subscribe': { input: { endpoint: string }; output: ReminderView };
+  'push.unsubscribe': { input: { endpoint: string }; output: ReminderView };
 }
 
 export type QueryName = keyof Queries;
 export type CommandName = keyof Commands;
 
 /** What a live message says changed; the screens that show it refetch. */
-export type Topic = 'me' | 'members' | 'invites' | 'strava' | 'activities' | 'challenge' | 'history';
+export type Topic = 'me' | 'members' | 'invites' | 'strava' | 'activities' | 'challenge' | 'history' | 'reminder';
 
 export interface LiveMessage {
   readonly type: 'changed';

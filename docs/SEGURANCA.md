@@ -27,6 +27,9 @@ conferidas pelo `src/security.test.ts`, que roda em todo build.
 - Para a jornada (ADR-009), o Worker manda ao OpenStreetMap só o texto da busca e as coordenadas
   dos lugares escolhidos, nunca dado de integrante. O navegador busca os tiles do mapa mandando só
   a origem do app como `Referer`, que o servidor de tiles exige.
+- O lembrete (ADR-012) vai por Web Push sem conteúdo: o servidor guarda só o endereço que o serviço
+  de push dá para cada aparelho e manda um push vazio, assinado com a chave VAPID, que fica só no
+  Worker (`VAPID_KEY`). O servidor aceita só endereços dos serviços de `PUSH_ORIGINS`.
 - O webhook do Strava não é assinado: ele fica num endereço que termina num segredo que só o
   Strava conhece, o evento só avisa que algo mudou, e o servidor busca a atividade na API com o
   token da própria pessoa (ADR-008).

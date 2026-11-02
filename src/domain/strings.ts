@@ -28,6 +28,7 @@ export const strings = {
     members: 'Integrantes',
     invites: 'Convites',
     settings: 'Configurações',
+    notifications: 'Notificações',
     back: 'Voltar',
     signOut: 'Sair',
   },
@@ -383,6 +384,25 @@ export const strings = {
     group: 'Grupo',
     theme: 'Tema',
     themes: { light: 'Claro', dark: 'Escuro', system: 'Sistema' },
+  },
+
+  reminder: {
+    title: 'Lembrete do Fabrício',
+    about: 'Um empurrãozinho para registrar as atividades. O texto é o mesmo para todas as Senhoras.',
+    /** The notification itself; public/sw.js shows it (src/app-identity.test.ts checks they match). */
+    notificationTitle: 'Senhoras',
+    notificationBody: 'Fabrício, já registrou suas atividades? 🏃‍♀️',
+    enabled: 'Receber o lembrete',
+    days: 'Dias',
+    time: 'Hora',
+    thisDevice: 'Chega neste aparelho.',
+    notThisDevice: 'O lembrete está ligado, mas não chega neste aparelho.',
+    addThisDevice: 'Receber também aqui',
+    devices: (n: number) => (n === 1 ? 'Ligado em 1 aparelho.' : `Ligado em ${n} aparelhos.`),
+    noDays: 'Escolha pelo menos um dia.',
+    blocked: 'As notificações estão bloqueadas para o Senhoras neste aparelho. Libere nas configurações do navegador e tente de novo.',
+    unsupported: 'Este navegador não recebe notificações. No iPhone, adicione o Senhoras à tela de início e abra por lá.',
+    unavailable: 'As notificações ainda não estão configuradas no servidor.',
   },
 
   tracking: {

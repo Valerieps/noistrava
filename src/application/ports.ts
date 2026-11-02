@@ -28,8 +28,22 @@ export interface Backend {
    * there is no driving route between them, `unavailable` when the routing server is down.
    */
   planRoute(input: RouteInput): Promise<ApiResult<Journey>>;
+  /** The key this device subscribes to the reminder's pushes with; `unavailable` where it is not set up (ADR-012). */
+  pushKey(): Promise<ApiResult<string>>;
   /** The address the browser navigates to for "Entrar com Google". */
   readonly signInUrl: string;
+}
+
+/** Whether this device receives pushes, and its push service address when it does. */
+export type PushDeviceState = { readonly kind: 'unsupported' | 'blocked' | 'off' } | { readonly kind: 'on'; readonly endpoint: string };
+
+/** This device's push subscription (ADR-012). */
+export interface PushDevice {
+  state(): Promise<PushDeviceState>;
+  /** Asks for permission and subscribes with the server's key. */
+  subscribe(publicKey: string): Promise<PushDeviceState>;
+  /** The address it had, to forget on the server; null when it had none. */
+  unsubscribe(): Promise<string | null>;
 }
 
 export type LiveStatus = 'connecting' | 'online' | 'offline';

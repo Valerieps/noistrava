@@ -4,7 +4,7 @@ import { canManageGroup } from '../domain/group/roles';
 import { strings } from '../domain/strings';
 import { useLiveStatus, useServices } from './backend-context';
 import { deviceTimezone } from './format';
-import { BackIcon, ClockIcon, FlagIcon, GearIcon, PersonIcon } from './icons';
+import { BackIcon, BellIcon, ClockIcon, FlagIcon, GearIcon, PersonIcon } from './icons';
 import { Link, navigate, usePath } from './router';
 import { ActivityForm } from './screens/ActivityForm';
 import { ChallengeForm } from './screens/ChallengeForm';
@@ -13,6 +13,7 @@ import { Drafts } from './screens/Drafts';
 import { History } from './screens/History';
 import { Invites } from './screens/Invites';
 import { Members } from './screens/Members';
+import { Notifications } from './screens/Notifications';
 import { MyActivities, NameForm, Profile } from './screens/Profile';
 import { BadgesScreen } from './screens/profile/Badges';
 import { Settings, SettingsHero } from './screens/Settings';
@@ -92,18 +93,23 @@ function Navigation() {
 }
 
 const TAB_PATHS = ['/', '/historico', '/perfil'];
-const SETTINGS_PATHS = ['/configuracoes', '/configuracoes/nome', '/configuracoes/strava', '/integrantes', '/convites'];
+const SETTINGS_PATHS = ['/notificacoes', '/configuracoes', '/configuracoes/nome', '/configuracoes/strava', '/integrantes', '/convites'];
 
-/** The app's name and the way to the settings. Only on the tab screens. */
+/** The app's name and the ways to the notifications and the settings. Only on the tab screens. */
 function TopBar() {
   const path = usePath();
   if (!TAB_PATHS.includes(path)) return null;
   return (
     <header className="top-bar">
       <span className="d top-bar-name">{strings.appName}</span>
-      <Link to="/configuracoes" className="icon-button" aria-label={strings.nav.settings}>
-        <GearIcon />
-      </Link>
+      <div className="top-bar-actions">
+        <Link to="/notificacoes" className="icon-button" aria-label={strings.nav.notifications}>
+          <BellIcon />
+        </Link>
+        <Link to="/configuracoes" className="icon-button" aria-label={strings.nav.settings}>
+          <GearIcon />
+        </Link>
+      </div>
     </header>
   );
 }
@@ -187,6 +193,12 @@ function Screen({ me, onSignOut }: { me: MeView; onSignOut: () => void }) {
         <div className="sheet-section">
           <StravaConnect />
         </div>
+      </SheetSub>
+    );
+  if (path === '/notificacoes')
+    return (
+      <SheetSub title={strings.nav.notifications} back="/">
+        <Notifications />
       </SheetSub>
     );
   if (path === '/configuracoes')

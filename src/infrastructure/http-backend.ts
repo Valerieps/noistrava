@@ -33,6 +33,7 @@ export function httpBackend(): Backend {
     stravaSync: () => post('/api/strava/sync', {}),
     searchPlaces: (query) => post('/api/places/search', { query }),
     planRoute: (input) => post('/api/places/route', input),
+    pushKey: () => post('/api/push/key', {}),
     signInUrl: '/api/auth/login',
   };
 }

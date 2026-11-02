@@ -131,6 +131,15 @@ export function CurveViewIcon() {
   );
 }
 
+export function BellIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" {...common}>
+      <path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z" />
+      <path d="M10 21h4" />
+    </svg>
+  );
+}
+
 export function GearIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" {...common}>
