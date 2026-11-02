@@ -34,6 +34,14 @@
   --color-heat-2: #cc6e98;
   --color-heat-3: #a82a5c;
 
+  /* Categories (the sports in "Destaques"), in order; the last is "Outros". Distinct in hue and
+     lightness, also with protanopia, deuteranopia and tritanopia, and at 3:1 or more on --color-sheet. */
+  --color-cat-1: #c2185b;
+  --color-cat-2: #c56200;
+  --color-cat-3: #3949ab;
+  --color-cat-4: #00695c;
+  --color-cat-5: #958aa1;
+
   /* The challenge screen: a brand-colored top and a white sheet. The muted text stays at 4.5:1 or
      more on the hero even over the white of its pattern (13% at most). */
   --color-hero: #c2185b;
@@ -102,6 +110,11 @@
     --color-heat-1: #5a2944;
     --color-heat-2: #a83f6e;
     --color-heat-3: #ff5c8f;
+    --color-cat-1: #ff5c8f;
+    --color-cat-2: #ffb23f;
+    --color-cat-3: #8c9eff;
+    --color-cat-4: #2fae8f;
+    --color-cat-5: #c9bed6;
 
     --color-hero: #8e1043;
     --color-on-hero: #ffffff;
@@ -140,6 +153,11 @@
   --color-heat-1: #5a2944;
   --color-heat-2: #a83f6e;
   --color-heat-3: #ff5c8f;
+  --color-cat-1: #ff5c8f;
+  --color-cat-2: #ffb23f;
+  --color-cat-3: #8c9eff;
+  --color-cat-4: #2fae8f;
+  --color-cat-5: #c9bed6;
 
   --color-hero: #8e1043;
   --color-on-hero: #ffffff;

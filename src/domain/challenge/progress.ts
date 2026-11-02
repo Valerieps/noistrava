@@ -203,17 +203,21 @@ export function highlights<T extends LoggedActivity>(log: readonly T[]): Highlig
   return { longest, streakDays: streak };
 }
 
-/** Each sport's share of the time, largest first; past `top`, the rest are summed as `null`. */
-export function sportShares(log: readonly LoggedActivity[], top = 4): { sport: string | null; share: number }[] {
+/**
+ * Each sport's share of the time, largest first. Past `top`, or under `minShare` of the total, sports
+ * are summed as `null` ("Outros"), last; a single such sport keeps its name.
+ */
+export function sportShares(log: readonly LoggedActivity[], top = 4, minShare = 0.05): { sport: string | null; share: number }[] {
   const total = log.reduce((sum, a) => sum + a.durationSeconds, 0);
   if (total === 0) return [];
   const bySport = new Map<string, number>();
   for (const a of log) bySport.set(a.sport, (bySport.get(a.sport) ?? 0) + a.durationSeconds);
-  const sorted = [...bySport.entries()].sort((a, b) => b[1] - a[1]);
-  const shares: { sport: string | null; share: number }[] = sorted.slice(0, top).map(([sport, s]) => ({ sport, share: s / total }));
-  const rest = sorted.slice(top).reduce((sum, [, s]) => sum + s, 0);
-  if (rest > 0) shares.push({ sport: null, share: rest / total });
-  return shares;
+  const sorted = [...bySport.entries()].map(([sport, s]) => ({ sport, share: s / total })).sort((a, b) => b.share - a.share);
+  const kept = sorted.filter((s, i) => i < top && s.share >= minShare);
+  const rest = sorted.slice(kept.length);
+  if (rest.length === 1) return [...kept, rest[0]];
+  if (rest.length > 1) return [...kept, { sport: null, share: rest.reduce((sum, s) => sum + s.share, 0) }];
+  return kept;
 }
 
 /** The accumulated total over the period, as fractions (0..1) of the period and of `scaleSeconds`. */
