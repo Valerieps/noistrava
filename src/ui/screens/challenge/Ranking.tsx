@@ -35,7 +35,7 @@ function Move({ move }: { move: number }) {
   return <span className={`move${move > 0 ? ' up' : ''}`}>{move > 0 ? `▲${move}` : `▼${-move}`}</span>;
 }
 
-export function Ranking({ members, log, period, now }: { members: readonly ChallengeMemberView[]; log: readonly LogEntryView[]; period: Period; now: Date }) {
+export function Ranking({ members, log, period, now, meId }: { members: readonly ChallengeMemberView[]; log: readonly LogEntryView[]; period: Period; now: Date; meId: string }) {
   const [kind, setKind] = useState<RankingKind>('hours');
   const senhoras = senhorasOf(members);
   const rows = ranking(senhoras, log, kind, now);
@@ -66,11 +66,12 @@ export function Ranking({ members, log, period, now }: { members: readonly Chall
       {rows.length === 0 && <p className="muted small">{strings.challenge.ranking.empty}</p>}
       <div className="sheet-list">
         {rows.map((r, i) => (
-          <div key={r.memberId} className="sheet-row">
+          <div key={r.memberId} className={`sheet-row${r.memberId === meId ? ' me' : ''}`}>
             <Avatar name={r.name} photoUrl={photo.get(r.memberId) ?? null} lead={i === 0 && r.value > 0} />
             <div style={{ minWidth: 0 }}>
               <div className="sheet-row-name ellipsis">
                 {i + 1}. {r.name}
+                {r.memberId === meId && <span className="sheet-row-you">{strings.challenge.ranking.you}</span>}
               </div>
               <div className="sheet-row-sub">
                 {sub(r.value)}
