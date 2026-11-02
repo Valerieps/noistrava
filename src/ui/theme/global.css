@@ -89,8 +89,10 @@ body {
   justify-content: center;
 }
 
+/* End-of-page room so the floating button never covers the last item: its height, its margin
+   above the nav, and the same gap above it. */
 .spacer-fab {
-  height: 72px;
+  height: calc(var(--fab-size) + var(--space-4) * 2);
 }
 
 h1 {
@@ -2252,9 +2254,9 @@ button:disabled {
 }
 
 .fab-round {
-  width: 60px;
-  height: 60px;
-  min-height: 60px;
+  width: var(--fab-size);
+  height: var(--fab-size);
+  min-height: var(--fab-size);
   padding: 0;
   justify-content: center;
   background: var(--color-hero);

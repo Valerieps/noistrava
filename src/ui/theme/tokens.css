@@ -71,6 +71,7 @@
   --radius-pill: 999px;
   --shadow-float: 0 8px 24px rgba(0, 0, 0, 0.18);
   --nav-height: 64px;
+  --fab-size: 60px;
 }
 
 @media (prefers-color-scheme: dark) {
