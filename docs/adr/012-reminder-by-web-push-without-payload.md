@@ -1,6 +1,6 @@
 # ADR-012: The reminder by Web Push without a payload
 
-**Status:** Accepted
+**Status:** Accepted, updated by ADR-013
 **Date:** 2026-11-02
 **Decision:** The reminder to log the activities (`docs/spec/notificacoes.md`) goes out by standard
 Web Push, with no library:
@@ -30,3 +30,6 @@ text); e-mail (another server and another provider).
 `PUSH_ORIGINS` and cannot turn the reminder on. On the iPhone, pushes only reach the app added to
 the home screen (iOS 16.4 or later). Changing `VAPID_KEY` invalidates every subscription: each
 device has to turn the reminder on again.
+
+**Update (2026-11-02):** The window reminder's push carries an encrypted payload, and devices keep
+their `p256dh` and `auth` keys (ADR-013). The reminder to log still goes without content.

@@ -85,7 +85,8 @@ app (celular) ──POST /api/query|command──► Worker ──RPC──► G
 | `challenge_milestones` | `challenge_id`, `milestone`, `reached_at` | Marco atingido não volta atrás |
 | `challenge_results` | `challenge_id`, `member_id`, `name`, `total_seconds` | Gravado ao fechar o desafio |
 | `reminders` | `member_id`, `enabled`, `days` (JSON, 0 = segunda), `time` (`HH:MM`), `last_sent_on` (migração 8) | O lembrete de cada integrante; `last_sent_on` é a data local do último envio |
-| `push_subscriptions` | `endpoint`, `member_id` (migração 8) | Um aparelho que recebe o lembrete: só o endereço do serviço de push (ADR-012) |
+| `window_reminders` | as mesmas colunas de `reminders` (migração 10) | O lembrete da janela de cada integrante; `last_sent_on` é a data local da última conferência |
+| `push_subscriptions` | `endpoint`, `member_id` (migração 8), `p256dh`, `auth` (migração 10) | Um aparelho que recebe os lembretes: o endereço do serviço de push (ADR-012) e, quando o navegador dá, as chaves para cifrar um push com conteúdo (ADR-013) |
 | `activity_templates` | `id`, `member_id`, `name`, `sport`, `duration_seconds`, `days` (JSON, 0 = segunda), `time` (`HH:MM`) (migração 9) | As atividades modelo de cada integrante; não entram no cálculo de nenhum desafio |
 | `member_badges` | `member_id`, `badge`, `earned_at` (migração 7) | Os selos ganhos. O acompanhamento é calculado das atividades a cada leitura (`src/domain/tracking/tracking.ts`); só os selos ficam gravados, porque um selo ganho não se perde quando a atividade que o deu é editada ou apagada |
 
@@ -112,6 +113,10 @@ app (celular) ──POST /api/query|command──► Worker ──RPC──► G
   lembrete (`remindersDue`) e já grava o envio do dia; o Worker assina e manda um push vazio para
   cada um, e esquece o aparelho que o serviço de push diz que sumiu (404 ou 410). O service worker
   (`public/sw.js`) mostra o texto fixo. Sem o segredo `VAPID_KEY`, nada sai.
+- **Lembrete da janela (ADR-013):** no mesmo cron, `windowRemindersDue` confere quem está na hora
+  do lembrete da janela, grava a conferência do dia e, se hoje é o último dia da janela
+  (`closingWindow`), monta o texto com o índice nos dois casos para cada aparelho com chaves. O
+  Worker cifra o conteúdo para cada aparelho e o manda; o service worker mostra o que chegou.
 - **Atividades de antes da conexão:** o `Group` diz quais conexões ainda não têm as atividades dos
   90 dias antes de conectar, ou desde o início do desafio aberto mais antigo que já começou, se for
   antes (`stravaBackfillsDue`); o Worker as busca

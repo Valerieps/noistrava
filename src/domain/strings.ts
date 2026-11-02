@@ -438,6 +438,16 @@ export const strings = {
     unavailable: 'As notificações ainda não estão configuradas no servidor.',
   },
 
+  windowReminder: {
+    title: 'Lembrete da janela',
+    about: 'Avisa no dia em que a sua janela de benefícios fecha se você não se exercitar, com o seu Índice de Aproveitamento nos dois casos.',
+    enabled: 'Receber o lembrete da janela',
+    notificationTitle: 'Sua janela fecha hoje ⏳',
+    /** `rises`: the index today, if I exercise, is above yesterday's. */
+    notificationBody: (ifActive: number, ifNot: number, rises: boolean) =>
+      `Um exercício hoje e o seu Índice de Aproveitamento ${rises ? 'sobe para' : 'fica em'} ${ifActive}%. Sem ele, cai para ${ifNot}%. Bora manter a janela aberta? 💪`,
+  },
+
   tracking: {
     thisWeek: (period: string) => `Esta semana · ${period}`,
     streak: (weeks: number) => `${weeks}ª semana seguida`,

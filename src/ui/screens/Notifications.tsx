@@ -1,7 +1,8 @@
-// "Notificações", from the bell in the top bar: the reminder to log the activities, on which
-// weekdays and at what time (docs/spec/notificacoes.md). Turning it on subscribes this device.
+// "Notificações", from the bell in the top bar: the reminder to log the activities and the window
+// reminder, each on its weekdays and at its time (docs/spec/notificacoes.md). Turning one on
+// subscribes this device.
 import { useEffect, useState } from 'react';
-import type { ReminderView } from '../../application/api-contract';
+import type { CommandName, ReminderView } from '../../application/api-contract';
 import type { PushDeviceState } from '../../application/ports';
 import type { ReminderSettings, Weekday } from '../../domain/reminder';
 import { strings } from '../../domain/strings';
@@ -10,34 +11,71 @@ import { useQuery } from '../use-query';
 
 const WEEKDAYS: readonly Weekday[] = [0, 1, 2, 3, 4, 5, 6];
 
+type ReminderKind = {
+  readonly command: Extract<CommandName, 'reminder.set' | 'windowReminder.set'>;
+  readonly text: { readonly title: string; readonly about: string; readonly enabled: string };
+  /** Its push has content, so it reaches only a device that gives its keys (ADR-013). */
+  readonly needsKeys: boolean;
+};
+
+const FABRICIO: ReminderKind = { command: 'reminder.set', text: strings.reminder, needsKeys: false };
+const WINDOW: ReminderKind = { command: 'windowReminder.set', text: strings.windowReminder, needsKeys: true };
+
+const reaches = (kind: ReminderKind, device: PushDeviceState): boolean => device.kind === 'on' && (!kind.needsKeys || device.keys !== null);
+
 export function Notifications() {
+  const { backend, push } = useServices();
   const reminder = useQuery('reminder', {}, ['reminder']);
-  if (!reminder.data) {
-    return reminder.error ? (
+  const windowReminder = useQuery('windowReminder', {}, ['reminder']);
+  const [device, setDevice] = useState<PushDeviceState | null>(null);
+
+  useEffect(() => {
+    void push.state().then(
+      (state) => {
+        setDevice(state);
+        // A device subscribed before the window reminder existed gives its keys now (ADR-013).
+        if (state.kind === 'on' && state.keys) void backend.command('push.refreshKeys', { endpoint: state.endpoint, ...state.keys });
+      },
+      () => setDevice({ kind: 'unsupported' }),
+    );
+  }, [backend, push]);
+
+  if (!reminder.data || !windowReminder.data) {
+    return reminder.error || windowReminder.error ? (
       <p className="notice" role="alert">
         {strings.genericError}
       </p>
     ) : null;
   }
-  return <ReminderForm saved={reminder.data} />;
+  return (
+    <>
+      <ReminderForm kind={FABRICIO} saved={reminder.data} device={device} onDevice={setDevice} />
+      <ReminderForm kind={WINDOW} saved={windowReminder.data} device={device} onDevice={setDevice} />
+    </>
+  );
 }
 
-function ReminderForm({ saved }: { saved: ReminderView }) {
+function ReminderForm({
+  kind,
+  saved,
+  device,
+  onDevice,
+}: {
+  kind: ReminderKind;
+  saved: ReminderView;
+  device: PushDeviceState | null;
+  onDevice: (state: PushDeviceState) => void;
+}) {
   const { backend, push } = useServices();
   const s = strings.reminder;
   const [settings, setSettings] = useState<ReminderSettings>(saved);
-  const [device, setDevice] = useState<PushDeviceState | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    void push.state().then(setDevice, () => setDevice({ kind: 'unsupported' }));
-  }, [push]);
 
   async function save(next: ReminderSettings) {
     setSettings(next);
     setError(null);
-    const result = await backend.command('reminder.set', next);
+    const result = await backend.command(kind.command, next);
     if (!result.ok) setError(strings.genericError);
   }
 
@@ -49,12 +87,12 @@ function ReminderForm({ saved }: { saved: ReminderView }) {
       return false;
     }
     const state = await push.subscribe(key.value).catch((): PushDeviceState => ({ kind: 'unsupported' }));
-    setDevice(state);
-    if (state.kind !== 'on') {
+    onDevice(state);
+    if (state.kind !== 'on' || !reaches(kind, state)) {
       setError(state.kind === 'blocked' ? s.blocked : s.unsupported);
       return false;
     }
-    const result = await backend.command('push.subscribe', { endpoint: state.endpoint });
+    const result = await backend.command('push.subscribe', { endpoint: state.endpoint, ...state.keys });
     // The server refuses a push service outside the network policy (ADR-012).
     if (!result.ok) setError(result.error === 'invalid' ? s.unsupported : strings.genericError);
     return result.ok;
@@ -81,11 +119,11 @@ function ReminderForm({ saved }: { saved: ReminderView }) {
 
   return (
     <div className="sheet-section">
-      <h2>{s.title}</h2>
-      <p className="muted">{s.about}</p>
+      <h2>{kind.text.title}</h2>
+      <p className="muted">{kind.text.about}</p>
 
       <label className="switch-row" style={{ flexDirection: 'row' }}>
-        <b>{s.enabled}</b>
+        <b>{kind.text.enabled}</b>
         <input
           type="checkbox"
           role="switch"
@@ -98,10 +136,10 @@ function ReminderForm({ saved }: { saved: ReminderView }) {
 
       {settings.enabled && device && (
         <p className="muted">
-          {device.kind === 'on' ? s.thisDevice : s.notThisDevice} {s.devices(saved.devices)}
+          {reaches(kind, device) ? s.thisDevice : s.notThisDevice} {s.devices(saved.devices)}
         </p>
       )}
-      {settings.enabled && device && device.kind !== 'on' && (
+      {settings.enabled && device && !reaches(kind, device) && (
         <button type="button" disabled={busy} onClick={() => void addDevice()}>
           {s.addThisDevice}
         </button>

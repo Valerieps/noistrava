@@ -159,6 +159,18 @@ export const MIGRATIONS: readonly (readonly string[])[] = [
     )`,
     `CREATE INDEX activity_templates_member ON activity_templates(member_id)`,
   ],
+  // 10: the window reminder, and the device keys to encrypt its content with (ADR-013).
+  [
+    `CREATE TABLE window_reminders (
+      member_id TEXT PRIMARY KEY REFERENCES members(id),
+      enabled INTEGER NOT NULL,
+      days TEXT NOT NULL,
+      time TEXT NOT NULL,
+      last_sent_on TEXT
+    )`,
+    `ALTER TABLE push_subscriptions ADD COLUMN p256dh TEXT`,
+    `ALTER TABLE push_subscriptions ADD COLUMN auth TEXT`,
+  ],
 ];
 
 export function migrate(sql: Sql): void {

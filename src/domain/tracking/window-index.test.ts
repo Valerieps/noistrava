@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { addDays } from '../time/zones';
-import { indexSeries, indexZone, monthIndex, windowStates } from './window-index';
+import { closingWindow, indexSeries, indexZone, monthIndex, windowStates } from './window-index';
 
 /** The active days of a timeline, `x` for an active day and `.` for a pause, ending on `today`. */
 function days(timeline: string, today: string): string[] {
@@ -99,5 +99,25 @@ describe('monthIndex', () => {
 
   it('is null for a month before my first active day', () => {
     expect(monthIndex(windowStates(days('x', TODAY), TODAY), '2026-10')).toBeNull();
+  });
+});
+
+describe('closingWindow', () => {
+  // Every day of October up to the 29th.
+  const october = Array.from({ length: 29 }, (_, i) => addDays('2026-10-01', i));
+
+  it('on the third day without activity, gives the index if I move today and if I do not', () => {
+    expect(closingWindow(october, '2026-11-01')).toEqual({ before: 100, ifActive: 100, ifNot: 90 });
+  });
+
+  it('is null before the third day, once I moved today, after it, or with no activity at all', () => {
+    expect(closingWindow(october, '2026-10-31')).toBeNull();
+    expect(closingWindow([...october, '2026-11-01'], '2026-11-01')).toBeNull();
+    expect(closingWindow(october, '2026-11-02')).toBeNull();
+    expect(closingWindow([], '2026-11-01')).toBeNull();
+  });
+
+  it('ignores activities after today', () => {
+    expect(closingWindow([...october, '2026-11-03'], '2026-11-01')).toMatchObject({ ifNot: 90 });
   });
 });

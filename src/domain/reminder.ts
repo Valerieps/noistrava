@@ -14,6 +14,8 @@ export interface ReminderSettings {
 }
 
 export const DEFAULT_REMINDER: ReminderSettings = { enabled: false, days: [0, 1, 2, 3, 4, 5, 6], time: '20:00' };
+/** The reminder that the window of benefits closes today; the same settings, earlier in the day. */
+export const DEFAULT_WINDOW_REMINDER: ReminderSettings = { ...DEFAULT_REMINDER, time: '12:00' };
 
 /** After the chosen time, how long the reminder may still go out (the cron may skip a run). */
 export const REMINDER_WINDOW_MINUTES = 60;
@@ -58,6 +60,18 @@ export function reminderDue(settings: ReminderSettings, timeZone: string, now: D
   const [hour, minute] = settings.time.split(':').map(Number);
   const late = local.minutes - (hour * 60 + minute);
   return late >= 0 && late < REMINDER_WINDOW_MINUTES ? local.date : null;
+}
+
+/** A device's keys to encrypt a push's content with (RFC 8291), base64url as the browser gives them. */
+export interface PushKeys {
+  /** The device's P-256 public key, 65 bytes uncompressed. */
+  readonly p256dh: string;
+  /** The 16-byte authentication secret. */
+  readonly auth: string;
+}
+
+export function isPushKeys(input: { p256dh?: unknown; auth?: unknown }): input is PushKeys {
+  return typeof input.p256dh === 'string' && /^B[A-Za-z0-9_-]{86}$/.test(input.p256dh) && typeof input.auth === 'string' && /^[A-Za-z0-9_-]{22}$/.test(input.auth);
 }
 
 /** A push subscription's address must belong to one of the known push services. */

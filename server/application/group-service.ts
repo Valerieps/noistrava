@@ -34,7 +34,19 @@ import {
   type SignInResult,
 } from './members';
 import type { Clock, IdGenerator, Sql } from './ports';
-import { reminder, remindersDue, removePushSubscription, setReminder, subscribePush, unsubscribePush } from './reminders';
+import {
+  refreshPushKeys,
+  reminder,
+  remindersDue,
+  removePushSubscription,
+  setReminder,
+  setWindowReminder,
+  subscribePush,
+  unsubscribePush,
+  windowReminder,
+  windowRemindersDue,
+  type PushMessage,
+} from './reminders';
 import { migrate } from './schema';
 import {
   connectStrava,
@@ -72,6 +84,7 @@ const QUERIES: { [N in QueryName]: Handler<Queries[N]['output'] | QueryError | n
   activityTemplates: (ctx, actor) => listMyTemplates(ctx, actor),
   tracking: (ctx, actor) => tracking(ctx, actor),
   reminder: (ctx, actor) => reminder(ctx, actor),
+  windowReminder: (ctx, actor) => windowReminder(ctx, actor),
 };
 
 /** Every command the API runs; each checks the actor's role itself. */
@@ -96,7 +109,9 @@ const COMMANDS: { [N in CommandName]: Handler<CommandResult<Commands[N]['output'
   'challenge.delete': deleteChallenge,
   'reaction.set': setReaction,
   'reminder.set': setReminder,
+  'windowReminder.set': setWindowReminder,
   'push.subscribe': subscribePush,
+  'push.refreshKeys': refreshPushKeys,
   'push.unsubscribe': unsubscribePush,
 };
 
@@ -171,6 +186,11 @@ export class GroupService {
   /** Called by the Worker's cron: the devices due the reminder now, already marked as sent. */
   remindersDue(): string[] {
     return remindersDue(this.ctx);
+  }
+
+  /** Called by the Worker's cron: the window reminders due now, already marked as checked. */
+  windowRemindersDue(): PushMessage[] {
+    return windowRemindersDue(this.ctx);
   }
 
   removePushSubscription(endpoint: string): void {

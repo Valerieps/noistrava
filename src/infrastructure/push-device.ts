@@ -1,6 +1,13 @@
-// This device's Web Push subscription for the reminder (ADR-012), through the service worker in
-// public/sw.js. The push service's address goes to the server; nothing else leaves the device.
+// This device's Web Push subscription for the reminders (ADR-012, ADR-013), through the service
+// worker in public/sw.js. The push service's address and the device's keys to encrypt a push with
+// go to the server; nothing else leaves the device.
 import type { PushDevice, PushDeviceState } from '../application/ports';
+import { isPushKeys } from '../domain/reminder';
+
+function on(subscription: PushSubscription): PushDeviceState {
+  const keys = subscription.toJSON().keys ?? {};
+  return { kind: 'on', endpoint: subscription.endpoint, keys: isPushKeys(keys) ? { p256dh: keys.p256dh, auth: keys.auth } : null };
+}
 
 function supported(): boolean {
   return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
@@ -18,7 +25,7 @@ export function pushDevice(): PushDevice {
       if (Notification.permission === 'denied') return { kind: 'blocked' };
       const existing = await navigator.serviceWorker.getRegistration('/');
       const subscription = await existing?.pushManager.getSubscription();
-      return subscription ? { kind: 'on', endpoint: subscription.endpoint } : { kind: 'off' };
+      return subscription ? on(subscription) : { kind: 'off' };
     },
 
     async subscribe(publicKey: string): Promise<PushDeviceState> {
@@ -34,7 +41,7 @@ export function pushDevice(): PushDevice {
         subscription = null;
       }
       subscription ??= await pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
-      return { kind: 'on', endpoint: subscription.endpoint };
+      return on(subscription);
     },
 
     async unsubscribe(): Promise<string | null> {
