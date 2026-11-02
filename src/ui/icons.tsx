@@ -189,3 +189,12 @@ export function PaceIcon({ tone }: { tone: 'ahead' | 'onPace' | 'behind' | 'fina
     </svg>
   );
 }
+
+export function InfoIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" {...common}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 11v6M12 7.5v.5" strokeLinecap="round" />
+    </svg>
+  );
+}

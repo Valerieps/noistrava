@@ -421,6 +421,17 @@ export const strings = {
     weekdays: ['segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado', 'domingo'],
     weekDaysLabel: (days: readonly string[]) => (days.length ? `Dias ativos desta semana: ${days.join(', ')}` : 'Nenhum dia ativo nesta semana ainda'),
     nextBadge: 'Próximo selo',
+    indexTitle: 'Índice de Aproveitamento',
+    indexAbout: 'O que é o Índice de Aproveitamento',
+    indexInfo:
+      'O exercício gera uma janela de benefícios que declina lentamente nas primeiras 48h. Se você treinar dentro dessa janela, os ganhos se mantêm no nível máximo. Após 3 dias, a maioria das adaptações metabólicas volta para perto de zero.',
+    indexChartLabel: (percent: number) => `Índice de Aproveitamento nos últimos 30 dias; hoje, ${percent}%`,
+    indexToday: 'hoje',
+    indexMessage: {
+      green: () => 'Perfeito! Você aproveitou o descanso sem deixar os ganhos caírem.',
+      yellow: (pauseDays: number) => `Sua linha caiu um pouco por causa dos ${pauseDays} dias de pausa. Um novo treino hoje recoloca você na zona verde!`,
+      red: () => 'Atenção: pausas longas fazem o corpo recomeçar do zero. Tente espalhar seus treinos ao longo da semana!',
+    },
     calendarLabel: 'Calendário do mês',
     previousMonth: 'Mês anterior',
     nextMonth: 'Próximo mês',

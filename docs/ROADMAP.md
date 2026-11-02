@@ -31,6 +31,10 @@ O que ainda não está pronto.
 - [ ] O tema começa no do sistema, e cada aparelho guarda a escolha, não a conta (`spec/acesso-e-membros.md`).
 - [ ] Depois do término, ninguém muda a resposta (`spec/desafio-horas.md`).
 - [ ] Com normal até aqui zero e atividade na semana, aparece "acima do seu normal até aqui", sem percentual (`spec/acompanhamento.md`).
+- [ ] Índice de Aproveitamento: uma pausa de 3 dias ou mais perde todos os seus dias; uma pausa
+  ainda aberta conta pelo tamanho até hoje; antes do primeiro dia ativo nada conta. Os exemplos
+  do pedido não fechavam com nenhuma regra só; com esta, eles dão 100%, 60% e 50% (o pedido dizia
+  100%, 70% e 40%) (`spec/acompanhamento.md`).
 - [ ] Sem fuso de ninguém, o período vale em UTC (`spec/desafio-horas.md`).
 - [ ] Com a meta batida antes do fim do período, contam só as atividades de antes desse momento
   (`spec/desafio-horas.md`).

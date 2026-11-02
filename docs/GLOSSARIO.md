@@ -16,6 +16,7 @@ Um termo, um sentido. Estes nomes valem para os textos da interface e para as do
 - **Elo:** um dia da corrente em que pelo menos uma Senhora ficou ativa. (`spec/desafio-corrente.md`)
 - **Grupo:** todas as pessoas que usam o app; há um só. (`spec/acesso-e-membros.md`)
 - **Horas colaborativas:** o tipo de desafio do MVP: as Senhoras somam horas de atividade até a meta. (`spec/desafio-horas.md`)
+- **Índice de Aproveitamento:** dos últimos 30 dias, a porcentagem dos que mantiveram a janela de benefícios do exercício: dias ativos e pausas de até 2 dias. (`spec/acompanhamento.md`)
 - **Integrante:** quem entrou no grupo com um convite. No lugar de "membro". (`spec/acesso-e-membros.md`)
 - **Jornada:** variante das horas colaborativas em que o tempo vira distância num mapa, de um ponto de partida a um ponto de chegada. (`spec/desafio-horas.md`)
 - **Marco:** ponto de celebração do desafio: 25%, 50% e 75% da meta, e as paradas da jornada. (`spec/desafio-horas.md`)

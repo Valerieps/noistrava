@@ -33,6 +33,10 @@
   --color-heat-1: #efc3d5;
   --color-heat-2: #cc6e98;
   --color-heat-3: #a82a5c;
+  /* the zones of the Índice de Aproveitamento, as faint backgrounds of its chart */
+  --color-zone-green: #2e7d32;
+  --color-zone-yellow: #f9a825;
+  --color-zone-red: #c62828;
 
   /* Categories (the sports in "Destaques"), in order; the last is "Outros". Distinct in hue and
      lightness, also with protanopia, deuteranopia and tritanopia, and at 3:1 or more on --color-sheet. */
@@ -110,6 +114,9 @@
     --color-heat-1: #5a2944;
     --color-heat-2: #a83f6e;
     --color-heat-3: #ff5c8f;
+    --color-zone-green: #66bb6a;
+    --color-zone-yellow: #fdd835;
+    --color-zone-red: #ef5350;
     --color-cat-1: #ff5c8f;
     --color-cat-2: #ffb23f;
     --color-cat-3: #8c9eff;
@@ -153,6 +160,9 @@
   --color-heat-1: #5a2944;
   --color-heat-2: #a83f6e;
   --color-heat-3: #ff5c8f;
+  --color-zone-green: #66bb6a;
+  --color-zone-yellow: #fdd835;
+  --color-zone-red: #ef5350;
   --color-cat-1: #ff5c8f;
   --color-cat-2: #ffb23f;
   --color-cat-3: #8c9eff;
