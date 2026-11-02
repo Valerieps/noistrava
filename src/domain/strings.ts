@@ -408,8 +408,12 @@ export const strings = {
   tracking: {
     thisWeek: (period: string) => `Esta semana · ${period}`,
     streak: (weeks: number) => `${weeks}ª semana seguida`,
-    compare: (percent: number, normal: string) =>
-      percent === 0 ? `igual ao seu normal (${normal})` : `${Math.abs(percent)}% ${percent > 0 ? 'acima' : 'abaixo'} do seu normal (${normal})`,
+    above: (percent: number | null, normalSoFar: string) =>
+      percent === null ? 'acima do seu normal até aqui' : `${percent}% acima do seu normal até aqui (${normalSoFar})`,
+    equal: (normalSoFar: string) => `igual ao seu normal até aqui (${normalSoFar})`,
+    below: (missing: string) => `faltam ${missing} para o seu normal até aqui`,
+    weekStarting: 'Semana começando',
+    weekNormal: (normal: string) => `seu normal: ${normal} por semana`,
     comeback: (days: number) => `Primeira atividade depois de ${days} dias. Que bom te ver de volta!`,
     weekdayInitials: ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'],
     weekdays: ['segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado', 'domingo'],

@@ -32,13 +32,33 @@ describe('rhythm', () => {
     expect(r.week.activeDays).toEqual([false, true, true, false, false, false, false]);
     expect(r.week.seconds).toBe(150 * 60);
     expect(r.normalSeconds).toBe(50 * 60);
-    expect(r.comparePercent).toBe(200);
+    // The Monday of 19 Oct counts toward Monday to Wednesday: 200 min / 4 weeks.
+    expect(r.compare).toEqual({ kind: 'above', percent: 200, normalSoFarSeconds: 50 * 60 });
+  });
+
+  it('compares with the normal up to the same weekday, today whole', () => {
+    // Before: 60 min on a Tuesday and 240 min on a Saturday, so 15 min so far on Wednesday.
+    const before = [at('2026-10-20T10:00:00Z', 60), at('2026-10-24T10:00:00Z', 240)];
+    expect(rhythm([...before, at('2026-10-28T08:00:00Z', 5)], NOW, 'UTC').compare).toEqual({ kind: 'below', missingSeconds: 10 * 60, normalSoFarSeconds: 15 * 60 });
+    expect(rhythm([...before, at('2026-10-28T08:00:00Z', 15)], NOW, 'UTC').compare).toEqual({ kind: 'equal', normalSoFarSeconds: 15 * 60 });
+    // On Monday the normal so far is zero, and any activity is above it.
+    expect(rhythm([...before, at('2026-10-26T08:00:00Z', 5)], new Date('2026-10-26T12:00:00Z'), 'UTC').compare).toEqual({
+      kind: 'above',
+      percent: null,
+      normalSoFarSeconds: 0,
+    });
+  });
+
+  it('does not compare while the week has no activity', () => {
+    const r = rhythm([at('2026-10-20T10:00:00Z', 60)], NOW, 'UTC');
+    expect(r.normalSeconds).toBe(15 * 60);
+    expect(r.compare).toBeNull();
   });
 
   it('has no normal when the 4 weeks before were idle', () => {
     const r = rhythm([at('2026-10-27T10:00:00Z'), at('2026-09-01T10:00:00Z')], NOW, 'UTC');
     expect(r.normalSeconds).toBeNull();
-    expect(r.comparePercent).toBeNull();
+    expect(r.compare).toBeNull();
   });
 
   it('finds the favorite weekday and period over 90 days, and the month', () => {

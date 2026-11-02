@@ -30,9 +30,22 @@ No meu perfil, eu acompanho o meu ritmo e ganho selos, para manter a constância
 - Eu vejo, no próprio perfil, um calendário do mês com os meus dias ativos, mais forte nos dias
   com mais tempo, e posso voltar aos meses anteriores até o primeiro em que tive atividade. Os
   tons são quatro: sem atividade, menos de 30 minutos, de 30 minutos a 1 hora, e 1 hora ou mais. *(2)*
-- Eu vejo o meu tempo desta semana comparado com a minha média das 4 semanas completas anteriores
-  (contando as semanas paradas como zero), como "20% acima do seu normal". Essa média é o meu
-  normal. Sem nenhuma atividade nessas 4 semanas, a comparação não aparece. *(2)*
+- O meu normal é a média do meu tempo nas 4 semanas completas anteriores, contando as semanas
+  paradas como zero. Sem nenhuma atividade nessas 4 semanas, eu não tenho normal e nenhuma
+  comparação aparece. *(2)*
+- Eu vejo o meu tempo desta semana comparado com o meu normal até aqui: a média, nessas 4
+  semanas, do que eu fiz de segunda até o mesmo dia da semana de hoje, com esse dia inteiro. O
+  número entre parênteses é esse normal até aqui, como "20% acima do seu normal até aqui
+  (0h40)". *(2)*
+  Por quê: numa segunda de manhã, comparar o dia que mal começou com a semana inteira passada
+  sempre dá "abaixo" e desanima.
+- Quando estou abaixo do normal até aqui, eu vejo quanto falta, como "faltam 0h20 para o seu
+  normal até aqui", e não um percentual negativo. Quando o meu normal até aqui é zero (eu
+  costumo começar mais tarde na semana) e eu já tenho atividade, aparece "acima do seu normal até
+  aqui", sem percentual. *(2)*
+- Enquanto a semana em andamento não tem atividade, o topo mostra "Semana começando" no lugar do
+  total, com o meu normal da semana inteira ("seu normal: 0h58 por semana") e a sequência de
+  semanas, que continua a da semana anterior. Sem normal, aparece só "Semana começando". *(2)*
 - Eu vejo o meu dia da semana e o meu período do dia mais frequentes nos últimos 90 dias. Os
   períodos são madrugada (0h às 6h), manhã (6h às 12h), tarde (12h às 18h) e noite (18h às 24h). *(2)*
 - Eu vejo as modalidades do mês e o tempo em cada uma. *(2)*
