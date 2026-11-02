@@ -145,6 +145,20 @@ export const MIGRATIONS: readonly (readonly string[])[] = [
     )`,
     `CREATE INDEX push_subscriptions_member ON push_subscriptions(member_id)`,
   ],
+  // 9: activity templates, to log a repeated activity by hand with a pick (docs/spec/atividades.md).
+  [
+    `CREATE TABLE activity_templates (
+      id TEXT PRIMARY KEY,
+      member_id TEXT NOT NULL REFERENCES members(id),
+      name TEXT NOT NULL,
+      sport TEXT NOT NULL,
+      duration_seconds INTEGER NOT NULL,
+      days TEXT NOT NULL,
+      time TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    )`,
+    `CREATE INDEX activity_templates_member ON activity_templates(member_id)`,
+  ],
 ];
 
 export function migrate(sql: Sql): void {

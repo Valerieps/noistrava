@@ -1,6 +1,7 @@
 // The contract between the app and the server: query and command names, inputs and outputs.
 // Types only. The server imports it with `import type`, so nothing here runs on either side.
 import type { ActivitySource } from '../domain/activity';
+import type { ActivityTemplateFields } from '../domain/activity-template';
 import type { ChainConfig, ChainDayState } from '../domain/challenge/chain';
 import type { Banner, ChallengeResponse, ChallengeState, ChallengeType, Journey, Place } from '../domain/challenge/challenge';
 import type { Role } from '../domain/group/roles';
@@ -198,6 +199,11 @@ export interface ActivityInput {
   sport: string;
 }
 
+/** One of my activity templates, to pick when logging by hand. */
+export interface ActivityTemplateView extends ActivityTemplateFields {
+  readonly id: string;
+}
+
 /** My reminder to log the activities, and on how many of my devices it arrives. */
 export interface ReminderView extends ReminderSettings {
   readonly devices: number;
@@ -219,6 +225,8 @@ export interface Queries {
   history: { input: Record<string, never>; output: HistoryItemView[] };
   /** My own activities, newest first. */
   activities: { input: Record<string, never>; output: ActivityView[] };
+  /** My own activity templates, by name. */
+  activityTemplates: { input: Record<string, never>; output: ActivityTemplateView[] };
   /** My own rhythm, contribution and badges. */
   tracking: { input: Record<string, never>; output: TrackingView };
   reminder: { input: Record<string, never>; output: ReminderView };
@@ -237,6 +245,10 @@ export interface Commands {
   /** Only my own; on a Strava activity only the duration changes. */
   'activity.update': { input: { activityId: string } & Partial<ActivityInput>; output: ActivityView };
   'activity.delete': { input: { activityId: string }; output: null };
+  'activityTemplate.create': { input: ActivityTemplateFields; output: ActivityTemplateView };
+  /** Only my own. */
+  'activityTemplate.update': { input: ActivityTemplateFields & { templateId: string }; output: ActivityTemplateView };
+  'activityTemplate.delete': { input: { templateId: string }; output: null };
   /** A draft any time; otherwise fails with `conflict` while another challenge is open. */
   'challenge.create': { input: ChallengeSetupInput & { creatorIsSenhora: boolean; draft?: boolean }; output: ChallengeView };
   /** The creator, before the end; in a draft she may also change whether she is a Senhora. */
@@ -260,7 +272,7 @@ export type QueryName = keyof Queries;
 export type CommandName = keyof Commands;
 
 /** What a live message says changed; the screens that show it refetch. */
-export type Topic = 'me' | 'members' | 'invites' | 'strava' | 'activities' | 'challenge' | 'history' | 'reminder';
+export type Topic = 'me' | 'members' | 'invites' | 'strava' | 'activities' | 'challenge' | 'history' | 'reminder' | 'templates';
 
 export interface LiveMessage {
   readonly type: 'changed';

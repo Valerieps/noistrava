@@ -5,6 +5,7 @@ import { capitalizeName, normalizeName } from '../../src/domain/group/profile';
 import { isAdmin, keepsAnAdmin, normalizeRoles, type Role } from '../../src/domain/group/roles';
 import { isValidTimezone } from '../../src/domain/time/zones';
 import { eraseMemberActivities } from './activities';
+import { eraseMemberTemplates } from './activity-templates';
 import { settleAll } from './challenges';
 import { failure, nowIso, type CommandResult, type Context } from './context';
 import { eraseMemberReminder } from './reminders';
@@ -205,6 +206,7 @@ export function removeMember(ctx: Context, actor: Member, input: { memberId?: un
   eraseMemberActivities(ctx, target.id);
   ctx.sql.run('DELETE FROM strava_connections WHERE member_id = ?', target.id);
   eraseMemberReminder(ctx, target.id);
+  eraseMemberTemplates(ctx, target.id);
   settleAll(ctx);
   return { ok: true, value: null, changed: ['members', 'activities', 'challenge'], disconnect: [target.id] };
 }

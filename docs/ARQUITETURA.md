@@ -86,6 +86,7 @@ app (celular) ──POST /api/query|command──► Worker ──RPC──► G
 | `challenge_results` | `challenge_id`, `member_id`, `name`, `total_seconds` | Gravado ao fechar o desafio |
 | `reminders` | `member_id`, `enabled`, `days` (JSON, 0 = segunda), `time` (`HH:MM`), `last_sent_on` (migração 8) | O lembrete de cada integrante; `last_sent_on` é a data local do último envio |
 | `push_subscriptions` | `endpoint`, `member_id` (migração 8) | Um aparelho que recebe o lembrete: só o endereço do serviço de push (ADR-012) |
+| `activity_templates` | `id`, `member_id`, `name`, `sport`, `duration_seconds`, `days` (JSON, 0 = segunda), `time` (`HH:MM`) (migração 9) | As atividades modelo de cada integrante; não entram no cálculo de nenhum desafio |
 | `member_badges` | `member_id`, `badge`, `earned_at` (migração 7) | Os selos ganhos. O acompanhamento é calculado das atividades a cada leitura (`src/domain/tracking/tracking.ts`); só os selos ficam gravados, porque um selo ganho não se perde quando a atividade que o deu é editada ou apagada |
 
 ## Fluxo de eventos

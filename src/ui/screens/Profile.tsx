@@ -186,6 +186,7 @@ function Group({ contribution: c }: { contribution: TrackingView['contribution']
 
 function Account() {
   const activities = useQuery('activities', {}, ['activities']);
+  const templates = useQuery('activityTemplates', {}, ['templates']);
   const strava = useQuery('strava', {}, ['strava']);
   const p = strings.profile;
   return (
@@ -194,6 +195,11 @@ function Account() {
         <Link to="/perfil/atividades" className="sheet-menu-row strong">
           <span>{p.activities}</span>
           <span className="sheet-menu-value">{activities.data?.length ?? ''}</span>
+          <ChevronIcon />
+        </Link>
+        <Link to="/perfil/modelos" className="sheet-menu-row strong">
+          <span>{p.templates}</span>
+          <span className="sheet-menu-value">{templates.data?.length ?? ''}</span>
           <ChevronIcon />
         </Link>
       </nav>

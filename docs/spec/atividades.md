@@ -2,8 +2,8 @@
 
 O que é uma atividade, como eu registro à mão e como edito as que vieram do Strava.
 
-- **Entra aqui:** os campos de uma atividade, o registro manual, editar e excluir, e quais atividades
-  contam.
+- **Entra aqui:** os campos de uma atividade, o registro manual, as atividades modelo, editar e
+  excluir, e quais atividades contam.
 - **Não entra aqui:** a conexão com o Strava ([strava.md](strava.md)) e como as atividades somam num
   desafio ([desafio-horas.md](desafio-horas.md)).
 
@@ -25,6 +25,20 @@ O que é uma atividade, como eu registro à mão e como edito as que vieram do S
 - O registro pede só o que o tipo de desafio precisa: no de horas colaborativas, início, tempo total
   e modalidade. *(1)*
 - No registro manual, eu escolho a modalidade numa lista, e o início não pode estar no futuro. *(1)*
+
+## Atividades modelo
+
+- Eu cadastro antes as atividades que repito, como a natação de segunda e quarta às 8h: cada uma
+  tem nome, modalidade, tempo total, os dias da semana e a hora. Só eu vejo as minhas. *(2)*
+  Por quê: preencher todos os campos a cada registro manual cansa.
+- No registro manual, eu escolho uma atividade modelo e o app preenche a modalidade, o tempo total,
+  a hora e o dia; eu confiro, mudo o que quiser e salvo. *(2)*
+- O dia preenchido é o mais recente dos dias da atividade modelo até hoje: se hoje é um deles, é
+  hoje; senão, o último que passou (na terça, a natação de segunda/quarta vem na segunda). *(2)*
+- Se hoje é um dos dias mas a hora ainda não chegou, vem o dia anterior da atividade modelo, porque
+  o início não pode estar no futuro. Sem dias marcados, vem hoje (ou ontem, antes da hora). *(2)*
+- Editar ou excluir uma atividade modelo não muda as atividades que eu já registrei com ela. *(2)*
+- Quando eu saio do grupo, as minhas atividades modelo saem junto. *(2)*
 
 ## Editar e excluir
 

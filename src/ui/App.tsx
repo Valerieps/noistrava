@@ -7,6 +7,7 @@ import { deviceTimezone } from './format';
 import { BackIcon, BellIcon, ClockIcon, FlagIcon, GearIcon, PersonIcon } from './icons';
 import { Link, navigate, usePath } from './router';
 import { ActivityForm } from './screens/ActivityForm';
+import { ActivityTemplateForm, ActivityTemplates } from './screens/ActivityTemplates';
 import { ChallengeForm } from './screens/ChallengeForm';
 import { ChallengeScreen } from './screens/ChallengeScreen';
 import { Drafts } from './screens/Drafts';
@@ -181,6 +182,12 @@ function Screen({ me, onSignOut }: { me: MeView; onSignOut: () => void }) {
         <MyActivities />
       </SheetSub>
     );
+  if (path === '/perfil/modelos')
+    return (
+      <SheetSub title={strings.templates.title} back="/perfil">
+        <ActivityTemplates />
+      </SheetSub>
+    );
   if (path === '/configuracoes/nome')
     return (
       <SheetSub title={strings.profile.nameRow} back="/configuracoes">
@@ -228,6 +235,9 @@ function Screen({ me, onSignOut }: { me: MeView; onSignOut: () => void }) {
   if (path === '/desafio/novo') return <ChallengeForm challengeId={null} />;
   const edit = /^\/desafio\/([^/]+)\/editar$/.exec(path);
   if (edit) return <ChallengeForm challengeId={decodeURIComponent(edit[1])} />;
+  if (path === '/modelo/novo') return <ActivityTemplateForm templateId={null} />;
+  const template = /^\/modelo\/([^/]+)$/.exec(path);
+  if (template) return <ActivityTemplateForm templateId={decodeURIComponent(template[1])} />;
   if (path === '/atividade/nova') return <ActivityForm activityId={null} />;
   const activity = /^\/atividade\/([^/]+)$/.exec(path);
   if (activity) return <ActivityForm activityId={decodeURIComponent(activity[1])} />;
