@@ -83,12 +83,13 @@ export const strings = {
       aheadBodyNoDate: 'Nesse embalo, a meta é nossa.',
       onPace: 'Certinho no ritmo',
       onPaceBody: (today: string, goal: string) => `Mais ${today} hoje e a gente segue no caminho das ${goal}.`,
-      behind: (diff: string) => `Bora! Faltam ${diff} para o ritmo`,
+      behind: (diff: string) => `Bora! Faltam ${diff} pro ritmo`,
       behindBody: (each: string) => `Se cada Senhora fizer ${each} hoje, a gente alcança o programado.`,
       finalStretch: (left: string, days: number) => `Faltam ${left} em ${days === 1 ? '1 dia' : `${days} dias`}`,
       finalStretchBody: (perDay: string) => `São ${perDay} por dia. Dá! Um dia forte resolve.`,
     },
     tiles: {
+      details: 'Ver detalhes',
       needed: (goal: string) => `por dia e as ${goal} são nossas`,
       average: 'por dia, nossa média até aqui',
       extra: 'por dia sobre a média e a gente bate',
@@ -424,6 +425,7 @@ export const strings = {
     previousMonth: 'Mês anterior',
     nextMonth: 'Próximo mês',
     activeDays: (n: number) => (n === 1 ? '1 dia ativo' : `${n} dias ativos`),
+    emptyMonth: 'Nenhuma atividade neste mês ainda.',
     less: 'menos',
     more: 'mais tempo',
     dayLabel: (day: string, time: string | null) => (time ? `${day}: ${time}` : `${day}: sem atividade`),
@@ -443,7 +445,9 @@ export const strings = {
     groupTitle: 'Com o grupo',
     myPart: (name: string) => `Minha parte em ${name}`,
     asSenhora: 'Desafios como Senhora',
-    asSenhoraValue: (n: number, won: number) => `${n}, ${won === 1 ? '1 vencido' : `${won} vencidos`}`,
+    // "1, 0 vencidos" reads as the decimal 1,0, so the count and the wins are split by a dot.
+    asSenhoraValue: (n: number, won: number) =>
+      `${n} · ${won === 0 ? 'nenhum vencido' : won === 1 ? '1 vencido' : `${won} vencidos`}`,
     hearts: 'Corações dados · recebidos',
     pulled: 'Dias em que puxei o grupo',
     badges: {

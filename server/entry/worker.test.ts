@@ -568,6 +568,7 @@ describe('the Group Durable Object', () => {
         activityId: activity.id,
         memberId: anaId,
         memberName: 'Ana',
+        photoUrl: null,
         startedAt: '2026-11-02T08:00:00.000Z',
         timezone: 'UTC',
         durationSeconds: 10_800,

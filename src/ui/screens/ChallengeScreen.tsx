@@ -319,14 +319,17 @@ function PaceTiles({ p, goalMinutes }: { p: Pace; goalMinutes: number }) {
     { value: `${extra > 0 ? '+' : '−'}${formatDuration(Math.abs(extra))}`, note: extra > 0 ? strings.challenge.tiles.extra : strings.challenge.tiles.slack },
   ];
   return (
-    <div className="sheet-numbers">
-      {tiles.map((t) => (
-        <div key={t.note}>
-          <div className="d sheet-number-value">{t.value}</div>
-          <div className="sheet-number-note">{t.note}</div>
-        </div>
-      ))}
-    </div>
+    <details className="pace-details">
+      <summary>{strings.challenge.tiles.details}</summary>
+      <div className="sheet-numbers">
+        {tiles.map((t) => (
+          <div key={t.note}>
+            <div className="d sheet-number-value">{t.value}</div>
+            <div className="sheet-number-note">{t.note}</div>
+          </div>
+        ))}
+      </div>
+    </details>
   );
 }
 

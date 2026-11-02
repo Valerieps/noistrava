@@ -32,7 +32,7 @@ export function formatDate(iso: string | Date): string {
   return new Date(iso).toLocaleDateString(LOCALE, { day: 'numeric', month: 'long' });
 }
 
-/** "12 de out., 18h", in the viewer's zone. */
+/** "12 de out., 18h00", in the viewer's zone. */
 export function formatDateTime(iso: string): string {
   const date = new Date(iso);
   return `${date.toLocaleDateString(LOCALE, { day: 'numeric', month: 'short' })}, ${formatHour(date, undefined)}`;
@@ -43,21 +43,21 @@ export function formatMonthYear(iso: string): string {
   return new Date(iso).toLocaleDateString(LOCALE, { month: 'short', year: 'numeric' }).replace(' de ', ' ').replace('.', '');
 }
 
-/** "7h12", "19h", in `timeZone` (the viewer's when undefined). */
+/** "7h12", "19h00", always with minutes, in `timeZone` (the viewer's when undefined). */
 export function formatHour(date: Date, timeZone: string | undefined): string {
   const parts = new Intl.DateTimeFormat(LOCALE, { hour: 'numeric', minute: '2-digit', hourCycle: 'h23', timeZone }).formatToParts(date);
   const hour = Number(parts.find((p) => p.type === 'hour')?.value ?? 0);
   const minute = parts.find((p) => p.type === 'minute')?.value ?? '00';
-  return minute === '00' ? `${hour}h` : `${hour}h${minute}`;
+  return `${hour}h${minute}`;
 }
 
-/** "seg 0h", in `timeZone`. */
+/** "seg 0h00", in `timeZone`. */
 export function formatWeekdayHour(date: Date, timeZone: string): string {
   const weekday = date.toLocaleDateString(LOCALE, { weekday: 'short', timeZone }).replace('.', '');
   return `${weekday} ${formatHour(date, timeZone)}`;
 }
 
-/** "hoje, 7h12", "ontem, 19h", "12 de out., 7h": an activity's start, in its own zone. */
+/** "hoje, 7h12", "ontem, 19h00", "12 de out., 7h00": an activity's start, in its own zone. */
 export function formatWhen(startedAt: string, timeZone: string, now: Date): string {
   const date = new Date(startedAt);
   const day = (d: Date) => {

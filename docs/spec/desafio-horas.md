@@ -126,8 +126,9 @@ O grupo soma horas de atividade para bater uma meta num período, com ou sem jor
 - Eu escolho ver o andamento como barra, anel ou curva acumulada; o meu aparelho lembra a escolha. *(1)*
 - Embaixo vem sempre uma frase que chama para a ação, nunca uma cobrança: à frente do ritmo, no
   ritmo, atrás do ritmo ou na reta final. *(1)*
-- Sem jornada, eu vejo quanto o grupo precisa por dia para bater a meta, a média por dia até aqui e
-  a diferença entre as duas. *(1)*
+- Sem jornada, em "Ver detalhes" (recolhido) eu vejo quanto o grupo precisa por dia para bater a
+  meta, a média por dia até aqui e a diferença entre as duas. *(1)*
+  Por quê: o título e a frase já dizem o que importa; os três números só confirmam.
 - Há um ranking das Senhoras, por horas, por número de atividades ou por dias ativos, com quem
   subiu ou desceu nas últimas 24 horas e quem está na torcida. *(1)*
 - Sem jornada, há destaques: a maior atividade, a sequência de dias em que alguém se mexeu e a
