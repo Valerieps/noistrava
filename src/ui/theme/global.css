@@ -1346,6 +1346,13 @@ button:disabled {
   letter-spacing: -0.03em;
 }
 
+.week-hero-starting {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
 .week-hero-note {
   color: var(--color-on-hero-muted);
   font-size: 14px;

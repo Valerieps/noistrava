@@ -7,7 +7,7 @@ import { formatDuration } from '../../domain/challenge/progress';
 import { NAME_MAX_LENGTH } from '../../domain/group/profile';
 import { strings } from '../../domain/strings';
 import { addDays } from '../../domain/time/zones';
-import { BADGES } from '../../domain/tracking/tracking';
+import { BADGES, type WeekCompare } from '../../domain/tracking/tracking';
 import { useServices } from '../backend-context';
 import { formatDateTime, formatMonth, formatShortDay, initial, sportName } from '../format';
 import { CheckIcon, ChevronIcon, PlusIcon } from '../icons';
@@ -81,6 +81,13 @@ export function Photo({ me, size = 56 }: { me: MeView; size?: number }) {
   );
 }
 
+function compareNote(c: WeekCompare): string {
+  const s = strings.tracking;
+  if (c.kind === 'above') return s.above(c.percent, formatDuration(c.normalSoFarSeconds));
+  if (c.kind === 'equal') return s.equal(formatDuration(c.normalSoFarSeconds));
+  return s.below(formatDuration(c.missingSeconds));
+}
+
 function WeekHero({ tracking: t }: { tracking: TrackingView }) {
   const s = strings.tracking;
   const activeNames = s.weekdays.filter((_, i) => t.week.activeDays[i]);
@@ -88,8 +95,17 @@ function WeekHero({ tracking: t }: { tracking: TrackingView }) {
     <>
       <div className="week-hero-total">
         <div className="stack" style={{ gap: 4, minWidth: 0 }}>
-          <span className="d week-hero-number">{formatDuration(t.week.seconds)}</span>
-          {t.comparePercent !== null && t.normalSeconds !== null && <span className="week-hero-note">{s.compare(t.comparePercent, formatDuration(t.normalSeconds))}</span>}
+          {t.week.seconds > 0 ? (
+            <>
+              <span className="d week-hero-number">{formatDuration(t.week.seconds)}</span>
+              {t.compare && <span className="week-hero-note">{compareNote(t.compare)}</span>}
+            </>
+          ) : (
+            <>
+              <span className="d week-hero-starting">{s.weekStarting}</span>
+              {t.normalSeconds !== null && <span className="week-hero-note">{s.weekNormal(formatDuration(t.normalSeconds))}</span>}
+            </>
+          )}
         </div>
         {t.streakWeeks > 0 && <span className="week-hero-chip">{s.streak(t.streakWeeks)}</span>}
       </div>

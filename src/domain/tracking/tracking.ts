@@ -109,8 +109,8 @@ export interface Rhythm {
   };
   /** The average of the 4 complete weeks before this one, idle ones as zero; null when all were idle. */
   readonly normalSeconds: number | null;
-  /** This week against the normal, in whole percent; null without a normal. */
-  readonly comparePercent: number | null;
+  /** This week against the normal so far; null without a normal or while the week has no activity. */
+  readonly compare: WeekCompare | null;
   /** Over the last 90 days: 0 (Monday) to 6, and the period of the day; null without activities. */
   readonly favoriteWeekday: number | null;
   readonly favoritePeriod: DayPeriod | null;
@@ -120,6 +120,24 @@ export interface Rhythm {
   readonly comebackDays: number | null;
   /** Every active day and its time, oldest first. */
   readonly days: readonly DayTotal[];
+}
+
+/**
+ * This week so far against the normal so far: the average, over the 4 weeks before, of Monday to
+ * today's weekday, today whole. Below it, the time missing; above it, the whole percent, or null
+ * when the normal so far is zero.
+ */
+export type WeekCompare =
+  | { readonly kind: 'above'; readonly percent: number | null; readonly normalSoFarSeconds: number }
+  | { readonly kind: 'equal'; readonly normalSoFarSeconds: number }
+  | { readonly kind: 'below'; readonly missingSeconds: number; readonly normalSoFarSeconds: number };
+
+export function compareWeek(weekSeconds: number, normalSoFarSeconds: number): WeekCompare {
+  if (normalSoFarSeconds === 0) return { kind: 'above', percent: null, normalSoFarSeconds };
+  const percent = Math.round(((weekSeconds - normalSoFarSeconds) / normalSoFarSeconds) * 100);
+  if (percent > 0) return { kind: 'above', percent, normalSoFarSeconds };
+  if (percent === 0) return { kind: 'equal', normalSoFarSeconds };
+  return { kind: 'below', missingSeconds: normalSoFarSeconds - weekSeconds, normalSoFarSeconds };
 }
 
 /** Picks the most frequent index; a tie goes to the lowest. */
@@ -151,6 +169,12 @@ export function rhythm(activities: readonly TrackedActivity[], now: Date, timeZo
   let previous = 0;
   for (let i = 1; i <= NORMAL_WEEKS; i++) previous += byWeek.get(addDays(thisWeek, -7 * i)) ?? 0;
   const normalSeconds = previous > 0 ? previous / NORMAL_WEEKS : null;
+  let previousSoFar = 0;
+  for (let i = 1; i <= NORMAL_WEEKS; i++) {
+    const monday = addDays(thisWeek, -7 * i);
+    for (let d = 0; d <= weekday(today); d++) previousSoFar += byDay.get(addDays(monday, d)) ?? 0;
+  }
+  const compare = normalSeconds === null || weekSeconds === 0 ? null : compareWeek(weekSeconds, previousSoFar / NORMAL_WEEKS);
 
   const since = now.getTime() - HABIT_DAYS * DAY_MS;
   const weekdays = [0, 0, 0, 0, 0, 0, 0];
@@ -187,7 +211,7 @@ export function rhythm(activities: readonly TrackedActivity[], now: Date, timeZo
       seconds: weekSeconds,
     },
     normalSeconds,
-    comparePercent: normalSeconds === null ? null : Math.round(((weekSeconds - normalSeconds) / normalSeconds) * 100),
+    compare,
     favoriteWeekday: favorite(weekdays),
     favoritePeriod: favoritePeriod === null ? null : PERIODS[favoritePeriod],
     month: {
