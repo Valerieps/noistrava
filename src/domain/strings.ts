@@ -424,6 +424,7 @@ export const strings = {
     previousMonth: 'Mês anterior',
     nextMonth: 'Próximo mês',
     activeDays: (n: number) => (n === 1 ? '1 dia ativo' : `${n} dias ativos`),
+    emptyMonth: 'Nenhuma atividade neste mês ainda.',
     less: 'menos',
     more: 'mais tempo',
     dayLabel: (day: string, time: string | null) => (time ? `${day}: ${time}` : `${day}: sem atividade`),

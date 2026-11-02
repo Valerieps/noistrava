@@ -28,7 +28,8 @@ No meu perfil, eu acompanho o meu ritmo e ganho selos, para manter a constância
 - Eu vejo os 7 dias da semana em andamento, com os dias ativos marcados, e o tempo da semana até
   agora. *(2)*
 - Eu vejo, no próprio perfil, um calendário do mês com os meus dias ativos, mais forte nos dias
-  com mais tempo, e posso voltar aos meses anteriores até o primeiro em que tive atividade. Os
+  com mais tempo. Ele sempre abre no mês atual, mesmo sem atividade (aí diz que não há atividade
+  neste mês ainda), e posso voltar aos meses anteriores até o primeiro em que tive atividade. Os
   tons são quatro: sem atividade, menos de 30 minutos, de 30 minutos a 1 hora, e 1 hora ou mais. *(2)*
 - O meu normal é a média do meu tempo nas 4 semanas completas anteriores, contando as semanas
   paradas como zero. Sem nenhuma atividade nessas 4 semanas, eu não tenho normal e nenhuma
