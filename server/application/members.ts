@@ -1,7 +1,7 @@
 // Members, sign-in and sessions (docs/spec/acesso-e-membros.md).
 import type { MemberListItem, MemberView, MeView } from '../../src/application/api-contract';
 import { normalizeEmail } from '../../src/domain/group/email';
-import { normalizeName } from '../../src/domain/group/profile';
+import { capitalizeName, normalizeName } from '../../src/domain/group/profile';
 import { isAdmin, keepsAnAdmin, normalizeRoles, type Role } from '../../src/domain/group/roles';
 import { isValidTimezone } from '../../src/domain/time/zones';
 import { eraseMemberActivities } from './activities';
@@ -43,7 +43,7 @@ export function toMember(row: MemberRow): Member {
   return {
     id: row.id,
     email: row.email,
-    name: row.name,
+    name: capitalizeName(row.name),
     photoUrl: row.photo_url,
     roles: normalizeRoles(JSON.parse(row.roles) as string[]),
     active: row.active === 1,

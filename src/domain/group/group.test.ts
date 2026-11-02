@@ -35,6 +35,6 @@ describe('normalizeName', () => {
   it('refuses empty and too long names', () => {
     expect(normalizeName('   ')).toBeNull();
     expect(normalizeName('x'.repeat(41))).toBeNull();
-    expect(normalizeName('x'.repeat(40))).toBe('x'.repeat(40));
+    expect(normalizeName('x'.repeat(40))).toBe('X' + 'x'.repeat(39));
   });
 });

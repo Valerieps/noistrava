@@ -1,5 +1,6 @@
 // The group's database (docs/ARQUITETURA.md). Migrations run in order, once each, when the
 // Durable Object starts. Never edit a migration that has shipped: add the next one.
+import { capitalizeName } from '../../src/domain/group/profile';
 import type { Sql } from './ports';
 
 export const MIGRATIONS: readonly (readonly string[])[] = [
@@ -154,5 +155,17 @@ export function migrate(sql: Sql): void {
       for (const statement of MIGRATIONS[version - 1]) sql.run(statement);
       sql.run('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)', version, new Date().toISOString());
     });
+  }
+  capitalizeStoredNames(sql);
+}
+
+/** Names saved before capitalization existed (as Google sent them) are fixed on every start; it is idempotent. */
+function capitalizeStoredNames(sql: Sql): void {
+  for (const table of ['members', 'challenge_results']) {
+    const key = table === 'members' ? 'id' : 'rowid';
+    for (const row of sql.all<{ key: string | number; name: string }>(`SELECT ${key} AS key, name FROM ${table}`)) {
+      const fixed = capitalizeName(row.name);
+      if (fixed !== row.name) sql.run(`UPDATE ${table} SET name = ? WHERE ${key} = ?`, fixed, row.key);
+    }
   }
 }
