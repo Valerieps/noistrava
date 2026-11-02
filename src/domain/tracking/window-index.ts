@@ -71,6 +71,21 @@ export function windowStates(activeDays: readonly CalendarDate[], today: Calenda
 }
 
 /**
+ * The index of a month, as known today: of its days from my first active day up to today, the
+ * share that kept the window. Null when none of its days counts yet.
+ */
+export function monthIndex(states: ReadonlyMap<CalendarDate, WindowState>, month: string): number | null {
+  let counted = 0;
+  let kept = 0;
+  for (const [date, state] of states) {
+    if (!date.startsWith(`${month}-`)) continue;
+    counted++;
+    if (state !== 'lost') kept++;
+  }
+  return counted ? Math.round((kept / counted) * 100) : null;
+}
+
+/**
  * The index on `date`, as known that day: over the 30 days up to it, or since my first active day
  * when that is later. A pause is judged by its whole length, even when it began before the
  * window; one still open on `date` by its length so far.

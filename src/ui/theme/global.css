@@ -2687,6 +2687,18 @@ button:disabled {
   color: var(--color-danger);
 }
 
+.index-percent-inline.green {
+  color: var(--color-ok-ink);
+}
+
+.index-percent-inline.yellow {
+  color: var(--color-accent-ink);
+}
+
+.index-percent-inline.red {
+  color: var(--color-danger);
+}
+
 .template-picker-head {
   display: flex;
   align-items: baseline;

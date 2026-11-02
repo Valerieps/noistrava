@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { addDays } from '../time/zones';
-import { indexSeries, indexZone, windowStates } from './window-index';
+import { indexSeries, indexZone, monthIndex, windowStates } from './window-index';
 
 /** The active days of a timeline, `x` for an active day and `.` for a pause, ending on `today`. */
 function days(timeline: string, today: string): string[] {
@@ -86,5 +86,18 @@ describe('windowStates', () => {
 describe('indexZone', () => {
   it('splits at 85 and 60', () => {
     expect([100, 85, 84, 60, 59, 0].map(indexZone)).toEqual(['green', 'green', 'yellow', 'yellow', 'red', 'red']);
+  });
+});
+
+describe('monthIndex', () => {
+  it("counts only the month's days from my first active day up to today", () => {
+    // 2026-10-28 to 2026-11-02: x x . . . x
+    const states = windowStates(days('xx...x', TODAY), TODAY);
+    expect(monthIndex(states, '2026-10')).toBe(50);
+    expect(monthIndex(states, '2026-11')).toBe(50);
+  });
+
+  it('is null for a month before my first active day', () => {
+    expect(monthIndex(windowStates(days('x', TODAY), TODAY), '2026-10')).toBeNull();
   });
 });
