@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { badgeStatuses, dayLevel, localTime, nextBadge, rhythm, weekStart, type BadgeStatus, type TrackedActivity } from './tracking';
+import { badgeStatuses, dayLevel, localTime, nextBadge, rhythm, visibleMonth, weekStart, type BadgeStatus, type TrackedActivity } from './tracking';
 
 const at = (startedAt: string, minutes = 60, sport = 'Run', timezone = 'UTC'): TrackedActivity => ({ startedAt, timezone, durationSeconds: minutes * 60, sport });
 
@@ -133,5 +133,13 @@ describe('badges', () => {
     expect(nextBadge(list)).toBe('loyal_fan');
     expect(nextBadge(statuses([]))).toBe('early_bird');
     expect(nextBadge(list.map((s) => ({ ...s, earnedAt: 'x' })))).toBeNull();
+  });
+});
+
+describe('visibleMonth', () => {
+  it('opens on the current month and follows it when the month turns', () => {
+    expect(visibleMonth(null, '2026-11')).toBe('2026-11');
+    expect(visibleMonth({ from: '2026-11', month: '2026-09' }, '2026-11')).toBe('2026-09');
+    expect(visibleMonth({ from: '2026-10', month: '2026-10' }, '2026-11')).toBe('2026-11');
   });
 });
