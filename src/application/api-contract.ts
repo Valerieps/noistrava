@@ -115,6 +115,7 @@ export interface LogEntryView {
   readonly activityId: string;
   readonly memberId: string;
   readonly memberName: string;
+  readonly photoUrl: string | null;
   readonly startedAt: string;
   readonly timezone: string;
   readonly durationSeconds: number;

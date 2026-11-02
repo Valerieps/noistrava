@@ -5,7 +5,8 @@ import type { LogEntryView } from '../../../application/api-contract';
 import { formatDuration, secondsToKm } from '../../../domain/challenge/progress';
 import { strings } from '../../../domain/strings';
 import { useServices } from '../../backend-context';
-import { formatKm, formatWhen, initial, sportName } from '../../format';
+import { Avatar } from '../../Avatar';
+import { formatKm, formatWhen, sportName } from '../../format';
 import { HeartIcon } from '../../icons';
 
 const PREVIEW = 4;
@@ -74,9 +75,7 @@ export function ActivityLog({
         <div className="sheet-list">
           {shown.map((entry) => (
             <div key={entry.activityId} className="sheet-row">
-              <div className="initial large" aria-hidden="true">
-                {initial(entry.memberName)}
-              </div>
+              <Avatar name={entry.memberName} photoUrl={entry.photoUrl} large />
               <div style={{ minWidth: 0 }}>
                 <div>
                   <b>{entry.memberName}</b> {strings.challenge.log.did(formatDuration(entry.durationSeconds), sportName(entry.sport).toLowerCase())}
@@ -112,9 +111,7 @@ export function ActivityLog({
       {entries.length === 0 && <p className="muted small">{strings.challenge.log.empty}</p>}
       {shown.map((entry) => (
         <div key={entry.activityId} className="log-row">
-          <div className="initial large" aria-hidden="true">
-            {initial(entry.memberName)}
-          </div>
+          <Avatar name={entry.memberName} photoUrl={entry.photoUrl} large />
           <div className="stack" style={{ gap: 2, minWidth: 0 }}>
             <div>
               <b>{entry.memberName}</b> · {sportName(entry.sport).toLowerCase()}

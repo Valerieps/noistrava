@@ -333,7 +333,9 @@ export function drafts(ctx: Context, actor: Member): ChallengeView[] {
 export function challengeLog(ctx: Context, actor: Member, input: { challengeId?: unknown }): LogEntryView[] | QueryError {
   const row = loadVisible(ctx, actor, input.challengeId);
   if (!row) return new QueryError('not_found');
-  const names = new Map(ctx.sql.all<{ id: string; name: string }>('SELECT id, name FROM members').map((m) => [m.id, m.name]));
+  const people = new Map(
+    ctx.sql.all<{ id: string; name: string; photo_url: string | null }>('SELECT id, name, photo_url FROM members').map((m) => [m.id, m]),
+  );
   const hearts = new Map(
     ctx.sql
       .all<{ activity_id: string; hearts: number; mine: number }>(
@@ -346,7 +348,8 @@ export function challengeLog(ctx: Context, actor: Member, input: { challengeId?:
   return countedActivities(ctx, row).map((a) => ({
     activityId: a.id,
     memberId: a.member_id,
-    memberName: names.get(a.member_id) ?? '',
+    memberName: people.get(a.member_id)?.name ?? '',
+    photoUrl: people.get(a.member_id)?.photo_url ?? null,
     startedAt: a.started_at,
     timezone: a.timezone,
     durationSeconds: a.duration_seconds,
