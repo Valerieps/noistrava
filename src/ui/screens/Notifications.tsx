@@ -13,7 +13,7 @@ const WEEKDAYS: readonly Weekday[] = [0, 1, 2, 3, 4, 5, 6];
 
 type ReminderKind = {
   readonly command: Extract<CommandName, 'reminder.set' | 'windowReminder.set'>;
-  readonly text: { readonly title: string; readonly about: string; readonly enabled: string };
+  readonly text: { readonly title: string; readonly about: string };
   /** Its push has content, so it reaches only a device that gives its keys (ADR-013). */
   readonly needsKeys: boolean;
 };
@@ -119,11 +119,8 @@ function ReminderForm({
 
   return (
     <div className="sheet-section">
-      <h2>{kind.text.title}</h2>
-      <p className="muted">{kind.text.about}</p>
-
       <label className="switch-row" style={{ flexDirection: 'row' }}>
-        <b>{kind.text.enabled}</b>
+        <h2>{kind.text.title}</h2>
         <input
           type="checkbox"
           role="switch"
@@ -133,12 +130,8 @@ function ReminderForm({
           onChange={(e) => void toggle(e.target.checked)}
         />
       </label>
+      <p className="muted">{kind.text.about}</p>
 
-      {settings.enabled && device && (
-        <p className="muted">
-          {reaches(kind, device) ? s.thisDevice : s.notThisDevice} {s.devices(saved.devices)}
-        </p>
-      )}
       {settings.enabled && device && !reaches(kind, device) && (
         <button type="button" disabled={busy} onClick={() => void addDevice()}>
           {s.addThisDevice}
@@ -146,7 +139,6 @@ function ReminderForm({
       )}
 
       <fieldset className="stack" disabled={!settings.enabled} style={{ border: 0, margin: 0, padding: 0 }}>
-        <legend className="field-label">{s.days}</legend>
         <div className="weekday-picker">
           {WEEKDAYS.map((day) => (
             <label key={day}>
@@ -163,9 +155,9 @@ function ReminderForm({
         {settings.days.length === 0 && <p className="muted">{s.noDays}</p>}
 
         <label>
-          <span className="field-label">{s.time}</span>
           <input
             type="time"
+            aria-label={strings.reminder.time}
             step={300}
             required
             value={settings.time}
