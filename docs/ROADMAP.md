@@ -23,6 +23,8 @@ O que ainda não está pronto.
 
 ## Revisar as lacunas que o agente decidiu
 
+- [ ] O índice do mês no calendário usa os estados de hoje (ativo, na janela, pausa longa) e as
+  zonas do índice de 30 dias para a cor (`spec/acompanhamento.md`).
 - [ ] Atividades modelo: hoje só vem preenchido se a hora já chegou; senão, o dia anterior da
   atividade modelo. Sem dias marcados, vale qualquer dia. Cada atividade modelo tem um nome livre
   (até 40 letras), e a pessoa tem no máximo 30 (`spec/atividades.md`).

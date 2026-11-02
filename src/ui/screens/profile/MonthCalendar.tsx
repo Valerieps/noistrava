@@ -1,10 +1,11 @@
 // The month calendar of my window of benefits (docs/spec/acompanhamento.md, "O meu ritmo"): active
 // days with their sport, days kept by a short pause, days lost in a long one, today with a ring, the
-// days still to come dashed, and arrows back to the months I was active.
+// days still to come dashed, the month's Índice de Aproveitamento, and arrows back to the months I
+// was active.
 import { useState } from 'react';
 import type { DayTotal } from '../../../domain/tracking/tracking';
 import { visibleMonth, weekday } from '../../../domain/tracking/tracking';
-import { windowStates, type WindowState } from '../../../domain/tracking/window-index';
+import { indexZone, monthIndex, windowStates, type WindowState } from '../../../domain/tracking/window-index';
 import { formatDuration } from '../../../domain/challenge/progress';
 import { strings } from '../../../domain/strings';
 import { formatDayMonth, formatMonth } from '../../format';
@@ -38,6 +39,7 @@ export function MonthCalendar({ days, today }: { days: readonly DayTotal[]; toda
 
   const dates = Array.from({ length: daysIn(month) }, (_, i) => `${month}-${String(i + 1).padStart(2, '0')}`);
   const active = dates.filter((d) => byDate.has(d)).length;
+  const index = monthIndex(states, month);
   const title = formatMonth(month, Number(today.slice(0, 4)));
 
   return (
@@ -49,6 +51,11 @@ export function MonthCalendar({ days, today }: { days: readonly DayTotal[]; toda
         <div className="center">
           <h2 className="d month-calendar-title">{title}</h2>
           <div className="small muted">{active ? t.activeDays(active) : t.emptyMonth}</div>
+          {index !== null && (
+            <div className="small month-index">
+              {t.monthIndex}: <strong className={`index-percent-inline ${indexZone(index)}`}>{index}%</strong>
+            </div>
+          )}
         </div>
         <button type="button" className="icon-button" aria-label={t.nextMonth} disabled={month >= current} onClick={() => setMonth(shiftMonth(month, 1))}>
           <ChevronIcon />

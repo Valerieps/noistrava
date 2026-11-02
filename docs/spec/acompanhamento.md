@@ -64,6 +64,10 @@ No meu perfil, eu acompanho o meu ritmo e ganho selos, para manter a constância
   A cor nunca muda pela modalidade nem pelo tempo do dia. Os dias que ainda vão chegar ficam
   tracejados, e hoje tem um contorno. A legenda diz: ativo · na janela · pausa longa. Para quem
   usa leitor de tela, cada dia diz o tempo e o estado.
+- Abaixo do nome do mês, o calendário mostra o Índice de Aproveitamento do mês: dos dias do mês
+  que contam, a porcentagem que manteve a janela (ativo ou na janela), na cor da zona dele. No mês
+  atual, contam os dias até hoje; antes do meu primeiro dia ativo, nada conta, e um mês sem nenhum
+  dia que conte não mostra o índice. *(2)*
   Por quê: o calendário mostra onde a janela se manteve e onde se perdeu, que é o que o índice
   conta.
 - O meu normal é a média do meu tempo nas 4 semanas completas anteriores, contando as semanas
