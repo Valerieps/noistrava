@@ -2076,22 +2076,29 @@ button:disabled {
   gap: var(--space-3);
 }
 
+.sheet-head:has(.sheet-select) {
+  align-items: baseline;
+}
+
 .sheet-select {
   position: relative;
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  min-height: 44px;
   color: var(--color-brand-ink);
   font-size: var(--text-sm);
   font-weight: 700;
 }
 
 .sheet-select select {
+  align-self: stretch;
   min-height: 44px;
   padding: 0 var(--space-5) 0 var(--space-2);
   border: 0;
   background: transparent;
   color: inherit;
   font: inherit;
+  field-sizing: content;
   appearance: none;
   cursor: pointer;
 }
@@ -2099,7 +2106,8 @@ button:disabled {
 .sheet-select svg {
   position: absolute;
   right: 0;
-  transform: rotate(90deg);
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
   pointer-events: none;
 }
 
@@ -2116,6 +2124,20 @@ button:disabled {
   align-items: center;
   min-height: 56px;
   padding: var(--space-2) 0;
+}
+
+.sheet-row.me {
+  margin: 0 calc(-1 * var(--space-2));
+  padding-inline: var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-brand-soft);
+}
+
+.sheet-row-you {
+  margin-left: var(--space-2);
+  color: var(--color-brand-ink);
+  font-size: var(--text-xs);
+  font-weight: 700;
 }
 
 .sheet-row .initial {
@@ -2181,6 +2203,17 @@ button:disabled {
   color: var(--color-text-muted);
   font-size: 14px;
   line-height: 1.4;
+}
+
+.pace-details > summary {
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.pace-details[open] > summary {
+  margin-bottom: var(--space-2);
 }
 
 .sheet-numbers {
