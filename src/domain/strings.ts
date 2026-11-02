@@ -388,7 +388,7 @@ export const strings = {
 
   reminder: {
     title: 'Lembrete do Fabrício',
-    about: 'Um empurrãozinho para registrar as atividades. O texto é o mesmo para todas as Senhoras.',
+    about: 'Lembrete de lembrar o Fabrício de registrar as atividades',
     /** The notification itself; public/sw.js shows it (src/app-identity.test.ts checks they match). */
     notificationTitle: 'Senhoras',
     notificationBody: 'Fabrício, já registrou suas atividades? 🏃‍♀️',
