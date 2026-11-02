@@ -3,7 +3,7 @@ import type { LogEntryView } from '../../../application/api-contract';
 import { formatDuration, highlights, sportShares } from '../../../domain/challenge/progress';
 import { strings } from '../../../domain/strings';
 import { sportName } from '../../format';
-import { TONES } from '../../palette';
+import { CATEGORIES, OTHERS } from '../../palette';
 
 export function Highlights({ log }: { log: readonly LogEntryView[] }) {
   const h = highlights(log);
@@ -29,13 +29,13 @@ export function Highlights({ log }: { log: readonly LogEntryView[] }) {
           </div>
           <div className="share-bar" aria-hidden="true">
             {shares.map((s, i) => (
-              <div key={s.sport ?? 'outros'} style={{ width: `${s.share * 100}%`, background: TONES[i % TONES.length] }} />
+              <div key={s.sport ?? 'outros'} style={{ width: `${s.share * 100}%`, background: tone(s.sport, i) }} />
             ))}
           </div>
           <div className="share-legend">
             {shares.map((s, i) => (
               <div key={s.sport ?? 'outros'} className="legend-item" style={{ gap: 6 }}>
-                <span className="swatch" style={{ background: TONES[i % TONES.length] }} />
+                <span className="swatch" style={{ background: tone(s.sport, i) }} />
                 {s.sport ? sportName(s.sport) : strings.otherSports} {Math.round(s.share * 100)}%
               </div>
             ))}
@@ -44,6 +44,11 @@ export function Highlights({ log }: { log: readonly LogEntryView[] }) {
       )}
     </section>
   );
+}
+
+// "Outros" always gets the last color; the sports take the others in order.
+function tone(sport: string | null, i: number): string {
+  return sport === null ? OTHERS : CATEGORIES[i % CATEGORIES.length];
 }
 
 function Tile({ label, value, note }: { label: string; value: string; note: string }) {

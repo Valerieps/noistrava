@@ -424,6 +424,7 @@ export const strings = {
     previousMonth: 'Mês anterior',
     nextMonth: 'Próximo mês',
     activeDays: (n: number) => (n === 1 ? '1 dia ativo' : `${n} dias ativos`),
+    emptyMonth: 'Nenhuma atividade neste mês ainda.',
     less: 'menos',
     more: 'mais tempo',
     dayLabel: (day: string, time: string | null) => (time ? `${day}: ${time}` : `${day}: sem atividade`),
@@ -443,7 +444,9 @@ export const strings = {
     groupTitle: 'Com o grupo',
     myPart: (name: string) => `Minha parte em ${name}`,
     asSenhora: 'Desafios como Senhora',
-    asSenhoraValue: (n: number, won: number) => `${n}, ${won === 1 ? '1 vencido' : `${won} vencidos`}`,
+    // "1, 0 vencidos" reads as the decimal 1,0, so the count and the wins are split by a dot.
+    asSenhoraValue: (n: number, won: number) =>
+      `${n} · ${won === 0 ? 'nenhum vencido' : won === 1 ? '1 vencido' : `${won} vencidos`}`,
     hearts: 'Corações dados · recebidos',
     pulled: 'Dias em que puxei o grupo',
     badges: {

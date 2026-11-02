@@ -2,7 +2,7 @@
 // time, today with a ring, the days still to come dashed, and arrows back to the months I was active.
 import { useState } from 'react';
 import type { DayTotal } from '../../../domain/tracking/tracking';
-import { dayLevel, weekday } from '../../../domain/tracking/tracking';
+import { dayLevel, visibleMonth, weekday } from '../../../domain/tracking/tracking';
 import { formatDuration } from '../../../domain/challenge/progress';
 import { strings } from '../../../domain/strings';
 import { formatDayMonth, formatMonth } from '../../format';
@@ -23,7 +23,9 @@ export function MonthCalendar({ days, today }: { days: readonly DayTotal[]; toda
   const t = strings.tracking;
   const current = today.slice(0, 7);
   const first = days[0]?.date.slice(0, 7) ?? current;
-  const [month, setMonth] = useState(current);
+  const [picked, setPicked] = useState<{ from: string; month: string } | null>(null);
+  const month = visibleMonth(picked, current);
+  const setMonth = (next: string) => setPicked({ from: current, month: next });
   const seconds = new Map(days.map((d) => [d.date, d.seconds]));
 
   const dates = Array.from({ length: daysIn(month) }, (_, i) => `${month}-${String(i + 1).padStart(2, '0')}`);
@@ -38,7 +40,7 @@ export function MonthCalendar({ days, today }: { days: readonly DayTotal[]; toda
         </button>
         <div className="center">
           <h2 className="d month-calendar-title">{title}</h2>
-          <div className="small muted">{t.activeDays(active)}</div>
+          <div className="small muted">{active ? t.activeDays(active) : t.emptyMonth}</div>
         </div>
         <button type="button" className="icon-button" aria-label={t.nextMonth} disabled={month >= current} onClick={() => setMonth(shiftMonth(month, 1))}>
           <ChevronIcon />
