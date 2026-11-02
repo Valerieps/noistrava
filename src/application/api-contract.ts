@@ -5,7 +5,7 @@ import type { ActivityTemplateFields } from '../domain/activity-template';
 import type { ChainConfig, ChainDayState } from '../domain/challenge/chain';
 import type { Banner, ChallengeResponse, ChallengeState, ChallengeType, Journey, Place } from '../domain/challenge/challenge';
 import type { Role } from '../domain/group/roles';
-import type { ReminderSettings } from '../domain/reminder';
+import type { PushKeys, ReminderSettings } from '../domain/reminder';
 import type { BadgeStatus, BadgeKey, Rhythm } from '../domain/tracking/tracking';
 
 export interface MemberView {
@@ -230,6 +230,8 @@ export interface Queries {
   /** My own rhythm, contribution and badges. */
   tracking: { input: Record<string, never>; output: TrackingView };
   reminder: { input: Record<string, never>; output: ReminderView };
+  /** My reminder that the window closes today; its devices are those that gave their keys. */
+  windowReminder: { input: Record<string, never>; output: ReminderView };
 }
 
 /** Writes: `POST /api/command/<name>`. Each runs alone, in one transaction. */
@@ -264,7 +266,11 @@ export interface Commands {
   'reaction.set': { input: { challengeId: string; activityId: string; heart: boolean }; output: null };
   'reminder.set': { input: ReminderSettings; output: ReminderView };
   /** This device receives my reminder; the address must belong to a push service of `PUSH_ORIGINS`. */
-  'push.subscribe': { input: { endpoint: string }; output: ReminderView };
+  'windowReminder.set': { input: ReminderSettings; output: ReminderView };
+  /** The keys come along when the browser gives them, to encrypt the window reminder (ADR-013). */
+  'push.subscribe': { input: { endpoint: string } & Partial<PushKeys>; output: ReminderView };
+  /** Updates the keys of a device already mine; never takes another member's device. */
+  'push.refreshKeys': { input: { endpoint: string } & PushKeys; output: ReminderView };
   'push.unsubscribe': { input: { endpoint: string }; output: ReminderView };
 }
 

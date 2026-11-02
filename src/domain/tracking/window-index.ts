@@ -120,3 +120,24 @@ export function indexSeries(activeDays: readonly CalendarDate[], today: Calendar
   }
   return points;
 }
+
+/** The index today if I exercise today, and if I do not; `before` is yesterday's, as known then. */
+export interface ClosingWindow {
+  readonly before: number | null;
+  readonly ifActive: number;
+  readonly ifNot: number;
+}
+
+/**
+ * When today is the last day my window can be kept (my last active day was MAX_PAUSE_DAYS + 1 days
+ * ago and I have not moved today), the index either way; else null.
+ */
+export function closingWindow(activeDays: readonly CalendarDate[], today: CalendarDate): ClosingWindow | null {
+  const past = activeDays.filter((d) => d <= today);
+  if (past.includes(today)) return null;
+  const last = past.sort().at(-1);
+  if (!last || last !== addDays(today, -(MAX_PAUSE_DAYS + 1))) return null;
+  const withToday = indexSeries([...past, today], today);
+  const without = indexSeries(past, today);
+  return { before: withToday.at(-2)?.percent ?? null, ifActive: withToday[withToday.length - 1].percent, ifNot: without[without.length - 1].percent };
+}

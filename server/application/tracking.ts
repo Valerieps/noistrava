@@ -3,6 +3,7 @@
 // badges are stored, since one earned stays even if its activity is edited or deleted.
 import type { ChainView, TrackingView } from '../../src/application/api-contract';
 import { badgeStatuses, isBadgeKey, localTime, nextBadge, rhythm, type BadgeStatus, type TrackedActivity } from '../../src/domain/tracking/tracking';
+import type { CalendarDate } from '../../src/domain/time/zones';
 import { getChallenge } from './challenges';
 import type { Context } from './context';
 import type { Member } from './members';
@@ -16,6 +17,11 @@ function activitiesOf(ctx: Context, memberId: string): TrackedActivity[] {
       memberId,
     )
     .map((a) => ({ startedAt: a.started_at, timezone: a.timezone, durationSeconds: a.duration_seconds, sport: a.sport }));
+}
+
+/** The days I moved, each activity on its own zone's date. */
+export function activeDaysOf(ctx: Context, memberId: string): CalendarDate[] {
+  return [...new Set(activitiesOf(ctx, memberId).map((a) => localTime(a.startedAt, a.timezone).date))];
 }
 
 /** The badges as the activities, hearts and chains give them now, before the stored ones. */

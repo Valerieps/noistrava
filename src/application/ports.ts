@@ -1,6 +1,7 @@
 // What the UI needs from the outside world. src/infrastructure/ implements it; the UI receives it
 // through ServicesProvider and never makes network calls itself.
 import type { Journey } from '../domain/challenge/challenge';
+import type { PushKeys } from '../domain/reminder';
 import type { ApiResult, CommandName, Commands, PlaceSuggestion, QueryName, Queries, RouteInput, Topic } from './api-contract';
 
 export interface Backend {
@@ -35,7 +36,10 @@ export interface Backend {
 }
 
 /** Whether this device receives pushes, and its push service address when it does. */
-export type PushDeviceState = { readonly kind: 'unsupported' | 'blocked' | 'off' } | { readonly kind: 'on'; readonly endpoint: string };
+export type PushDeviceState =
+  | { readonly kind: 'unsupported' | 'blocked' | 'off' }
+  /** `keys`, to encrypt a push's content with (ADR-013); null when the browser gives none. */
+  | { readonly kind: 'on'; readonly endpoint: string; readonly keys: PushKeys | null };
 
 /** This device's push subscription (ADR-012). */
 export interface PushDevice {

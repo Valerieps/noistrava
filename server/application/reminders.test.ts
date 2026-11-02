@@ -109,3 +109,67 @@ describe('remindersDue', () => {
     expect(service.remindersDue()).toEqual([]);
   });
 });
+
+describe('window reminder', () => {
+  const P256DH = `B${'a'.repeat(86)}`;
+  const AUTH = 'b'.repeat(22);
+  const turnOnWindow = (hash: string, time = '12:00') => service.command(hash, 'windowReminder.set', { enabled: true, days: [0, 1, 2, 3, 4, 5, 6], time });
+  const logDay = (hash: string, date: string) =>
+    expect(service.command(hash, 'activity.create', { startedAt: `${date}T08:00:00Z`, timezone: 'UTC', durationSeconds: 1800, sport: 'Run' })).toMatchObject({ ok: true });
+
+  beforeEach(() => {
+    // Ana moved every day of October up to the 30th, so 2 November is her window's last day.
+    clock.set('2026-11-01T10:00:00Z');
+    for (let day = 1; day <= 30; day++) logDay(ana, `2026-10-${String(day).padStart(2, '0')}`);
+    clock.set('2026-11-02T12:05:00Z');
+  });
+
+  it('starts off, every day at 12:00, apart from the reminder to log', () => {
+    expect(service.query(ana, 'windowReminder', {})).toEqual({ ok: true, value: { enabled: false, days: [0, 1, 2, 3, 4, 5, 6], time: '12:00', devices: 0 } });
+    turnOnWindow(ana, '09:00');
+    expect(service.query(ana, 'reminder', {})).toMatchObject({ value: { enabled: false, time: '20:00' } });
+  });
+
+  it('on the window last day, sends the index either way to the devices with keys, once', () => {
+    turnOnWindow(ana);
+    service.command(ana, 'push.subscribe', { endpoint: PHONE, p256dh: P256DH, auth: AUTH });
+    service.command(ana, 'push.subscribe', { endpoint: LAPTOP });
+    expect(service.query(ana, 'windowReminder', {})).toMatchObject({ value: { devices: 1 } });
+    const [message, ...rest] = service.windowRemindersDue();
+    expect(rest).toEqual([]);
+    expect(message).toMatchObject({ endpoint: PHONE, keys: { p256dh: P256DH, auth: AUTH } });
+    expect(JSON.parse(message.payload)).toEqual({
+      title: 'Sua janela fecha hoje ⏳',
+      body: 'Um exercício hoje e o seu Índice de Aproveitamento fica em 100%. Sem ele, cai para 90%. Bora manter a janela aberta? 💪',
+      tag: 'janela',
+    });
+    expect(service.windowRemindersDue()).toEqual([]);
+  });
+
+  it('sends nothing once she moved today, nor on another day', () => {
+    turnOnWindow(ana);
+    service.command(ana, 'push.subscribe', { endpoint: PHONE, p256dh: P256DH, auth: AUTH });
+    logDay(ana, '2026-11-02');
+    expect(service.windowRemindersDue()).toEqual([]);
+    clock.set('2026-11-03T12:05:00Z');
+    expect(service.windowRemindersDue()).toEqual([]);
+  });
+
+  it('waits for a chosen day and time', () => {
+    service.command(ana, 'windowReminder.set', { enabled: true, days: [1], time: '12:00' });
+    service.command(ana, 'push.subscribe', { endpoint: PHONE, p256dh: P256DH, auth: AUTH });
+    expect(service.windowRemindersDue()).toEqual([]);
+  });
+
+  it('refuses bad keys, and refreshes keys only on a device already mine', () => {
+    expect(service.command(ana, 'push.subscribe', { endpoint: PHONE, p256dh: 'x', auth: AUTH })).toEqual({ ok: false, error: 'invalid' });
+    service.command(ana, 'push.subscribe', { endpoint: PHONE });
+    expect(service.command(bia, 'push.refreshKeys', { endpoint: PHONE, p256dh: P256DH, auth: AUTH })).toMatchObject({ ok: true, changed: [] });
+    expect(service.query(ana, 'windowReminder', {})).toMatchObject({ value: { devices: 0 } });
+    expect(service.command(ana, 'push.refreshKeys', { endpoint: PHONE, p256dh: P256DH, auth: AUTH })).toMatchObject({ ok: true, changed: ['reminder'] });
+    expect(service.query(ana, 'windowReminder', {})).toMatchObject({ value: { devices: 1 } });
+    // Subscribing again without keys keeps the ones it had.
+    service.command(ana, 'push.subscribe', { endpoint: PHONE });
+    expect(service.query(ana, 'windowReminder', {})).toMatchObject({ value: { devices: 1 } });
+  });
+});

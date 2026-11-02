@@ -1,6 +1,7 @@
 # Notificações
 
-Eu recebo, no celular ou no computador, um lembrete para registrar as minhas atividades.
+Eu recebo, no celular ou no computador, um lembrete para registrar as minhas atividades e um aviso
+no dia em que a minha janela de benefícios fecha.
 
 - **Entra aqui:** quais notificações existem, quem as recebe, quando chegam e como eu as configuro.
 - **Não entra aqui:** como o push funciona por dentro (ADR-012) e o registro de uma atividade
@@ -13,7 +14,7 @@ Eu recebo, no celular ou no computador, um lembrete para registrar as minhas ati
 
 ## O lembrete do Fabrício
 
-- A única notificação, por enquanto, é o lembrete para registrar as atividades. É uma brincadeira
+- O primeiro lembrete é o de registrar as atividades. É uma brincadeira
   com o Fabrício: o texto é o mesmo para todas as Senhoras, "Fabrício, já registrou suas
   atividades? 🏃‍♀️". *(2)*
 - Eu abro as notificações pelo sininho, à esquerda da engrenagem, na faixa de cima do app. *(2)*
@@ -33,3 +34,23 @@ Eu recebo, no celular ou no computador, um lembrete para registrar as minhas ati
   recebe notificações, o app avisa e não liga. *(2)*
 - Num aparelho usado por duas integrantes, chega o lembrete de quem ligou por último nele. *(2)*
 - Quem sai do grupo para de receber na hora. *(2)*
+
+## O lembrete da janela
+
+- O lembrete da janela me avisa no dia em que a minha janela de benefícios fecha: o terceiro dia
+  depois do meu último dia ativo, se eu ainda não me exercitei nele. *(2)*
+  Por quê: uma pausa de até 2 dias mantém a janela; no terceiro dia sem atividade, a pausa inteira
+  se perde e o Índice de Aproveitamento cai ([acompanhamento.md](acompanhamento.md)).
+- O texto me encoraja e mostra o meu Índice de Aproveitamento de hoje nos dois casos: título "Sua
+  janela fecha hoje ⏳", texto "Um exercício hoje e o seu Índice de Aproveitamento sobe para 87%.
+  Sem ele, cai para 77%. Bora manter a janela aberta? 💪". Quando o índice com o exercício de hoje
+  não passa o de ontem, o texto diz "fica em" no lugar de "sobe para". *(2)*
+- Eu escolho, na mesma tela do lembrete do Fabrício e separado dele, se recebo o lembrete da
+  janela, em quais dias da semana e a que hora. Até eu mudar, ele fica desligado, todos os dias,
+  às 12h. *(2)*
+- Se o dia em que a janela fecha não é um dos dias escolhidos, ou se eu me exercito antes da hora,
+  nada chega. *(2)*
+- Ele chega nos mesmos aparelhos do lembrete do Fabrício, uma vez por dia, na hora escolhida ou
+  até uma hora depois, e vale para qualquer integrante. Tocar nele abre o app. *(2)*
+- Num navegador que não dá as chaves para cifrar o conteúdo do push, o lembrete da janela não
+  liga, e o app avisa. *(2)*

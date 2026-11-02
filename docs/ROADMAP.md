@@ -82,6 +82,10 @@ O que ainda não está pronto.
   para todos os aparelhos; num aparelho compartilhado, vale quem ligou por último; abre numa tela
   própria pelo sininho, não num menu suspenso; o Edge no Windows não recebe (ADR-012)
   (`spec/notificacoes.md`).
+- [ ] Lembrete da janela: "fica em" no lugar de "sobe para" quando o índice não passa o de ontem;
+  o dia de cada atividade é a data no fuso dela, como no perfil; um aparelho ligado antes do
+  lembrete da janela passa a recebê-lo quando eu abro as Notificações nele; um navegador sem as
+  chaves de cifra não liga (ADR-013) (`spec/notificacoes.md`, "O lembrete da janela").
 
 ## Adiado
 

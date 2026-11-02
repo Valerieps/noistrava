@@ -1,6 +1,8 @@
-// Sending the reminder (ADR-012): the Group says which devices are due, the Worker signs and sends
-// each push, and forgets the devices their push service says are gone.
+// Sending the reminders (ADR-012, ADR-013): the Group says which devices are due, the Worker signs
+// (and, for the window reminder, encrypts) each push, and forgets the devices their push service
+// says are gone.
 import { importVapidKey, sendPush } from '../infrastructure/web-push';
+import type { PushMessage } from '../application/reminders';
 import type { Env } from './env';
 import type { Group } from './group-object';
 
@@ -8,11 +10,12 @@ export async function sendReminders(env: Env, group: DurableObjectStub<Group>): 
   const key = await importVapidKey(env.VAPID_KEY);
   // Previews and local runs without the secret never send pushes; the reminders stay unsent.
   if (!key) return;
-  const endpoints = (await group.remindersDue()) as string[];
+  const plain = ((await group.remindersDue()) as string[]).map((endpoint) => ({ endpoint, content: undefined }));
+  const window = ((await group.windowRemindersDue()) as PushMessage[]).map((m) => ({ endpoint: m.endpoint, content: { keys: m.keys, payload: m.payload } }));
   await Promise.all(
-    endpoints.map(async (endpoint) => {
+    [...plain, ...window].map(async ({ endpoint, content }) => {
       try {
-        if ((await sendPush(key, endpoint, new Date())) === 'gone') await group.removePushSubscription(endpoint);
+        if ((await sendPush(key, endpoint, new Date(), content)) === 'gone') await group.removePushSubscription(endpoint);
       } catch (error) {
         console.error('Push failed', error instanceof Error ? error.message : 'unknown error');
       }

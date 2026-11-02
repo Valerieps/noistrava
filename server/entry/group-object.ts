@@ -5,6 +5,7 @@ import { DurableObject } from 'cloudflare:workers';
 import type { LiveMessage, Topic } from '../../src/application/api-contract';
 import { GroupService } from '../application/group-service';
 import type { GoogleProfile, SignInResult } from '../application/members';
+import type { PushMessage } from '../application/reminders';
 import type { NewStravaConnection, StravaActivityEvent, StravaCredentials } from '../application/strava';
 import { durableObjectSql } from '../infrastructure/durable-object-sql';
 import type { Env } from './env';
@@ -75,6 +76,10 @@ export class Group extends DurableObject<Env> {
 
   remindersDue(): string[] {
     return this.service.remindersDue();
+  }
+
+  windowRemindersDue(): PushMessage[] {
+    return this.service.windowRemindersDue();
   }
 
   removePushSubscription(endpoint: string): void {

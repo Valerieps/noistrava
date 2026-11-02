@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_REMINDER, isPushEndpoint, localMoment, parseReminderSettings, reminderDue, type ReminderSettings } from './reminder';
+import { DEFAULT_REMINDER, isPushEndpoint, isPushKeys, localMoment, parseReminderSettings, reminderDue, type ReminderSettings } from './reminder';
 
 const weekdays: ReminderSettings = { enabled: true, days: [0, 1, 2, 3, 4], time: '20:00' };
 
@@ -66,5 +66,18 @@ describe('isPushEndpoint', () => {
     expect(isPushEndpoint('http://fcm.googleapis.com/x', origins)).toBe(false);
     expect(isPushEndpoint('not a url', origins)).toBe(false);
     expect(isPushEndpoint(42, origins)).toBe(false);
+  });
+});
+
+describe('isPushKeys', () => {
+  const p256dh = `B${'a'.repeat(86)}`;
+  it('accepts a 65-byte public key and a 16-byte secret, base64url', () => {
+    expect(isPushKeys({ p256dh, auth: 'b'.repeat(22) })).toBe(true);
+  });
+  it('refuses anything else', () => {
+    expect(isPushKeys({ p256dh, auth: 'b'.repeat(21) })).toBe(false);
+    expect(isPushKeys({ p256dh: `C${'a'.repeat(86)}`, auth: 'b'.repeat(22) })).toBe(false);
+    expect(isPushKeys({ p256dh: `${p256dh}=`, auth: 'b'.repeat(22) })).toBe(false);
+    expect(isPushKeys({})).toBe(false);
   });
 });
