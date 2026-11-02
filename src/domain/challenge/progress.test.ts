@@ -93,10 +93,29 @@ describe('ranking and highlights', () => {
   });
 
   it('shares time by sport, the rest as others', () => {
-    const shares = sportShares(log, 1);
+    const shares = sportShares([...log, activity('c', '2026-10-10T10:00:00Z', 1, 'Swim')], 1);
     expect(shares).toEqual([
-      { sport: 'Run', share: 4 / 7 },
-      { sport: null, share: 3 / 7 },
+      { sport: 'Run', share: 4 / 8 },
+      { sport: null, share: 4 / 8 },
+    ]);
+  });
+
+  it('sums sports under 5% as others, but names a single one', () => {
+    const many = [
+      activity('a', '2026-10-05T10:00:00Z', 50),
+      activity('a', '2026-10-05T12:00:00Z', 44, 'Yoga'),
+      activity('a', '2026-10-05T14:00:00Z', 4, 'Swim'),
+      activity('a', '2026-10-05T16:00:00Z', 2, 'Ride'),
+    ];
+    expect(sportShares(many)).toEqual([
+      { sport: 'Run', share: 0.5 },
+      { sport: 'Yoga', share: 0.44 },
+      { sport: null, share: 0.06 },
+    ]);
+    expect(sportShares(many.slice(0, 3))).toEqual([
+      { sport: 'Run', share: 50 / 98 },
+      { sport: 'Yoga', share: 44 / 98 },
+      { sport: 'Swim', share: 4 / 98 },
     ]);
   });
 
