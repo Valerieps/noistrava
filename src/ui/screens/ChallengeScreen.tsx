@@ -17,7 +17,7 @@ import { ActivityLog } from './challenge/ActivityLog';
 import { ChainHero, ChainPanel } from './challenge/ChainPanel';
 import { Highlights } from './challenge/Highlights';
 import { JourneyMap } from './challenge/JourneyMap';
-import { ProgressFigure, PaceNote, useProgressView, ViewPicker, type ProgressNumbers } from './challenge/ProgressPanel';
+import { journeyNumbers, ProgressFigure, PaceNote, useProgressView, ViewPicker, type ProgressNumbers } from './challenge/ProgressPanel';
 import { JourneyRanking, Ranking, senhorasOf } from './challenge/Ranking';
 import { HowWeGotThere, ResultHero, ToleranceNote } from './challenge/Result';
 
@@ -275,22 +275,6 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
       )}
     </>
   );
-}
-
-function journeyNumbers(challenge: ChallengeView, p: Pace, progressMeters: number): ProgressNumbers {
-  const journey = challenge.journey!;
-  const totalKm = journey.distanceMeters / 1000;
-  const doneKm = progressMeters / 1000;
-  const programmedKm = Math.min(totalKm, secondsToKm(p.programmedSeconds));
-  const open = challenge.state === 'open';
-  return {
-    headline: formatKm(doneKm),
-    effective: doneKm / totalKm,
-    programmed: open ? programmedKm / totalKm : 0,
-    ofLabel: strings.challenge.ofTheRoute,
-    ringLabel: strings.journey.ringLabel(formatKm(doneKm), formatKm(programmedKm)),
-    goalCaption: strings.journey.curveGoal(journey.end.name, formatKm(totalKm)),
-  };
 }
 
 function paceText(p: Pace, challenge: ChallengeView, senhoras: number, journey: boolean): { title: string; body: string } {

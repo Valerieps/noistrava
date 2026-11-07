@@ -249,11 +249,6 @@ export const strings = {
       tolerance: (until: string) => `Atividades atrasadas e o dia seguinte ao término ainda podem salvar a corrente até ${until}.`,
       lostNote: 'quebras perdidas',
     },
-    history: {
-      succeeded: 'Corrente inteira',
-      failed: 'Corrente quebrou',
-      summary: (saved: number, lost: number, allowed: number) => `${saved === 1 ? '1 salva' : `${saved} salvas`} · ${lost} de ${allowed} perdidas`,
-    },
     draft: (allowed: number) => (allowed === 1 ? 'corrente · 1 quebra' : `corrente · ${allowed} quebras`),
   },
 
@@ -385,12 +380,12 @@ export const strings = {
     goalsMet: (met: number, all: number) => `${met} de ${all}`,
     goalsMetLabel: 'metas batidas',
     empty: 'Quando um desafio fechar, ele aparece aqui com o resultado de cada Senhora.',
-    succeeded: (days: number) => `Concluído em ${days === 1 ? '1 dia' : `${days} dias`}`,
-    failed: (percent: number) => `Não concluído · ${percent}%`,
+    succeeded: 'Sucesso!',
+    failed: 'Não foi dessa vez',
     cancelled: 'Cancelado',
-    totalOfGoal: (total: string, goal: string) => `${total} de ${goal}`,
-    senhoras: (n: number) => (n === 1 ? '1 Senhora' : `${n} Senhoras`),
-    cancelledOn: (day: number) => `cancelado no dia ${day}`,
+    expand: (name: string) => `Ver ranking e andamento de ${name}`,
+    collapse: (name: string) => `Recolher ${name}`,
+    loading: 'Carregando…',
   },
 
   profile: {

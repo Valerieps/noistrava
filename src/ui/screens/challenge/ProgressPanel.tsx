@@ -1,9 +1,10 @@
 // The progress at the top of the challenge's sheet: effective against programmed, as a bar, a ring or
 // a curve (each viewer picks one and the device remembers it), and the pace sentence under it.
 import { useState, type ReactNode } from 'react';
-import type { LogEntryView } from '../../../application/api-contract';
-import { curvePoints, elapsedFraction, type Pace, type Period } from '../../../domain/challenge/progress';
+import type { ChallengeView, LogEntryView } from '../../../application/api-contract';
+import { curvePoints, elapsedFraction, secondsToKm, type Pace, type Period } from '../../../domain/challenge/progress';
 import { strings } from '../../../domain/strings';
+import { formatKm } from '../../format';
 import { BarViewIcon, CurveViewIcon, PaceIcon, RingViewIcon } from '../../icons';
 
 export type View = 'bar' | 'ring' | 'curve';
@@ -194,4 +195,21 @@ function ProgressCurve({ goalCaption, period, goalSeconds, log, now, dateRange }
       </div>
     </div>
   );
+}
+
+/** The numbers of a journey challenge's progress figure. */
+export function journeyNumbers(challenge: ChallengeView, p: Pace, progressMeters: number): ProgressNumbers {
+  const journey = challenge.journey!;
+  const totalKm = journey.distanceMeters / 1000;
+  const doneKm = progressMeters / 1000;
+  const programmedKm = Math.min(totalKm, secondsToKm(p.programmedSeconds));
+  const open = challenge.state === 'open';
+  return {
+    headline: formatKm(doneKm),
+    effective: doneKm / totalKm,
+    programmed: open ? programmedKm / totalKm : 0,
+    ofLabel: strings.challenge.ofTheRoute,
+    ringLabel: strings.journey.ringLabel(formatKm(doneKm), formatKm(programmedKm)),
+    goalCaption: strings.journey.curveGoal(journey.end.name, formatKm(totalKm)),
+  };
 }
