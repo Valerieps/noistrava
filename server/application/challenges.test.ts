@@ -106,9 +106,9 @@ describe('goal, end and tolerance', () => {
     log(ANA, '2026-11-02T08:00:00Z', 3);
     expect(current()?.milestones.map((m) => m.milestone)).toEqual(['25%']);
     const late = log(ANA, '2026-11-03T08:00:00Z', 7);
-    expect(current()).toMatchObject({ state: 'succeeded', totalSeconds: 36_000, percent: 100, endedAt: '2026-11-03T12:00:00.000Z', closesAt: '2026-11-04T12:00:00.000Z' });
+    expect(current()).toMatchObject({ state: 'succeeded', totalSeconds: 36_000, percent: 100, endedAt: '2026-11-03T12:00:00.000Z', status: 'active', closesAt: null });
 
-    // During the tolerance the result follows the total, both ways.
+    // Until it is archived the result follows the total, both ways.
     ok(service.command(ANA, 'activity.delete', { activityId: late }));
     expect(current()).toMatchObject({ id, state: 'failed', percent: 30 });
     expect(current()?.milestones.map((m) => m.milestone)).toEqual(['25%', '50%', '75%']);
@@ -121,7 +121,7 @@ describe('goal, end and tolerance', () => {
     log(ANA, '2026-11-02T08:00:00Z', 4);
     clock.set('2026-11-09T01:00:00Z');
     expect(service.tick()).toEqual(['challenge', 'history']);
-    expect(current()).toMatchObject({ state: 'failed', endedAt: '2026-11-09T00:00:00.000Z', percent: 40 });
+    expect(current()).toMatchObject({ state: 'failed', status: 'finished', endedAt: '2026-11-09T00:00:00.000Z', closesAt: '2026-11-10T00:00:00.000Z', percent: 40 });
 
     // A Strava sync that arrived late, for an activity inside the period.
     log(ANA, '2026-11-08T20:00:00Z', 6);
@@ -133,6 +133,52 @@ describe('goal, end and tolerance', () => {
     expect(ok(service.query(ANA, 'history', {}))).toEqual([
       expect.objectContaining({ id, state: 'succeeded', totalSeconds: 36_000, percent: 100, results: [{ memberId: expect.any(String), name: 'Ana', totalSeconds: 36_000 }] }),
     ]);
+  });
+
+  it('stays active after the goal until the scheduled end, then is finished and archived', () => {
+    const { id } = create({ goalHours: 1 });
+    log(ANA, '2026-11-02T08:00:00Z', 2);
+    expect(current()).toMatchObject({ state: 'succeeded', status: 'active', closed: false });
+    clock.set('2026-11-09T01:00:00Z');
+    service.tick();
+    expect(current()).toMatchObject({ id, state: 'succeeded', status: 'finished', closesAt: '2026-11-10T00:00:00.000Z' });
+    clock.set('2026-11-10T00:30:00Z');
+    service.tick();
+    expect(current()).toBeNull();
+    expect(ok<HistoryItemView[]>(service.query(ANA, 'history', {})).map((h) => h.id)).toEqual([id]);
+  });
+
+  it('is finished and archived by hand by the creator or an admin, and by nobody else', () => {
+    const { id } = create({ goalHours: 1 });
+    log(ANA, '2026-11-02T08:00:00Z', 2);
+    expect(service.command(BIA, 'challenge.finish', { challengeId: id })).toEqual({ ok: false, error: 'forbidden' });
+    expect(service.command(ANA, 'challenge.finish', { challengeId: id })).toMatchObject({ ok: true, changed: ['challenge', 'history'] });
+    expect(current()).toBeNull();
+    expect(ok<HistoryItemView[]>(service.query(ANA, 'history', {}))).toEqual([expect.objectContaining({ id, state: 'succeeded', totalSeconds: 7_200 })]);
+    expect(service.command(ANA, 'challenge.finish', { challengeId: id })).toEqual({ ok: false, error: 'conflict' });
+  });
+
+  it('finishing one still open ends it without success; an admin may do it for another creator', () => {
+    ok(service.command(BIA, 'challenge.create', { name: 'Da Bia', startDate: '2026-11-02', endDate: '2026-11-08', goalHours: 10, creatorIsSenhora: true }));
+    const { id } = current()!;
+    log(BIA, '2026-11-02T08:00:00Z', 2);
+    ok(service.command(ANA, 'challenge.finish', { challengeId: id }));
+    expect(ok<HistoryItemView[]>(service.query(ANA, 'history', {}))).toEqual([expect.objectContaining({ id, state: 'failed', percent: 20 })]);
+  });
+
+  it('keeps a new challenge out while one is active or finished, until it is archived', () => {
+    const { id } = create({ goalHours: 1 });
+    log(ANA, '2026-11-02T08:00:00Z', 2);
+    const next = { name: 'Outro', startDate: '2026-11-04', endDate: '2026-11-08', goalHours: 5, creatorIsSenhora: true };
+    // The goal is hit, yet it is still active.
+    expect(service.command(ANA, 'challenge.create', next)).toEqual({ ok: false, error: 'conflict' });
+    clock.set('2026-11-09T01:00:00Z');
+    service.tick();
+    const later = { ...next, startDate: '2026-11-10', endDate: '2026-11-12' };
+    // Finished, in the tolerance.
+    expect(service.command(ANA, 'challenge.create', later)).toEqual({ ok: false, error: 'conflict' });
+    ok(service.command(ANA, 'challenge.finish', { challengeId: id }));
+    expect(service.command(ANA, 'challenge.create', later)).toMatchObject({ ok: true });
   });
 
   it('locks a Senhora\'s activities in a closed challenge', () => {
@@ -515,12 +561,15 @@ describe('drafts', () => {
     expect(service.command(BIA, 'challenge.create', { ...setup, goalHours: undefined, journeyPending: true })).toEqual({ ok: false, error: 'invalid' });
   });
 
-  it('activates only while no challenge is open, and then invites everyone', () => {
+  it('activates only once no challenge is active or finished, and then invites everyone', () => {
     create();
     const { id } = draft(BIA, { creatorIsSenhora: true });
     expect(service.command(BIA, 'challenge.activate', { challengeId: id })).toEqual({ ok: false, error: 'conflict' });
-    // The open one ends with its period; its tolerance does not hold the next one back.
+    // The open one ends with its period, but stays finished through its tolerance until archived.
     clock.set('2026-11-09T01:00:00Z');
+    service.tick();
+    expect(service.command(BIA, 'challenge.activate', { challengeId: id })).toEqual({ ok: false, error: 'conflict' });
+    clock.set('2026-11-10T00:30:00Z');
     service.tick();
     expect(service.command(ANA, 'challenge.activate', { challengeId: id })).toEqual({ ok: false, error: 'not_found' });
     const active = ok<ChallengeView>(service.command(BIA, 'challenge.activate', { challengeId: id }));

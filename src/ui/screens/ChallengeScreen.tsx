@@ -133,6 +133,9 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
   function cancel() {
     if (window.confirm(strings.challenge.cancelConfirm)) void run(() => backend.command('challenge.cancel', { challengeId: challenge.id }));
   }
+  function finish() {
+    if (window.confirm(strings.challenge.finishConfirm)) void run(() => backend.command('challenge.finish', { challengeId: challenge.id }));
+  }
   function remove() {
     if (window.confirm(strings.challenge.deleteConfirm)) void run(() => backend.command('challenge.delete', { challengeId: challenge.id }), () => navigate('/', { replace: true }));
   }
@@ -163,7 +166,7 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
         <div className="hero-c-head">
           <div className="hero-c-label">
             <span>{label}</span>
-            <Options me={me} challenge={challenge} busy={busy} onLeave={leave} onCancel={cancel} onDelete={remove} />
+            <Options me={me} challenge={challenge} busy={busy} onLeave={leave} onCancel={cancel} onFinish={finish} onDelete={remove} />
           </div>
           <h1 className="d hero-c-title">{challenge.name}</h1>
           <div className="hero-c-by">
@@ -419,6 +422,7 @@ function Options({
   busy,
   onLeave,
   onCancel,
+  onFinish,
   onDelete,
 }: {
   me: MeView;
@@ -426,6 +430,7 @@ function Options({
   busy: boolean;
   onLeave: () => void;
   onCancel: () => void;
+  onFinish: () => void;
   onDelete: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -450,7 +455,8 @@ function Options({
   const creator = challenge.creatorId === me.id;
   const open = challenge.state === 'open';
   const canLeave = open && challenge.myResponse === 'accepted';
-  if (!(creator && open) && !isAdmin(me) && !canLeave) return null;
+  const canFinish = (creator || isAdmin(me)) && !challenge.closed && challenge.state !== 'draft';
+  if (!(creator && open) && !canFinish && !isAdmin(me) && !canLeave) return null;
 
   const pick = (action: () => void) => () => {
     setExpanded(false);
@@ -471,6 +477,11 @@ function Options({
           {creator && open && (
             <button type="button" role="menuitem" disabled={busy} onClick={pick(onCancel)}>
               {strings.challenge.cancel}
+            </button>
+          )}
+          {canFinish && (
+            <button type="button" role="menuitem" disabled={busy} onClick={pick(onFinish)}>
+              {strings.challenge.finish}
             </button>
           )}
           {canLeave && (

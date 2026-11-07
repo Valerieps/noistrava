@@ -3,7 +3,7 @@
 import type { ActivitySource } from '../domain/activity';
 import type { ActivityTemplateFields } from '../domain/activity-template';
 import type { ChainConfig, ChainDayState } from '../domain/challenge/chain';
-import type { Banner, ChallengeResponse, ChallengeState, ChallengeType, Journey, Place } from '../domain/challenge/challenge';
+import type { Banner, ChallengeResponse, ChallengeState, ChallengeStatus, ChallengeType, Journey, Place } from '../domain/challenge/challenge';
 import type { Role } from '../domain/group/roles';
 import type { PushKeys, ReminderSettings } from '../domain/reminder';
 import type { BadgeStatus, BadgeKey, Rhythm } from '../domain/tracking/tracking';
@@ -91,8 +91,10 @@ export interface ChallengeView {
   readonly startsAt: string;
   readonly endsAt: string;
   readonly state: ChallengeState;
+  /** `active` until the scheduled end or a manual finish; then `finished`; `archived` once it is in the history. */
+  readonly status: ChallengeStatus;
   readonly endedAt: string | null;
-  /** End of the 24 hours of tolerance; null while open. */
+  /** End of the 24 hours of tolerance; null before the scheduled end. */
   readonly closesAt: string | null;
   readonly closed: boolean;
   readonly goalMinutes: number;
@@ -261,6 +263,8 @@ export interface Commands {
   'challenge.respond': { input: { challengeId: string; accept: boolean }; output: ChallengeView };
   /** The creator, before the end. */
   'challenge.cancel': { input: { challengeId: string }; output: null };
+  /** The creator or an admin finishes and archives it now, with the totals so far; it goes to the history. */
+  'challenge.finish': { input: { challengeId: string }; output: null };
   /** Admins; a draft, its creator. */
   'challenge.delete': { input: { challengeId: string }; output: null };
   'reaction.set': { input: { challengeId: string; activityId: string; heart: boolean }; output: null };

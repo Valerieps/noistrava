@@ -18,6 +18,7 @@ import {
   type ChallengeConfig,
   type ChallengeResponse,
   type ChallengeState,
+  type ChallengeStatus,
   type ChallengeType,
   type Participation,
 } from '../../src/domain/challenge/challenge';
@@ -33,6 +34,7 @@ interface ChallengeRow {
   starts_at: string;
   ends_at: string;
   state: ChallengeState;
+  status: ChallengeStatus;
   ended_at: string | null;
   closes_at: string | null;
   closed_at: string | null;
@@ -163,9 +165,10 @@ function settleChain(ctx: Context, row: ChallengeRow): boolean {
   let endedAt = row.ended_at;
   if (state === 'open' && now >= row.ends_at) endedAt = row.ends_at;
   if (endedAt !== null) state = broken ? 'failed' : 'succeeded';
-  if (state === row.state && endedAt === row.ended_at) return false;
+  const status: ChallengeStatus = endedAt === null ? row.status : 'finished';
+  if (state === row.state && endedAt === row.ended_at && status === row.status) return false;
   const closes = endedAt === null ? null : new Date(Date.parse(endedAt) + CHAIN_CLOSE_HOURS * HOUR_MS).toISOString();
-  ctx.sql.run('UPDATE challenges SET state = ?, ended_at = ?, closes_at = ? WHERE id = ?', state, endedAt, closes, row.id);
+  ctx.sql.run('UPDATE challenges SET state = ?, status = ?, ended_at = ?, closes_at = ? WHERE id = ?', state, status, endedAt, closes, row.id);
   return true;
 }
 
@@ -203,9 +206,12 @@ export function settle(ctx: Context, row: ChallengeRow): boolean {
     ctx.sql.run('INSERT INTO challenge_milestones (challenge_id, milestone, reached_at) VALUES (?, ?, ?)', row.id, milestone, now);
     changed = true;
   }
-  if (state !== row.state || endedAt !== row.ended_at) {
-    const closes = endedAt === null ? null : closesAt(new Date(endedAt)).toISOString();
-    ctx.sql.run('UPDATE challenges SET state = ?, ended_at = ?, closes_at = ? WHERE id = ?', state, endedAt, closes, row.id);
+  // The goal ends the counting, but the challenge stays active until its scheduled end; from then
+  // it is finished, and the result closes after the tolerance.
+  const status: ChallengeStatus = row.status === 'active' && now >= row.ends_at ? 'finished' : row.status;
+  if (state !== row.state || endedAt !== row.ended_at || status !== row.status) {
+    const closes = status === 'finished' ? closesAt(new Date(row.ends_at)).toISOString() : null;
+    ctx.sql.run('UPDATE challenges SET state = ?, status = ?, ended_at = ?, closes_at = ? WHERE id = ?', state, status, endedAt, closes, row.id);
     changed = true;
   }
   return changed;
@@ -239,7 +245,7 @@ function close(ctx: Context, row: ChallengeRow): void {
     );
   }
   const chain = row.type === 'corrente' ? JSON.stringify(chainOf(ctx, row)) : null;
-  ctx.sql.run('UPDATE challenges SET closed_at = ?, chain_result = ? WHERE id = ?', nowIso(ctx), chain, row.id);
+  ctx.sql.run("UPDATE challenges SET closed_at = ?, chain_result = ?, status = 'archived' WHERE id = ?", nowIso(ctx), chain, row.id);
 }
 
 /** The cron's part: ends challenges whose period passed and closes those past the tolerance. */
@@ -286,6 +292,7 @@ function view(ctx: Context, actor: Member, id: string): ChallengeView {
     startsAt: row.starts_at,
     endsAt: row.ends_at,
     state: row.state,
+    status: row.status,
     endedAt: row.ended_at,
     closesAt: row.closes_at,
     closed: row.closed_at !== null,
@@ -391,7 +398,8 @@ export function history(ctx: Context): HistoryItemView[] {
 
 // Commands
 
-const isOpen = (ctx: Context) => ctx.sql.all("SELECT 1 FROM challenges WHERE state = 'open'").length > 0;
+/** A new challenge waits for the one active or finished (not yet archived) to be finished and archived. */
+const hasLiveChallenge = (ctx: Context) => ctx.sql.all("SELECT 1 FROM challenges WHERE state != 'draft' AND status != 'archived'").length > 0;
 
 /** Opens the challenge: every member is invited, and the creator's own answer is the one she chose. */
 function invite(ctx: Context, id: string, creatorId: string, creatorIsSenhora: boolean): void {
@@ -417,7 +425,7 @@ export function createChallenge(ctx: Context, actor: Member, input: Record<strin
   const draft = input.draft === true;
   const setup = draft ? parseDraftSetup(input) : parseChallengeSetup(input);
   if (!setup || typeof input.creatorIsSenhora !== 'boolean') return failure('invalid');
-  if (!draft && isOpen(ctx)) return failure('conflict');
+  if (!draft && hasLiveChallenge(ctx)) return failure('conflict');
   const period = challengePeriod(setup.startDate, setup.endDate, memberTimezones(ctx));
   if (!draft && period.endsAt.getTime() <= ctx.clock.now().getTime()) return failure('invalid');
 
@@ -452,7 +460,7 @@ export function activateChallenge(ctx: Context, actor: Member, input: { challeng
   if (row.state !== 'draft') return failure('conflict');
   const config = configOf(row);
   if (config.journeyPending) return failure('invalid');
-  if (isOpen(ctx)) return failure('conflict');
+  if (hasLiveChallenge(ctx)) return failure('conflict');
   const period = challengePeriod(config.startDate, config.endDate, memberTimezones(ctx));
   if (period.endsAt.getTime() <= ctx.clock.now().getTime()) return failure('invalid');
 
@@ -546,6 +554,26 @@ export function cancelChallenge(ctx: Context, actor: Member, input: { challengeI
   if (row.state !== 'open') return failure('conflict');
   const now = nowIso(ctx);
   ctx.sql.run("UPDATE challenges SET state = 'cancelled', ended_at = ?, closes_at = ? WHERE id = ?", now, now, row.id);
+  close(ctx, load(ctx, row.id) as ChallengeRow);
+  return { ok: true, value: null, changed: ['challenge', 'history'] };
+}
+
+/**
+ * The creator or an admin finishes the challenge before its scheduled end, or ends the tolerance
+ * early: the result freezes with the totals so far and it is archived, so it goes to the history
+ * and a new one can start. One still open ends without success; one that already hit its goal keeps it.
+ */
+export function finishChallenge(ctx: Context, actor: Member, input: { challengeId?: unknown }): CommandResult<null> {
+  let row = loadVisible(ctx, actor, input.challengeId);
+  if (!row) return failure('not_found');
+  if (row.creator_id !== actor.id && !isAdmin(actor)) return failure('forbidden');
+  if (row.state === 'draft' || row.status === 'archived') return failure('conflict');
+  settle(ctx, row);
+  row = load(ctx, row.id) as ChallengeRow;
+  if (row.state === 'open') {
+    ctx.sql.run("UPDATE challenges SET state = 'failed', ended_at = ? WHERE id = ?", nowIso(ctx), row.id);
+  }
+  ctx.sql.run("UPDATE challenges SET status = 'finished' WHERE id = ?", row.id);
   close(ctx, load(ctx, row.id) as ChallengeRow);
   return { ok: true, value: null, changed: ['challenge', 'history'] };
 }

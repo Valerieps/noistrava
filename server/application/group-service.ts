@@ -6,6 +6,7 @@ import { createTemplate, deleteTemplate, listMyTemplates, updateTemplate } from 
 import {
   activateChallenge,
   cancelChallenge,
+  finishChallenge,
   challengeLog,
   createChallenge,
   deleteChallenge,
@@ -106,6 +107,7 @@ const COMMANDS: { [N in CommandName]: Handler<CommandResult<Commands[N]['output'
   'challenge.activate': activateChallenge,
   'challenge.respond': respond,
   'challenge.cancel': cancelChallenge,
+  'challenge.finish': finishChallenge,
   'challenge.delete': deleteChallenge,
   'reaction.set': setReaction,
   'reminder.set': setReminder,

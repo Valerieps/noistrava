@@ -171,6 +171,30 @@ export const MIGRATIONS: readonly (readonly string[])[] = [
     `ALTER TABLE push_subscriptions ADD COLUMN p256dh TEXT`,
     `ALTER TABLE push_subscriptions ADD COLUMN auth TEXT`,
   ],
+  // 11: a challenge's status: active, finished or archived. Closed ones are archived; one whose
+  // period passed is finished. The "30h" challenge, whose goal was hit before its end and so was
+  // hidden by the next one, is archived now, with each Senhora's total frozen for the history.
+  [
+    `ALTER TABLE challenges ADD COLUMN status TEXT NOT NULL DEFAULT 'active'`,
+    `UPDATE challenges SET status = 'archived' WHERE closed_at IS NOT NULL`,
+    `UPDATE challenges SET status = 'finished'
+       WHERE closed_at IS NULL AND state IN ('succeeded', 'failed') AND ends_at <= strftime('%Y-%m-%dT%H:%M:%fZ', 'now')`,
+    `INSERT OR REPLACE INTO challenge_results (challenge_id, member_id, name, total_seconds)
+       SELECT c.id, m.id, m.name, COALESCE((
+         SELECT SUM(a.duration_seconds) FROM activities a
+         WHERE a.member_id = m.id AND a.deleted = 0 AND a.started_at >= c.starts_at AND a.started_at < COALESCE(c.ended_at, c.ends_at)
+           AND NOT EXISTS (
+             SELECT 1 FROM challenge_absences ab
+             WHERE ab.challenge_id = c.id AND ab.member_id = m.id AND a.started_at >= ab.left_at AND (ab.returned_at IS NULL OR a.started_at < ab.returned_at)
+           )
+       ), 0)
+       FROM challenges c JOIN members m ON m.active = 1 AND (
+         EXISTS (SELECT 1 FROM challenge_members cm WHERE cm.challenge_id = c.id AND cm.member_id = m.id AND cm.response = 'accepted')
+         OR EXISTS (SELECT 1 FROM challenge_absences ab WHERE ab.challenge_id = c.id AND ab.member_id = m.id))
+       WHERE c.closed_at IS NULL AND c.state = 'succeeded' AND c.type = 'horas_colaborativas' AND c.name LIKE '%30h%'`,
+    `UPDATE challenges SET status = 'archived', closed_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+       WHERE closed_at IS NULL AND state = 'succeeded' AND type = 'horas_colaborativas' AND name LIKE '%30h%'`,
+  ],
 ];
 
 export function migrate(sql: Sql): void {
