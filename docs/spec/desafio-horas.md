@@ -25,10 +25,11 @@ O grupo soma horas de atividade para bater uma meta num período, com ou sem jor
 
 ## Criar
 
-- Só existe um desafio ativo por vez no grupo. Enquanto houver um ativo e não terminado, o que eu
-  crio fica como rascunho (ver "Rascunhos"). *(1)*
-- Ao criar, eu escolho entre salvar como rascunho e criar já ativo. Criar já ativo só aparece
-  quando não há desafio ativo. *(1)*
+- Todo desafio tem um status: **ativo**, **finalizado** ou **arquivado**. Só existe um desafio
+  ativo ou finalizado por vez no grupo (ver "Status"). *(1)*
+- Ao criar, eu escolho entre salvar como rascunho e criar já ativo. Se ainda houver um desafio ativo
+  ou finalizado, o app avisa que ele precisa ser finalizado e arquivado antes, e oferece fazer as
+  duas coisas ali mesmo (ver "Status"). *(1)*
 - O desafio é do tipo "Horas colaborativas" e tem um nome dado por quem cria. O outro tipo, a
   corrente, está em [desafio-corrente.md](desafio-corrente.md). *(1)*
 - Eu escolho o início, o término e a meta em horas. Com jornada, a meta é a distância da rota (ver
@@ -51,13 +52,28 @@ O grupo soma horas de atividade para bater uma meta num período, com ou sem jor
 - Digo se sou Senhora ao criar o rascunho, e posso mudar enquanto ele for rascunho. *(1)*
 - Eu edito o rascunho à vontade e posso apagá-lo sem o admin. *(1)*
   Por quê: ninguém mais viu o rascunho.
-- O rascunho vira desafio quando eu toco em "Ativar". Só dá para ativar quando não há desafio
-  ativo, e valem todas as regras de "Criar": o término não pode ter passado e a jornada precisa da
-  rota. *(1)*
-- Um desafio deixa de estar ativo assim que termina (meta batida, fim do período ou cancelamento).
-  As 24 horas de tolerância só recebem as atividades atrasadas e não impedem ativar outro. *(1)*
+- O rascunho vira desafio quando eu toco em "Ativar". Valem a regra de status (se houver um desafio
+  ativo ou finalizado, o app oferece finalizá-lo e arquivá-lo) e todas as regras de "Criar": o
+  término não pode ter passado e a jornada precisa da rota. *(1)*
 - O convite vai para todas as integrantes na hora em que eu ativo, e o período é calculado com os
   fusos de quem está no grupo nesse momento. *(1)*
+
+## Status
+
+- Um desafio ativo vira **finalizado** na data programada de término, ou na hora em que o criador
+  ou um admin o finaliza. *(1)*
+- Um desafio finalizado vira **arquivado** nas mesmas duas situações: no fim das 24 horas de
+  tolerância depois da data programada de término, ou na hora em que o criador ou um admin o
+  finaliza, que finaliza e arquiva de uma vez, com os totais até ali. *(1)*
+  Por quê: as 24 horas ainda recebem atividades atrasadas; quem não quer esperar finaliza à mão.
+- Bater a meta antes do prazo não muda o status: o desafio segue ativo, com o resultado de sucesso,
+  até a data programada de término ou até alguém finalizá-lo. *(1)*
+- Só o desafio arquivado aparece no histórico. *(1)*
+- Um desafio novo só pode ser ativado se nenhum estiver ativo ou finalizado. Se eu tentar, o app
+  avisa que o desafio atual precisa ser finalizado e arquivado antes e pergunta se quero fazer as
+  duas coisas agora; se eu aceito, ele é arquivado e o novo é ativado. Só o criador do atual ou um
+  admin consegue; para os outros o app diz isso. *(1)*
+- Um desafio cancelado fica arquivado na hora. *(1)*
 
 ## Responder ao convite
 
@@ -87,10 +103,10 @@ O grupo soma horas de atividade para bater uma meta num período, com ou sem jor
 - Todo minuto de atividade de cada Senhora soma no total do grupo. *(1)*
 - Quando o total chega à meta, o desafio termina na hora, com sucesso. *(1)*
 - Se o período acaba antes, o desafio termina sem sucesso e mostra o percentual atingido. *(1)*
-- Depois do término, as Senhoras ainda têm 24 horas para atividades atrasadas ou editadas que
-  começaram dentro do período (por exemplo, um Strava que sincronizou tarde). Ao fim dessas 24
-  horas, o resultado fica fechado. *(1)*
-- Nessas 24 horas, o resultado acompanha o total: se atividades atrasadas fizerem o total chegar à
+- Depois da data programada de término, as Senhoras ainda têm 24 horas para atividades atrasadas ou
+  editadas que começaram dentro do período (por exemplo, um Strava que sincronizou tarde). Ao fim
+  dessas 24 horas, o resultado fica fechado e o desafio, arquivado. *(1)*
+- Até o desafio ser arquivado, o resultado acompanha o total: se atividades atrasadas fizerem o total chegar à
   meta, o desafio passa a ter sucesso; se uma edição ou exclusão deixar o total abaixo da meta, ele
   volta a ficar sem sucesso. *(1)*
 - Quando a meta é batida antes do fim do período, contam só as atividades que começaram antes desse
@@ -156,6 +172,6 @@ O grupo soma horas de atividade para bater uma meta num período, com ou sem jor
 
 ## Histórico
 
-- Eu vejo a lista dos desafios passados, com o resultado, o total, o percentual e o total de cada
+- Eu vejo a lista dos desafios arquivados, com o resultado, o total, o percentual e o total de cada
   Senhora. *(1)*
 - Esses totais ficam guardados mesmo se alguém sair do grupo. *(1)*

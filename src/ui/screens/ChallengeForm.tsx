@@ -2,13 +2,14 @@
 // the name, the goal in hours or a journey, or a chain's breaks (docs/spec/desafio-corrente.md),
 // the period, the header's banner, and whether the creator is a Senhora. A new challenge is saved as a draft, or opened at once while no other is open.
 import { useEffect, useState, type FormEvent } from 'react';
-import type { ApiError, ChallengeSetupInput, ChallengeView } from '../../application/api-contract';
+import type { ApiError, ApiResult, ChallengeSetupInput, ChallengeView } from '../../application/api-contract';
 import { CHAIN_MIN_MINUTES_MAX, maxBreaks } from '../../domain/challenge/chain';
 import { BANNERS, CHALLENGE_NAME_MAX_LENGTH, GOAL_HOURS_MAX, type Banner, type ChallengeType, type Journey } from '../../domain/challenge/challenge';
 import { strings } from '../../domain/strings';
 import { BackHeader } from '../App';
 import { useServices } from '../backend-context';
 import { todayDate } from '../format';
+import { startOrReplace, type StartResult } from '../replace-challenge';
 import { navigate } from '../router';
 import { useQuery } from '../use-query';
 import { JourneyBuilder } from './JourneyBuilder';
@@ -51,11 +52,8 @@ type Mode = 'draft' | 'open' | 'save';
 
 function Form({ challenge }: { challenge: ChallengeView | null }) {
   const { backend } = useServices();
-  const current = useQuery('challenge', {}, ['challenge']);
   const isDraft = challenge?.state === 'draft';
   const creating = challenge === null || isDraft;
-  // Opening now is offered only while no challenge is open.
-  const canOpen = current.data !== undefined && current.data.challenge?.state !== 'open';
   const today = todayDate();
   const [name, setName] = useState(challenge?.name ?? '');
   const [startDate, setStartDate] = useState(challenge?.startDate ?? today);
@@ -97,16 +95,25 @@ function Form({ challenge }: { challenge: ChallengeView | null }) {
       : journey
         ? { name, banner, startDate, endDate, journey }
         : { name, banner, startDate, endDate, journeyPending: true };
-    let result;
+    let result: StartResult | ApiResult<ChallengeView>;
     if (!challenge) {
-      result = await backend.command('challenge.create', { ...setup, creatorIsSenhora: senhora, draft: mode === 'draft' });
+      const create = () => backend.command('challenge.create', { ...setup, creatorIsSenhora: senhora, draft: mode === 'draft' });
+      result = mode === 'draft' ? await create() : await startOrReplace(backend, create);
     } else {
       result = await backend.command('challenge.edit', { ...setup, challengeId: challenge.id, ...(isDraft ? { creatorIsSenhora: senhora } : {}) });
-      if (result.ok && isDraft && mode === 'open') result = await backend.command('challenge.activate', { challengeId: challenge.id });
+      if (result.ok && isDraft && mode === 'open') {
+        result = await startOrReplace(backend, () => backend.command('challenge.activate', { challengeId: challenge.id }));
+      }
     }
     setBusy(false);
     if (result.ok) {
       navigate(mode === 'draft' ? '/rascunhos' : '/', { replace: true });
+      return;
+    }
+    // Declined the alert: the form stays as it is.
+    if (result.error === 'declined') return;
+    if (result.error === 'forbidden' && mode === 'open') {
+      setError(strings.challenge.replaceForbidden);
       return;
     }
     setError(errorText(result.error, !creating));
@@ -114,7 +121,7 @@ function Form({ challenge }: { challenge: ChallengeView | null }) {
 
   function onSubmit(event: FormEvent) {
     event.preventDefault();
-    void submit(!creating ? 'save' : canOpen ? 'open' : 'draft');
+    void submit(!creating ? 'save' : 'open');
   }
 
   const f = strings.challengeForm;
@@ -219,20 +226,16 @@ function Form({ challenge }: { challenge: ChallengeView | null }) {
             {error}
           </p>
         )}
-        {creating && canOpen && (
+        {creating && (
           <button type="submit" className="big-button" disabled={busy}>
             {isDraft ? f.activate : f.create}
           </button>
         )}
         {creating ? (
-          <button type={canOpen ? 'button' : 'submit'} className={canOpen ? 'secondary big-button' : 'big-button'} disabled={busy}
-            onClick={
-              canOpen
-                ? (e) => {
-                    if (e.currentTarget.form?.reportValidity()) void submit('draft');
-                  }
-                : undefined
-            }
+          <button type="button" className="secondary big-button" disabled={busy}
+            onClick={(e) => {
+              if (e.currentTarget.form?.reportValidity()) void submit('draft');
+            }}
           >
             {f.saveDraft}
           </button>

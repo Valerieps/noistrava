@@ -6,11 +6,13 @@ import { formatGoal } from '../../domain/challenge/progress';
 import { strings } from '../../domain/strings';
 import { useServices } from '../backend-context';
 import { formatPeriod } from '../format';
+import { startOrReplace } from '../replace-challenge';
 import { Link, navigate } from '../router';
 import { useQuery } from '../use-query';
 
 function errorText(error: ApiError, draft: ChallengeView): string {
   const d = strings.drafts;
+  if (error === 'forbidden') return strings.challenge.replaceForbidden;
   if (error === 'conflict') return d.activeExists;
   if (error === 'invalid') return draft.journeyPending ? d.routeNeeded : d.endPassed;
   return strings.genericError;
@@ -19,22 +21,20 @@ function errorText(error: ApiError, draft: ChallengeView): string {
 export function Drafts() {
   const { backend } = useServices();
   const drafts = useQuery('drafts', {}, ['challenge']);
-  const current = useQuery('challenge', {}, ['challenge']);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const d = strings.drafts;
   const items = drafts.data ?? [];
-  const canActivate = current.data !== undefined && current.data.challenge?.state !== 'open';
 
   async function activate(draft: ChallengeView) {
     setBusy(true);
-    const result = await backend.command('challenge.activate', { challengeId: draft.id });
+    const result = await startOrReplace(backend, () => backend.command('challenge.activate', { challengeId: draft.id }));
     setBusy(false);
     if (result.ok) {
       navigate('/', { replace: true });
       return;
     }
-    setError(errorText(result.error, draft));
+    setError(result.error === 'declined' ? null : errorText(result.error, draft));
   }
 
   async function remove(draft: ChallengeView) {
@@ -58,7 +58,7 @@ export function Drafts() {
         </p>
       )}
       <p className="small muted" style={{ margin: '0 4px' }}>
-        {canActivate ? d.introFree : d.introBusy}
+        {d.intro}
       </p>
       {drafts.data && items.length === 0 && <p className="muted">{d.empty}</p>}
       {error && (
@@ -75,11 +75,9 @@ export function Drafts() {
             {formatPeriod(draft.startDate, draft.endDate)} · {draft.chain ? strings.chain.draft(draft.chain.allowedBreaks) : draft.journeyPending ? d.routePending : draft.journey ? d.journey(formatGoal(draft.goalMinutes)) : formatGoal(draft.goalMinutes)}
           </div>
           <div className="actions">
-            {canActivate && (
-              <button type="button" disabled={busy} onClick={() => void activate(draft)}>
-                {d.activate}
-              </button>
-            )}
+            <button type="button" disabled={busy} onClick={() => void activate(draft)}>
+              {d.activate}
+            </button>
             <button type="button" className="secondary" disabled={busy} onClick={() => navigate(`/desafio/${encodeURIComponent(draft.id)}/editar`)}>
               {d.edit}
             </button>

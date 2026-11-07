@@ -58,7 +58,8 @@ app (celular) ──POST /api/query|command──► Worker ──RPC──► G
 - A janela de contagem vai do `starts_at` ao `ended_at` (meta batida antes, cancelamento) ou, sem
   ele, ao `ends_at`. `settle` (em `server/application/challenges.ts`) recalcula o total a cada
   mudança e grava marcos e estado; nas 24 horas de tolerância o estado segue o total.
-- Ao fechar (24 horas depois do término), o desafio grava os totais de cada Senhora em
+- O ciclo de vida fica em `challenges.status`: `active` (até o término programado ou a finalização manual), `finished` (a tolerância de 24 horas) e `archived` (`closed_at` preenchido). Só `archived` vai ao histórico, e um desafio novo exige nenhum `active` nem `finished`. Bater a meta não muda o status.
+- Ao arquivar (24 horas depois do término programado, ou na finalização manual pelo criador ou admin), o desafio grava os totais de cada Senhora em
   `challenge_results`. Depois disso o histórico lê só dali, e apagar as atividades de quem saiu do
   grupo não o altera.
 - A corrente (`type = 'corrente'`) não tem meta nem marcos: `settle` calcula os dias com

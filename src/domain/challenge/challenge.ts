@@ -28,7 +28,14 @@ export type ChallengeType = 'horas_colaborativas' | 'corrente';
 
 /** A `draft` is seen only by its creator until she activates it (one `open` at a time). */
 export type ChallengeState = 'draft' | 'open' | 'succeeded' | 'failed' | 'cancelled';
-export type ChallengeResponse = 'pending' | 'accepted' | 'declined';
+/**
+ * Where a challenge is in its life, apart from its result (`ChallengeState`): `active` until its
+ * scheduled end or until the creator or an admin finishes it; `finished` from then, while late
+ * activities may still arrive; `archived` once the result is frozen and it shows in the history.
+ * A new challenge needs none that is `active` or `finished`.
+ */
+export type ChallengeStatus = 'active' | 'finished' | 'archived';
+export type ChallengeResponse ='pending' | 'accepted' | 'declined';
 
 export interface Place {
   readonly name: string;
