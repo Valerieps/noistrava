@@ -1809,6 +1809,37 @@ button:disabled {
   gap: var(--space-3);
 }
 
+.history-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.history-chevron {
+  display: flex;
+  align-self: center;
+  color: var(--color-text-muted);
+  transition: transform 0.15s;
+}
+
+.history-chevron.open {
+  transform: rotate(90deg);
+}
+
+.history-detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
 .history-thumb {
   width: 48px;
   height: 48px;

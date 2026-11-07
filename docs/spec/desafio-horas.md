@@ -172,6 +172,8 @@ O grupo soma horas de atividade para bater uma meta num período, com ou sem jor
 
 ## Histórico
 
-- Eu vejo a lista dos desafios arquivados, com o resultado, o total, o percentual e o total de cada
-  Senhora. *(1)*
+- Eu vejo a lista dos desafios arquivados. O cartão resumo mostra só o nome, o mês e a cápsula do
+  resultado: "Sucesso!", "Não foi dessa vez" ou "Cancelado". *(1)*
+- Uma seta no cartão abre os detalhes: os gráficos de andamento (barra, anel ou curva, como no
+  desafio) e o ranking final de cada Senhora. *(1)*
 - Esses totais ficam guardados mesmo se alguém sair do grupo. *(1)*
