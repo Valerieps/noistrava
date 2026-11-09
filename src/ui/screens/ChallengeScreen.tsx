@@ -14,7 +14,7 @@ import { MoreIcon, PlusIcon } from '../icons';
 import { Link, navigate } from '../router';
 import { useQuery } from '../use-query';
 import { ActivityLog } from './challenge/ActivityLog';
-import { ChainHero, ChainLinks, ChainPanel } from './challenge/ChainPanel';
+import { ChainPanel } from './challenge/ChainPanel';
 import { Highlights } from './challenge/Highlights';
 import { JourneyMap } from './challenge/JourneyMap';
 import { journeyNumbers, ProgressFigure, PaceNote, useProgressView, ViewPicker, type ProgressNumbers } from './challenge/ProgressPanel';
@@ -174,15 +174,10 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
             {strings.challenge.createdBy(challenge.creatorName)}
           </div>
         </div>
-        {!open ? (
-          <ResultHero challenge={challenge} log={entries} />
-        ) : chain ? (
-          <ChainHero chain={chain} />
-        ) : null}
+        {!open && <ResultHero challenge={challenge} log={entries} />}
       </header>
 
       <div className="sheet">
-        {open && chain && <ChainLinks chain={chain} />}
         {open && !chain && (journey ? (
           <ProgressFigure
             view={view}

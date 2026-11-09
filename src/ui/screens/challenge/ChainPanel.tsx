@@ -1,6 +1,6 @@
-// The chain (docs/spec/desafio-corrente.md, "Ver a corrente"): the streak and the last links in the
-// top; on the sheet, a message on where it stands, the streak and the breaks, a calendar with one
-// circle per day, and the saved breaks with who saved them.
+// The chain (docs/spec/desafio-corrente.md, "Ver a corrente"): on the sheet, a message on where it
+// stands, the streak and the breaks, a calendar with one circle per day, and the saved breaks with
+// who saved them.
 import type { ChainDayView, ChainView } from '../../../application/api-contract';
 import { addDays } from '../../../domain/time/zones';
 import { strings } from '../../../domain/strings';
@@ -21,64 +21,6 @@ function weekday(date: string): number {
 function savable(days: readonly ChainDayView[]): ChainDayView | undefined {
   const started = days.filter((d) => d.state !== 'future');
   return started.find((d) => d.state === 'at_risk') ?? started.slice(0, -1).find((d) => d.state === 'waiting');
-}
-
-const LINKS = 10;
-const LINK_W = 30;
-const LINK_STEP = 26;
-const LINK_H = 18;
-
-/** The streak in the top. */
-export function ChainHero({ chain }: { chain: ChainView }) {
-  return (
-    <div className="hero-c-figure">
-      <div className="hero-c-km">
-        <div className="d hero-c-number streak">{c.streak(chain.streak)}</div>
-        <div className="hero-c-of">{c.heroStreak}</div>
-      </div>
-    </div>
-  );
-}
-
-/** The last ten days drawn as links on the sheet: kept, at risk, lost, or today. Never bigger than its natural size. */
-export function ChainLinks({ chain }: { chain: ChainView }) {
-  const today = todayDate();
-  const days = chain.days.filter((d) => d.state !== 'future').slice(-LINKS);
-  const width = (days.length - 1) * LINK_STEP + LINK_W + 4;
-  if (days.length === 0) return null;
-  return (
-    <div className="sheet-section">
-      <svg className="chain-links" width={width} style={{ maxWidth: '100%' }} viewBox={`0 0 ${width} ${LINK_H + 20}`} role="img" aria-label={c.linksLabel(days.length)}>
-          {days.map((d, i) => {
-            const risk = d.state === 'at_risk';
-            const kept = d.state === 'linked' || d.state === 'saved';
-            const isToday = d.date === today;
-            const x = 2 + i * LINK_STEP;
-            return (
-              <g key={d.date}>
-                <rect
-                  x={x}
-                  y={2}
-                  width={LINK_W}
-                  height={LINK_H}
-                  rx={LINK_H / 2}
-                  fill="none"
-                  stroke={risk ? 'var(--color-accent)' : 'var(--color-brand)'}
-                  strokeWidth="2.5"
-                  strokeDasharray={risk || d.state === 'lost' ? '4 3' : undefined}
-                  opacity={isToday || (!kept && !risk) ? 0.4 : 1}
-                >
-                  <title>{c.dayLabel(formatDayMonth(d.date), c.states[d.state])}</title>
-                </rect>
-                <text x={x + LINK_W / 2} y={LINK_H + 17} textAnchor="middle" fontSize="10" fill="var(--color-text-muted)" aria-hidden="true">
-                  {isToday ? strings.challenge.today : Number(d.date.slice(8))}
-                </text>
-              </g>
-            );
-          })}
-      </svg>
-    </div>
-  );
 }
 
 function ChainMessage({ chain }: { chain: ChainView }) {
