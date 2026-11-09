@@ -28,19 +28,27 @@ const LINK_W = 30;
 const LINK_STEP = 26;
 const LINK_H = 18;
 
-/** The streak in the top and the last ten days drawn as links: kept, at risk, lost, or today. */
+/** The streak in the top. */
 export function ChainHero({ chain }: { chain: ChainView }) {
-  const today = todayDate();
-  const days = chain.days.filter((d) => d.state !== 'future').slice(-LINKS);
-  const width = (days.length - 1) * LINK_STEP + LINK_W + 4;
   return (
     <div className="hero-c-figure">
       <div className="hero-c-km">
         <div className="d hero-c-number streak">{c.streak(chain.streak)}</div>
         <div className="hero-c-of">{c.heroStreak}</div>
       </div>
-      {days.length > 0 && (
-        <svg className="chain-links" width="100%" viewBox={`0 0 ${width} ${LINK_H + 20}`} role="img" aria-label={c.linksLabel(days.length)}>
+    </div>
+  );
+}
+
+/** The last ten days drawn as links on the sheet: kept, at risk, lost, or today. Never bigger than its natural size. */
+export function ChainLinks({ chain }: { chain: ChainView }) {
+  const today = todayDate();
+  const days = chain.days.filter((d) => d.state !== 'future').slice(-LINKS);
+  const width = (days.length - 1) * LINK_STEP + LINK_W + 4;
+  if (days.length === 0) return null;
+  return (
+    <div className="sheet-section">
+      <svg className="chain-links" width={width} style={{ maxWidth: '100%' }} viewBox={`0 0 ${width} ${LINK_H + 20}`} role="img" aria-label={c.linksLabel(days.length)}>
           {days.map((d, i) => {
             const risk = d.state === 'at_risk';
             const kept = d.state === 'linked' || d.state === 'saved';
@@ -55,21 +63,20 @@ export function ChainHero({ chain }: { chain: ChainView }) {
                   height={LINK_H}
                   rx={LINK_H / 2}
                   fill="none"
-                  stroke={risk ? 'var(--color-accent)' : 'var(--color-on-hero)'}
+                  stroke={risk ? 'var(--color-accent)' : 'var(--color-brand)'}
                   strokeWidth="2.5"
                   strokeDasharray={risk || d.state === 'lost' ? '4 3' : undefined}
                   opacity={isToday || (!kept && !risk) ? 0.4 : 1}
                 >
                   <title>{c.dayLabel(formatDayMonth(d.date), c.states[d.state])}</title>
                 </rect>
-                <text x={x + LINK_W / 2} y={LINK_H + 17} textAnchor="middle" fontSize="10" fill="var(--color-on-hero-muted)" aria-hidden="true">
+                <text x={x + LINK_W / 2} y={LINK_H + 17} textAnchor="middle" fontSize="10" fill="var(--color-text-muted)" aria-hidden="true">
                   {isToday ? strings.challenge.today : Number(d.date.slice(8))}
                 </text>
               </g>
             );
           })}
-        </svg>
-      )}
+      </svg>
     </div>
   );
 }
