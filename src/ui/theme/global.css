@@ -2530,15 +2530,7 @@ button:disabled {
   text-align: right;
 }
 
-/* Chain: the streak in the hero, the last links under it, the saved breaks as rows */
-.hero-c-number.streak {
-  font-size: 56px;
-}
-
-.chain-links {
-  display: block;
-}
-
+/* Chain: the saved breaks as rows */
 .chain-saved-row {
   grid-template-columns: 40px minmax(0, 1fr);
 }

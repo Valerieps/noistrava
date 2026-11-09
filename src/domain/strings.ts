@@ -210,7 +210,6 @@ export const strings = {
     type: 'Corrente',
     heroLabel: (left: string) => `Corrente · ${left}`,
     heroStreak: 'seguidos',
-    linksLabel: (days: number) => `A corrente dos últimos ${days} dias`,
     calendar: 'A corrente, dia a dia',
     weekdays: ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'],
     states: {
