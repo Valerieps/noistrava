@@ -82,6 +82,10 @@ export class Group extends DurableObject<Env> {
     return this.service.windowRemindersDue();
   }
 
+  seasonNoticesDue(): PushMessage[] {
+    return this.service.seasonNoticesDue();
+  }
+
   removePushSubscription(endpoint: string): void {
     this.service.removePushSubscription(endpoint);
   }

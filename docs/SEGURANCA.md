@@ -27,8 +27,8 @@ conferidas pelo `src/security.test.ts`, que roda em todo build.
 - Para a jornada (ADR-009), o Worker manda ao OpenStreetMap só o texto da busca e as coordenadas
   dos lugares escolhidos, nunca dado de integrante. O navegador busca os tiles do mapa mandando só
   a origem do app como `Referer`, que o servidor de tiles exige.
-- O lembrete do Fabrício (ADR-012) vai por Web Push sem conteúdo; o da janela (ADR-013) leva o
-  texto cifrado para o aparelho (RFC 8291), e o serviço de push não consegue lê-lo. O servidor
+- O lembrete do Fabrício (ADR-012) vai por Web Push sem conteúdo; o da janela e os avisos da
+  Corrida das Estações (ADR-013) levam o texto cifrado para o aparelho (RFC 8291), e o serviço de push não consegue lê-lo. O servidor
   guarda o endereço que o serviço de push dá para cada aparelho e as chaves públicas do aparelho;
   cada push é assinado com a chave VAPID, que fica só no Worker (`VAPID_KEY`). O servidor aceita só
   endereços dos serviços de `PUSH_ORIGINS`.

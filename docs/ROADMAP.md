@@ -12,7 +12,6 @@ O que ainda não está pronto.
 | Feature | Fase | Spec | Observação |
 | --- | --- | --- | --- |
 | Jornada: postal de cada marco (foto e resumo do lugar), "Onde estamos" e números do caminho (países, rios) | 1 | `spec/desafio-horas.md` | Estão nos rascunhos; precisam de dados que o servidor não tem |
-| Corrida das Estações: a aba Estações, etapas trimestrais, rankings, títulos, o circuito no perfil e os avisos | 2 | `spec/corrida-das-estacoes.md`, `spec/notificacoes.md` | Depende do Índice de Aproveitamento da semana |
 | Notificações do desafio (o lembrete do Fabrício já existe) | 2 | `spec/notificacoes.md`, `spec/desafio-horas.md`, `spec/desafio-corrente.md` | Regras em aberto |
 
 ## O código ainda não segue o spec
@@ -33,6 +32,17 @@ O que ainda não está pronto.
   os critérios de desempate; o Volta por cima mede o aumento em horas, não em porcentagem; o
   Relógio Suíço exige atividade em todas as semanas; os títulos são distribuídos na ordem da tabela;
   empatadas em primeiro levam o título juntas; do Sem Perder o Embalo, o grupo vê só a quantidade de semanas.
+
+- [ ] Corrida das Estações (`spec/corrida-das-estacoes.md`): durante a etapa, uma semana só entra
+  no Sem Perder o Embalo e no Relógio Suíço depois que acaba; o Relógio Suíço começa com duas
+  semanas inteiras acabadas; o quanto falta é para igualar a 1ª, e quem iguala vê o desempate.
+
+- [ ] Avisos da Corrida das Estações (`spec/notificacoes.md`): o de fim de ano no 18 de dezembro do
+  meu fuso; o do pódio e os dos títulos até 3 dias depois de a etapa fechar; cada aviso uma vez só,
+  e um desligado não chega depois; só nos aparelhos que dão as chaves de cifra, com "Receber aqui".
+- [ ] Aba Estações: as setas do topo trocam de etapa e de ano; tocar num nome do resumo do ano abre
+  o circuito dela; o circuito lista as etapas do ano com as medalhas de cada uma
+  (`spec/corrida-das-estacoes.md`, "Onde eu vejo").
 
 - [ ] O índice do mês no calendário usa os estados de hoje (ativo, na janela, pausa longa) e as
   zonas do índice de 30 dias para a cor (`spec/acompanhamento.md`).

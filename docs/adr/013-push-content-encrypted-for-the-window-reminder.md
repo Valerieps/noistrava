@@ -18,6 +18,10 @@ WebCrypto in `encryptPayload` of `server/infrastructure/web-push.ts`, with no li
   fixed text of ADR-012 otherwise. The two reminders have different tags, so one does not replace
   the other.
 
+**Update (2026-11-09):** The Corrida das Estações notices (`docs/spec/notificacoes.md`) go the same
+way: `seasonNoticesDue` in `server/application/season-notices.ts` builds `{title, body, tag, url}` for
+the devices with keys, and `public/sw.js` opens `url`, a path of the app, when the notice is tapped.
+
 **Why:** The text depends on each member's activities, so a fixed text in the service worker is not
 enough, and push services require an encrypted payload. Encryption is ~40 lines of WebCrypto that
 the Worker and Node both run, and the push service never sees the text.

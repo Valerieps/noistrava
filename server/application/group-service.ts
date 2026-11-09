@@ -65,6 +65,8 @@ import {
   type StravaActivityEvent,
   type StravaCredentials,
 } from './strava';
+import { seasonNotices, seasonNoticesDue, setSeasonNotices } from './season-notices';
+import { closeDueStages, invalidateSeasons, seasonCircuit, seasonStage, seasonYear } from './seasons';
 import { awardBadges, tracking } from './tracking';
 
 type Input = Record<string, unknown>;
@@ -86,6 +88,10 @@ const QUERIES: { [N in QueryName]: Handler<Queries[N]['output'] | QueryError | n
   tracking: (ctx, actor) => tracking(ctx, actor),
   reminder: (ctx, actor) => reminder(ctx, actor),
   windowReminder: (ctx, actor) => windowReminder(ctx, actor),
+  seasonStage: (ctx, actor, input) => seasonStage(ctx, actor, input),
+  seasonYear: (ctx, actor, input) => seasonYear(ctx, actor, input),
+  seasonCircuit: (ctx, actor, input) => seasonCircuit(ctx, actor, input),
+  seasonNotices: (ctx, actor) => seasonNotices(ctx, actor),
 };
 
 /** Every command the API runs; each checks the actor's role itself. */
@@ -115,6 +121,7 @@ const COMMANDS: { [N in CommandName]: Handler<CommandResult<Commands[N]['output'
   'push.subscribe': subscribePush,
   'push.refreshKeys': refreshPushKeys,
   'push.unsubscribe': unsubscribePush,
+  'seasonNotices.set': setSeasonNotices,
 };
 
 export class GroupService {
@@ -195,6 +202,11 @@ export class GroupService {
     return windowRemindersDue(this.ctx);
   }
 
+  /** Called by the Worker's cron, after `tick`: the Corrida das Estações notices due now, marked as sent. */
+  seasonNoticesDue(): PushMessage[] {
+    return seasonNoticesDue(this.ctx);
+  }
+
   removePushSubscription(endpoint: string): void {
     removePushSubscription(this.ctx, endpoint);
   }
@@ -217,12 +229,15 @@ export class GroupService {
     return this.ctx.sql.transaction(() => {
       const result = handler(this.ctx, actor, asInput(input));
       if (result.ok && result.changed.some((t) => t === 'activities' || t === 'challenge')) awardBadges(this.ctx);
+      // The rankings follow the activities, the members and their zones.
+      if (result.ok && result.changed.length > 0) invalidateSeasons(this.ctx);
       return result;
     });
   }
 
   /** Badges are earned whenever the activities, the hearts or the chains change. */
   private withBadges(changed: boolean): boolean {
+    if (changed) invalidateSeasons(this.ctx);
     if (changed) this.ctx.sql.transaction(() => awardBadges(this.ctx));
     return changed;
   }
@@ -236,7 +251,8 @@ export class GroupService {
     const changed = runChallengeJobs(this.ctx);
     // Also gives the badges of what the app had before they existed.
     this.ctx.sql.transaction(() => awardBadges(this.ctx));
-    return changed ? ['challenge', 'history'] : [];
+    const closed = closeDueStages(this.ctx);
+    return [...(changed ? (['challenge', 'history'] as const) : []), ...(closed.length > 0 ? (['seasons'] as const) : [])];
   }
 }
 

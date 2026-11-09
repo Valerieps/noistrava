@@ -61,7 +61,7 @@ no dia em que a minha janela de benefícios fecha e os avisos da Corrida das Est
   | Aviso | Quando chega | Texto |
   | --- | --- | --- |
   | O pódio saiu | No primeiro dia do trimestre seguinte, quando o resultado da etapa fecha | "🏅 Saiu o pódio do Inverno 2026! Veja quem levou cada título." |
-  | Eu levei um título | Junto com o pódio, um por título | "Você é a Maratonista do Inverno 2026! 🏅" |
+  | Eu levei um título | Junto com o pódio, um por título | "Você é a Maratonista do Inverno 2026! 🏅" nos títulos que são uma pessoa (Guerreira de fim de semana, Multitalento, Maratonista, Relógio Suíço); nos outros, "Você levou o título Mais horas do Inverno 2026! 🏅" |
   | O ano acabou | Em 18 de dezembro, quando a Primavera acaba e a aba abre no resumo do ano | "☀️🍁❄️🌸 O circuito 2026 acabou! Veja o resumo do ano." |
 
 - Eu escolho, na mesma tela dos lembretes, se recebo cada um dos três, separado dos outros. Até eu
@@ -69,3 +69,10 @@ no dia em que a minha janela de benefícios fecha e os avisos da Corrida das Est
 - Eles chegam nos aparelhos em que eu liguei as notificações, na hora em que o servidor percebe o
   momento, sem hora marcada, e valem para qualquer integrante. Tocar num deles abre a aba
   Estações. *(2)*
+- O aviso de fim de ano chega quando já é 18 de dezembro no meu fuso. O do pódio e os dos títulos
+  chegam até 3 dias depois de a etapa fechar; quem entra no grupo depois não recebe. *(2)*
+- Cada aviso chega uma vez só. Um aviso que eu tinha desligado quando o momento passou não chega
+  depois, mesmo que eu ligue. *(2)*
+- Eles levam o texto no próprio push, como o lembrete da janela: chegam só nos aparelhos que dão as
+  chaves para cifrar o conteúdo. Quando este aparelho ainda não recebe, a tela mostra "Receber
+  aqui". *(2)*

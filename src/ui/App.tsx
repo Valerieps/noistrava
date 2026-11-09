@@ -3,8 +3,9 @@ import type { MeView } from '../application/api-contract';
 import { canManageGroup } from '../domain/group/roles';
 import { strings } from '../domain/strings';
 import { useLiveStatus, useServices } from './backend-context';
-import { deviceTimezone } from './format';
-import { BackIcon, BellIcon, ClockIcon, FlagIcon, GearIcon, PersonIcon } from './icons';
+import { quarterStage } from '../domain/seasons/stages';
+import { deviceTimezone, todayDate } from './format';
+import { BackIcon, BellIcon, ClockIcon, FlagIcon, GearIcon, PersonIcon, SeasonIcon } from './icons';
 import { Link, navigate, usePath } from './router';
 import { ActivityForm } from './screens/ActivityForm';
 import { ActivityTemplateForm, ActivityTemplates } from './screens/ActivityTemplates';
@@ -17,12 +18,13 @@ import { Members } from './screens/Members';
 import { Notifications } from './screens/Notifications';
 import { MyActivities, NameForm, Profile } from './screens/Profile';
 import { BadgesScreen } from './screens/profile/Badges';
+import { CircuitScreen, SeasonStage, SeasonsTab, YearScreen } from './screens/Seasons';
 import { Settings, SettingsHero } from './screens/Settings';
 import { SignIn } from './screens/SignIn';
 import { StravaConnect } from './screens/StravaConnect';
 import { useQuery } from './use-query';
 
-/** The app's screens: the challenge, the history and the profile, with a top bar and a bottom navigation. */
+/** The app's screens: the challenge, the Estações, the history and the profile, with a top bar and a bottom navigation. */
 export function App() {
   const { backend, live } = useServices();
   const me = useQuery('me', {}, ['me']);
@@ -75,9 +77,20 @@ export function App() {
 
 function Navigation() {
   const path = usePath();
-  const section = path.startsWith('/historico') ? '/historico' : path.startsWith('/perfil') ? '/perfil' : SETTINGS_PATHS.includes(path) ? null : '/';
+  const section = path.startsWith('/historico')
+    ? '/historico'
+    : path.startsWith('/perfil')
+      ? '/perfil'
+      : path.startsWith('/estacoes')
+        ? '/estacoes'
+        : SETTINGS_PATHS.includes(path)
+          ? null
+          : '/';
+  // The tab's icon is the season of the stage in progress, colored while the tab is open.
+  const season = quarterStage(todayDate()).season;
   const tabs = [
     { path: '/', label: strings.nav.challenge, icon: <FlagIcon /> },
+    { path: '/estacoes', label: strings.seasons.tab, icon: <SeasonIcon season={season} plain={section !== '/estacoes'} /> },
     { path: '/historico', label: strings.nav.history, icon: <ClockIcon /> },
     { path: '/perfil', label: strings.nav.profile, icon: <PersonIcon /> },
   ];
@@ -93,7 +106,7 @@ function Navigation() {
   );
 }
 
-const TAB_PATHS = ['/', '/historico', '/perfil'];
+const TAB_PATHS = ['/', '/estacoes', '/historico', '/perfil'];
 const SETTINGS_PATHS = ['/notificacoes', '/configuracoes', '/configuracoes/nome', '/configuracoes/strava', '/integrantes', '/convites'];
 
 /** The app's name and the ways to the notifications and the settings. Only on the tab screens. */
@@ -183,6 +196,16 @@ function Screen({ me, onSignOut }: { me: MeView; onSignOut: () => void }) {
   const path = usePath();
   if (path === '/historico') return <History />;
   if (path === '/perfil') return <Profile me={me} />;
+  if (path === '/estacoes') return <SeasonsTab />;
+  const seasonStage = /^\/estacoes\/etapa\/([^/]+)$/.exec(path);
+  if (seasonStage) return <SeasonStage key={seasonStage[1]} stageKey={decodeURIComponent(seasonStage[1])} />;
+  const seasonYear = /^\/estacoes\/ano\/(\d{4})$/.exec(path);
+  if (seasonYear) return <YearScreen key={seasonYear[1]} year={Number(seasonYear[1])} />;
+  const myCircuit = /^\/perfil\/circuito(?:\/(\d{4}))?$/.exec(path);
+  if (myCircuit) return <CircuitScreen key={path} year={myCircuit[1] ? Number(myCircuit[1]) : undefined} back="/perfil" />;
+  const circuit = /^\/estacoes\/circuito\/([^/]+)(?:\/(\d{4}))?$/.exec(path);
+  if (circuit)
+    return <CircuitScreen key={path} memberId={decodeURIComponent(circuit[1])} year={circuit[2] ? Number(circuit[2]) : undefined} back="/estacoes" />;
   if (path === '/perfil/selos')
     return (
       <SheetSub title={strings.tracking.badgesTitle} back="/perfil">

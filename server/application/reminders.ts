@@ -141,6 +141,7 @@ export function eraseMemberReminder(ctx: Context, memberId: string): void {
   ctx.sql.run('DELETE FROM push_subscriptions WHERE member_id = ?', memberId);
   ctx.sql.run('DELETE FROM reminders WHERE member_id = ?', memberId);
   ctx.sql.run('DELETE FROM window_reminders WHERE member_id = ?', memberId);
+  ctx.sql.run('DELETE FROM season_notice_settings WHERE member_id = ?', memberId);
 }
 
 /**

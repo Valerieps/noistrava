@@ -89,6 +89,10 @@ app (celular) ──POST /api/query|command──► Worker ──RPC──► G
 | `window_reminders` | as mesmas colunas de `reminders` (migração 10) | O lembrete da janela de cada integrante; `last_sent_on` é a data local da última conferência |
 | `push_subscriptions` | `endpoint`, `member_id` (migração 8), `p256dh`, `auth` (migração 10) | Um aparelho que recebe os lembretes: o endereço do serviço de push (ADR-012) e, quando o navegador dá, as chaves para cifrar um push com conteúdo (ADR-013) |
 | `activity_templates` | `id`, `member_id`, `name`, `sport`, `duration_seconds`, `days` (JSON, 0 = segunda), `time` (`HH:MM`) (migração 9) | As atividades modelo de cada integrante; não entram no cálculo de nenhum desafio |
+| `season_stages` | `stage` (`2026-spring`), `closed_at` (migração 12) | As etapas da Corrida das Estações com o resultado fechado |
+| `season_results` | `stage`, `ranking`, `member_id`, `name`, `position`, `value`, `title` (migração 12) | A posição final de cada integrante em cada ranking de uma etapa fechada, e quem levou o título. Gravada ao fechar, com o nome, para a etapa ficar como fechou depois que alguém sai. Só o servidor lê as posições; a API mostra a 1ª e a de quem pede |
+| `season_notice_settings` | `member_id`, `podium`, `title`, `year` (migração 13) | Os avisos da Corrida das Estações que cada integrante quer; sem linha, os três ligados |
+| `season_notices_sent` | `member_id`, `notice`, `sent_at` (migração 13) | Cada aviso já mandado (`podium:2026-spring`, `title:2026-spring:marathon`, `year:2026`), para não repetir |
 | `member_badges` | `member_id`, `badge`, `earned_at` (migração 7) | Os selos ganhos. O acompanhamento é calculado das atividades a cada leitura (`src/domain/tracking/tracking.ts`); só os selos ficam gravados, porque um selo ganho não se perde quando a atividade que o deu é editada ou apagada |
 
 ## Fluxo de eventos
@@ -118,6 +122,13 @@ app (celular) ──POST /api/query|command──► Worker ──RPC──► G
   do lembrete da janela, grava a conferência do dia e, se hoje é o último dia da janela
   (`closingWindow`), monta o texto com o índice nos dois casos para cada aparelho com chaves. O
   Worker cifra o conteúdo para cada aparelho e o manda; o service worker mostra o que chegou.
+- **Corrida das Estações:** os 9 rankings de uma etapa em andamento ou na apuração são calculados
+  juntos (`standings`, em `src/domain/seasons/rankings.ts`) a partir das atividades, e guardados na
+  memória do `Group` até o próximo comando que muda algo ou a próxima importação do Strava. No cron,
+  `closeDueStages` fecha a etapa cujo trimestre seguinte já começou no fuso mais atrasado: grava as
+  posições e os títulos em `season_results` e avisa o tópico `seasons`. Depois do `tick`,
+  `seasonNoticesDue` monta os avisos do pódio, dos títulos e do fim do ano (ADR-013), grava cada um
+  como mandado e o Worker os cifra e manda junto com o lembrete da janela.
 - **Atividades de antes da conexão:** o `Group` diz quais conexões ainda não têm as atividades dos
   90 dias antes de conectar, ou desde o início do desafio aberto mais antigo que já começou, se for
   antes (`stravaBackfillsDue`); o Worker as busca
