@@ -195,6 +195,25 @@ export const MIGRATIONS: readonly (readonly string[])[] = [
     `UPDATE challenges SET status = 'archived', closed_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
        WHERE closed_at IS NULL AND state = 'succeeded' AND type = 'horas_colaborativas' AND name LIKE '%30h%'`,
   ],
+  // 12: the Corrida das Estações. A closed stage keeps everyone's final place in each ranking and the
+  // titles, with the names, so it stays as it closed after someone leaves.
+  [
+    `CREATE TABLE season_stages (
+      stage TEXT PRIMARY KEY,
+      closed_at TEXT NOT NULL
+    )`,
+    `CREATE TABLE season_results (
+      stage TEXT NOT NULL REFERENCES season_stages(stage),
+      ranking TEXT NOT NULL,
+      member_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      position INTEGER NOT NULL,
+      value REAL NOT NULL,
+      title INTEGER NOT NULL,
+      PRIMARY KEY (stage, ranking, member_id)
+    )`,
+    `CREATE INDEX season_results_member ON season_results(member_id)`,
+  ],
 ];
 
 export function migrate(sql: Sql): void {

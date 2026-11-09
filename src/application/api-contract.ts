@@ -6,6 +6,9 @@ import type { ChainConfig, ChainDayState } from '../domain/challenge/chain';
 import type { Banner, ChallengeResponse, ChallengeState, ChallengeStatus, ChallengeType, Journey, Place } from '../domain/challenge/challenge';
 import type { Role } from '../domain/group/roles';
 import type { PushKeys, ReminderSettings } from '../domain/reminder';
+import type { Gap, RankingKey } from '../domain/seasons/rankings';
+import type { Season, StageStatus } from '../domain/seasons/stages';
+import type { CalendarDate } from '../domain/time/zones';
 import type { BadgeStatus, BadgeKey, Rhythm } from '../domain/tracking/tracking';
 
 export interface MemberView {
@@ -211,6 +214,85 @@ export interface ReminderView extends ReminderSettings {
   readonly devices: number;
 }
 
+/** A stage of the Corrida das Estações and its dates (docs/spec/corrida-das-estacoes.md). */
+export interface SeasonStageRef {
+  /** `2026-spring`. */
+  readonly key: string;
+  readonly year: number;
+  readonly season: Season;
+  readonly start: CalendarDate;
+  readonly end: CalendarDate;
+  /** The first day of the next quarter, when the result closes. */
+  readonly closesOn: CalendarDate;
+}
+
+export interface SeasonPerson {
+  readonly memberId: string;
+  readonly name: string;
+  readonly photoUrl: string | null;
+}
+
+/**
+ * One ranking as I may see it: the first place, which the whole group sees, and my own place only.
+ * Never anyone else's position, nor the first's lead over the second.
+ */
+export interface SeasonRankingView {
+  readonly key: RankingKey;
+  /** Several when tied; empty while nobody is in the ranking. */
+  readonly leaders: readonly SeasonPerson[];
+  readonly leaderValue: number | null;
+  /** Once the stage closes: who took the title, and the first ones who already had 2. */
+  readonly titleHolders: readonly SeasonPerson[];
+  readonly blockedLeaders: readonly SeasonPerson[];
+  readonly me: {
+    /** Null when I am not in the ranking. */
+    readonly position: number | null;
+    /** My own value, when it has one. */
+    readonly value: number | null;
+    /** What I miss to reach the first; only while the stage runs. */
+    readonly gap: Gap | null;
+  };
+}
+
+export interface SeasonStageView {
+  readonly stage: SeasonStageRef;
+  /** `counting` from the stage's end until the result closes for the whole group. */
+  readonly status: StageStatus;
+  /** Today in my zone. */
+  readonly today: CalendarDate;
+  /** In the order of the spec's table. */
+  readonly rankings: readonly SeasonRankingView[];
+}
+
+/** A title someone took, or, while its stage is in the count, is taking. */
+export interface SeasonTitleView {
+  readonly stage: string;
+  readonly season: Season;
+  readonly ranking: RankingKey;
+  readonly provisional: boolean;
+}
+
+export interface SeasonYearView {
+  readonly year: number;
+  /** The years the race had so far, oldest first. */
+  readonly years: readonly number[];
+  readonly stages: readonly { readonly stage: SeasonStageRef; readonly status: StageStatus | 'upcoming' }[];
+  /** Those who took a title in the year, in alphabetical order. */
+  readonly members: readonly (SeasonPerson & { readonly titles: readonly SeasonTitleView[] })[];
+}
+
+/** One member's titles in a year: everyone may see anyone's. */
+export interface SeasonCircuitView {
+  readonly person: SeasonPerson;
+  readonly year: number;
+  readonly years: readonly number[];
+  readonly stages: readonly {
+    readonly stage: SeasonStageRef;
+    readonly status: StageStatus | 'upcoming';
+    readonly titles: readonly SeasonTitleView[];
+  }[];
+}
+
 /** Reads: `POST /api/query/<name>`. They never change anything. */
 export interface Queries {
   me: { input: Record<string, never>; output: MeView };
@@ -234,6 +316,12 @@ export interface Queries {
   reminder: { input: Record<string, never>; output: ReminderView };
   /** My reminder that the window closes today; its devices are those that gave their keys. */
   windowReminder: { input: Record<string, never>; output: ReminderView };
+  /** Without a stage, the one of today's quarter; `yearEnd` from 18 to 31 December. */
+  seasonStage: { input: { stage?: string }; output: { yearEnd: boolean; view: SeasonStageView } };
+  /** Without a year, the current one. */
+  seasonYear: { input: { year?: number }; output: SeasonYearView };
+  /** Without a member, mine; without a year, the current one. */
+  seasonCircuit: { input: { memberId?: string; year?: number }; output: SeasonCircuitView };
 }
 
 /** Writes: `POST /api/command/<name>`. Each runs alone, in one transaction. */
@@ -282,7 +370,7 @@ export type QueryName = keyof Queries;
 export type CommandName = keyof Commands;
 
 /** What a live message says changed; the screens that show it refetch. */
-export type Topic = 'me' | 'members' | 'invites' | 'strava' | 'activities' | 'challenge' | 'history' | 'reminder' | 'templates';
+export type Topic = 'me' | 'members' | 'invites' | 'strava' | 'activities' | 'challenge' | 'history' | 'reminder' | 'templates' | 'seasons';
 
 export interface LiveMessage {
   readonly type: 'changed';

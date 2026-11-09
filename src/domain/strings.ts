@@ -522,6 +522,68 @@ export const strings = {
     } as Record<string, (n: number) => string>,
   },
 
+  seasons: {
+    race: 'Corrida das Estações',
+    raceKicker: 'Corrida das',
+    tab: 'Estações',
+    names: { summer: 'Verão', autumn: 'Outono', winter: 'Inverno', spring: 'Primavera' },
+    /** "Verão 2027". */
+    stage: (season: string, year: number) => `${season} ${year}`,
+    shortMonths: ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'],
+    rankings: {
+      activities: 'Mais atividades',
+      hours: 'Mais horas',
+      momentum: 'Sem Perder o Embalo',
+      weekend: 'Guerreira de fim de semana',
+      variety: 'Multitalento',
+      marathon: 'Maratonista',
+      comeback: 'Volta por cima',
+      sprint: 'Sprint final',
+      steady: 'Relógio Suíço',
+    },
+    /** The tie-break of each ranking, as the spec's table says it. */
+    tiebreaks: {
+      activities: 'mais horas',
+      hours: 'mais atividades',
+      momentum: 'a maior média do índice nas semanas da etapa',
+      weekend: 'mais horas aos sábados e domingos',
+      variety: 'mais atividades',
+      marathon: 'a segunda atividade mais longa',
+      comeback: 'mais horas na etapa',
+      sprint: 'mais horas nesses dias',
+      steady: 'mais horas',
+    },
+    count: (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`,
+    variation: (percent: number) => `variou só ±${percent}%`,
+    gap: {
+      leader: 'Você está em 1º.',
+      absent: 'Você ainda não tem atividade nesta etapa.',
+      nobody: 'Ninguém entrou neste ranking ainda.',
+      /** "Faltam 8 atividades para alcançar a 1ª." */
+      missing: (amount: string, plural: boolean, what: string) => `${plural ? 'Faltam' : 'Falta'} ${amount}${what} para alcançar a 1ª.`,
+      marathon: (leader: string) => `Uma atividade de mais de ${leader} te põe em 1º.`,
+      steady: (leader: number, mine: number) => `A 1ª variou ±${leader}%; você, ±${mine}%.`,
+      tied: (tiebreak: string) => `Você empata com a 1ª, mas perde no desempate: ${tiebreak}.`,
+      notOpen: (from: string, to: string) => `Conta só os últimos 7 dias da etapa: de ${from} a ${to}.`,
+      fewWeeks: 'Conta a partir de duas semanas inteiras na etapa, de segunda a domingo.',
+      missedWeek: (week: string) => `Você ficou de fora: não teve atividade na semana de ${week}.`,
+      momentumZero: 'Você ainda não teve uma semana inteira entre 85% e 100%.',
+      noIncrease: 'Você ainda não passou das horas da etapa anterior.',
+    },
+    /** What each ranking adds to "Faltam N…" after the amount. */
+    gapUnits: {
+      activities: [' atividade', ' atividades'],
+      hours: ['', ''],
+      momentum: [' semana entre 85% e 100%', ' semanas entre 85% e 100%'],
+      weekend: [' atividade num sábado ou domingo', ' atividades num sábado ou domingo'],
+      variety: [' modalidade nova', ' modalidades novas'],
+      marathon: ['', ''],
+      comeback: [' a mais que na etapa anterior', ' a mais que na etapa anterior'],
+      sprint: [' atividade nos últimos 7 dias', ' atividades nos últimos 7 dias'],
+      steady: ['', ''],
+    } as Record<string, readonly [string, string]>,
+  },
+
   strava: {
     title: 'Strava',
     intro: 'Conecte o Strava e as suas atividades chegam sozinhas, sem precisar registrar.',

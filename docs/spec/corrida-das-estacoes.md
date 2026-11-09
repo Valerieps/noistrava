@@ -23,13 +23,14 @@ premiar quem se mexeu e de jeitos diferentes.
   | Primavera | 1º de outubro | 17 de dezembro |
 
   Ela aparece com o ano, como "Verão 2027".
+- A primeira etapa é a Primavera 2026. As etapas de antes dela não têm pódio nem títulos. *(2)*
 - Uma etapa começa no primeiro dia do trimestre e termina duas semanas antes do último dia dele. *(2)*
   Por quê: as duas semanas finais são da apuração e da festa do pódio.
 - Durante as duas semanas de apuração, as atividades feitas nesses dias não contam para nenhuma
   etapa. *(2)*
 - Na apuração, uma atividade da etapa que chega atrasada do Strava, ou que eu registro, edito ou
   excluo, ainda muda o resultado. No primeiro dia do trimestre seguinte, o resultado fica fechado e
-  não muda mais. *(2)*
+  não muda mais. Ele fecha quando esse dia já começou para todo o grupo, no fuso mais atrasado. *(2)*
   Por quê: o Strava e o registro à mão às vezes atrasam alguns dias.
 - Cada atividade vale no fuso em que ela aconteceu, como no acompanhamento: o dia e a semana dela são
   os desse fuso. *(2)*
@@ -40,6 +41,8 @@ premiar quem se mexeu e de jeitos diferentes.
 - Contam todas as minhas atividades da etapa, do Strava ou manuais, de dentro ou de fora de um
   desafio, e todas valem igual. *(2)*
 - Quem não tem nenhuma atividade na etapa não aparece nos rankings. *(2)*
+- Num ranking, só entra quem tem mais que zero no que ele conta: sem nenhuma atividade no fim de
+  semana, por exemplo, eu fico fora da Guerreira de fim de semana. Ninguém leva título com zero. *(2)*
 - Quem entra no grupo no meio de uma etapa disputa com as atividades que tiver nela. *(2)*
 - Quem sai do grupo deixa de aparecer nos rankings da etapa em andamento; as etapas fechadas
   continuam como fecharam. *(2)*
@@ -66,6 +69,7 @@ continuando empatadas, elas dividem a posição.
 
 - No Sem Perder o Embalo, contam só as semanas inteiras dentro da etapa, de segunda a domingo. *(2)*
   Por quê: uma semana cortada pelo início ou pelo fim da etapa teria um índice de outro período.
+- Durante a etapa, uma semana só entra no Sem Perder o Embalo e no Relógio Suíço depois que acaba. *(2)*
 - No Volta por cima, a etapa anterior conta mesmo que tenha sido antes da Corrida das Estações
   existir no app. Só entra quem aumentou as horas. *(2)*
 - No Relógio Suíço, contam as mesmas semanas inteiras do Sem Perder o Embalo, e só entra quem tem
@@ -73,6 +77,8 @@ continuando empatadas, elas dividem a posição.
   fica na frente é quem tem a menor variação relativa do tempo semanal (o desvio dividido pela
   média). Eu vejo essa variação como "variou só ±N% entre as semanas". *(2)*
   Por quê: sem esse mínimo, quem não fez nada teria variação zero.
+- O Relógio Suíço só começa a contar com duas semanas inteiras acabadas na etapa. *(2)*
+  Por quê: com uma semana só, todas teriam variação zero.
 - Durante a etapa, eu vejo os rankings ao vivo, como parciais. *(2)*
 
 ## Títulos
@@ -94,6 +100,10 @@ continuando empatadas, elas dividem a posição.
   das etapas fechadas. *(2)*
 - A minha posição em cada ranking, e o quanto me falta para chegar ao primeiro lugar, só eu vejo.
   Ninguém vê a posição das outras, só a primeira colocada. *(2)*
+- O quanto falta é para eu igualar a primeira no que o ranking conta, como "Faltam 8 atividades para
+  alcançar a 1ª". Quando eu já igualo e perco no desempate, eu vejo qual é o desempate. Fora de um
+  ranking, eu vejo por quê: o Sprint final ainda não começou, ou faltou atividade numa semana do
+  Relógio Suíço. *(2)*
 - Quando eu estou em primeiro, eu vejo só isso, sem a minha vantagem sobre a segunda. *(2)*
 - Do Sem Perder o Embalo, o grupo vê só quantas semanas cada uma teve entre 85% e 100%. O índice de cada semana, o
   calendário e o resto do meu acompanhamento continuam só meus. *(2)*
