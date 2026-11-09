@@ -12,6 +12,7 @@ O que ainda não está pronto.
 | Feature | Fase | Spec | Observação |
 | --- | --- | --- | --- |
 | Jornada: postal de cada marco (foto e resumo do lugar), "Onde estamos" e números do caminho (países, rios) | 1 | `spec/desafio-horas.md` | Estão nos rascunhos; precisam de dados que o servidor não tem |
+| Corrida das Estações: etapas trimestrais, rankings e títulos | 2 | `spec/corrida-das-estacoes.md` | Depende do Índice de Aproveitamento da semana; fase em aberto |
 | Notificações do desafio (o lembrete do Fabrício já existe) | 2 | `spec/notificacoes.md`, `spec/desafio-horas.md`, `spec/desafio-corrente.md` | Regras em aberto |
 
 ## O código ainda não segue o spec
@@ -22,6 +23,13 @@ O que ainda não está pronto.
   só o fundo listrado.
 
 ## Revisar as lacunas que o agente decidiu
+
+- [ ] Corrida das Estações (`spec/corrida-das-estacoes.md`): as atividades das duas semanas de
+  apuração não contam para nenhuma etapa; na apuração, o resultado ainda muda, e fecha no primeiro
+  dia do trimestre seguinte; o Sem Perder o Embalo e o Relógio Suíço contam só as semanas inteiras da etapa;
+  os critérios de desempate; o Volta por cima mede o aumento em horas, não em porcentagem; o
+  Relógio Suíço exige atividade em todas as semanas; os títulos são distribuídos na ordem da tabela;
+  empatadas em primeiro levam o título juntas; do Sem Perder o Embalo, o grupo vê só a quantidade de semanas.
 
 - [ ] O índice do mês no calendário usa os estados de hoje (ativo, na janela, pausa longa) e as
   zonas do índice de 30 dias para a cor (`spec/acompanhamento.md`).

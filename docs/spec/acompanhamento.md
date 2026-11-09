@@ -12,7 +12,10 @@ No meu perfil, eu acompanho o meu ritmo e ganho selos, para manter a constância
 - As métricas e os selos aparecem só para mim, no meu perfil. Ninguém do grupo vê os meus, nem o
   admin. *(2)*
   Por quê: o app é colaborativo; num grupo pequeno, comparar uma pessoa com as outras vira ranking.
-- Nada do acompanhamento aparece no log dos desafios nem em outro lugar que o grupo vê. *(2)*
+- Nada do acompanhamento aparece no log dos desafios nem em outro lugar que o grupo vê. A única
+  exceção é a quantidade de semanas com o índice entre 85% e 100%, no ranking Sem Perder o
+  Embalo da
+  [Corrida das Estações](corrida-das-estacoes.md). *(2)*
 - Contam todas as minhas atividades, do Strava ou manuais, de dentro ou de fora de um desafio. *(2)*
 - Uma atividade que eu edito ou excluo muda as métricas na hora. *(2)*
 - Cada atividade vale no fuso em que ela aconteceu: o dia, a hora e a semana dela são os desse fuso. *(2)*
