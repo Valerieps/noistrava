@@ -1,8 +1,8 @@
 // "Notificações", from the bell in the top bar: the reminder to log the activities and the window
-// reminder, each on its weekdays and at its time (docs/spec/notificacoes.md). Turning one on
-// subscribes this device.
+// reminder, each on its weekdays and at its time, and the three notices of the Corrida das Estações
+// (docs/spec/notificacoes.md). Turning one on subscribes this device.
 import { useEffect, useState } from 'react';
-import type { CommandName, ReminderView } from '../../application/api-contract';
+import type { CommandName, ReminderView, SeasonNoticesView } from '../../application/api-contract';
 import type { PushDeviceState } from '../../application/ports';
 import type { ReminderSettings, Weekday } from '../../domain/reminder';
 import { strings } from '../../domain/strings';
@@ -27,6 +27,7 @@ export function Notifications() {
   const { backend, push } = useServices();
   const reminder = useQuery('reminder', {}, ['reminder']);
   const windowReminder = useQuery('windowReminder', {}, ['reminder']);
+  const seasonNotices = useQuery('seasonNotices', {}, ['reminder']);
   const [device, setDevice] = useState<PushDeviceState | null>(null);
 
   useEffect(() => {
@@ -51,6 +52,7 @@ export function Notifications() {
     <>
       <ReminderForm kind={FABRICIO} saved={reminder.data} device={device} onDevice={setDevice} />
       <ReminderForm kind={WINDOW} saved={windowReminder.data} device={device} onDevice={setDevice} />
+      {seasonNotices.data && <SeasonNoticesForm saved={seasonNotices.data} device={device} onDevice={setDevice} />}
     </>
   );
 }
@@ -168,6 +170,77 @@ function ReminderForm({
         </label>
       </fieldset>
 
+      {error && (
+        <p className="notice" role="alert">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/** Asks for permission and subscribes this device with its keys; the error to show, or null. */
+async function subscribeThisDevice(
+  services: ReturnType<typeof useServices>,
+  onDevice: (state: PushDeviceState) => void,
+): Promise<string | null> {
+  const { backend, push } = services;
+  const s = strings.reminder;
+  const key = await backend.pushKey();
+  if (!key.ok) return key.error === 'unavailable' ? s.unavailable : strings.genericError;
+  const state = await push.subscribe(key.value).catch((): PushDeviceState => ({ kind: 'unsupported' }));
+  onDevice(state);
+  if (state.kind !== 'on' || !state.keys) return state.kind === 'blocked' ? s.blocked : s.unsupported;
+  const result = await backend.command('push.subscribe', { endpoint: state.endpoint, ...state.keys });
+  if (!result.ok) return result.error === 'invalid' ? s.unsupported : strings.genericError;
+  return null;
+}
+
+type NoticeKey = 'podium' | 'title' | 'year';
+
+/** The three notices, each on its own, all on until I change them; they arrive with content (ADR-013). */
+function SeasonNoticesForm({ saved, device, onDevice }: { saved: SeasonNoticesView; device: PushDeviceState | null; onDevice: (state: PushDeviceState) => void }) {
+  const services = useServices();
+  const n = strings.seasonNotices;
+  const [settings, setSettings] = useState({ podium: saved.podium, title: saved.title, year: saved.year });
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const rows: [NoticeKey, string][] = [
+    ['podium', n.podium],
+    ['title', n.myTitle],
+    ['year', n.year],
+  ];
+
+  async function toggle(key: NoticeKey, on: boolean) {
+    const next = { ...settings, [key]: on };
+    setSettings(next);
+    setError(null);
+    const result = await services.backend.command('seasonNotices.set', next);
+    if (!result.ok) setError(strings.genericError);
+  }
+
+  async function addDevice() {
+    setBusy(true);
+    setError(await subscribeThisDevice(services, onDevice));
+    setBusy(false);
+  }
+
+  const reachesHere = device?.kind === 'on' && device.keys !== null;
+  return (
+    <div className="sheet-section">
+      <h2>{n.title}</h2>
+      <p className="muted">{n.about}</p>
+      {rows.map(([key, label]) => (
+        <label key={key} className="switch-row" style={{ flexDirection: 'row' }}>
+          <span>{label}</span>
+          <input type="checkbox" role="switch" className="switch" checked={settings[key]} onChange={(e) => void toggle(key, e.target.checked)} />
+        </label>
+      ))}
+      {device && !reachesHere && (settings.podium || settings.title || settings.year) && (
+        <button type="button" disabled={busy} onClick={() => void addDevice()}>
+          {n.receiveHere}
+        </button>
+      )}
       {error && (
         <p className="notice" role="alert">
           {error}

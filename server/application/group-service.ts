@@ -65,6 +65,7 @@ import {
   type StravaActivityEvent,
   type StravaCredentials,
 } from './strava';
+import { seasonNotices, seasonNoticesDue, setSeasonNotices } from './season-notices';
 import { closeDueStages, invalidateSeasons, seasonCircuit, seasonStage, seasonYear } from './seasons';
 import { awardBadges, tracking } from './tracking';
 
@@ -90,6 +91,7 @@ const QUERIES: { [N in QueryName]: Handler<Queries[N]['output'] | QueryError | n
   seasonStage: (ctx, actor, input) => seasonStage(ctx, actor, input),
   seasonYear: (ctx, actor, input) => seasonYear(ctx, actor, input),
   seasonCircuit: (ctx, actor, input) => seasonCircuit(ctx, actor, input),
+  seasonNotices: (ctx, actor) => seasonNotices(ctx, actor),
 };
 
 /** Every command the API runs; each checks the actor's role itself. */
@@ -119,6 +121,7 @@ const COMMANDS: { [N in CommandName]: Handler<CommandResult<Commands[N]['output'
   'push.subscribe': subscribePush,
   'push.refreshKeys': refreshPushKeys,
   'push.unsubscribe': unsubscribePush,
+  'seasonNotices.set': setSeasonNotices,
 };
 
 export class GroupService {
@@ -197,6 +200,11 @@ export class GroupService {
   /** Called by the Worker's cron: the window reminders due now, already marked as checked. */
   windowRemindersDue(): PushMessage[] {
     return windowRemindersDue(this.ctx);
+  }
+
+  /** Called by the Worker's cron, after `tick`: the Corrida das Estações notices due now, marked as sent. */
+  seasonNoticesDue(): PushMessage[] {
+    return seasonNoticesDue(this.ctx);
   }
 
   removePushSubscription(endpoint: string): void {

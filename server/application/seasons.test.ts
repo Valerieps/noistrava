@@ -178,3 +178,58 @@ describe('seasonYear and seasonCircuit', () => {
     expect(service.query(ANA, 'seasonYear', { year: 2025 })).toEqual({ ok: false, error: 'not_found' });
   });
 });
+
+describe('the notices', () => {
+  const PHONE = 'https://fcm.googleapis.com/fcm/send/ana';
+  const KEYS = { p256dh: 'BOr4bpkK3wDN5kq8XyBsZdJ0kAFRtmuHBuhjF8D1ZGI9i7LmdVIjo7lSgaKY2_YWbjR4F8x5vIFdeBEqcjEsH3o', auth: 'qsZvYrc-dS4ERhR7ex4F0w' };
+  const bodies = () => service.seasonNoticesDue().map((m) => JSON.parse(m.payload) as { body: string; url: string });
+
+  beforeEach(() => {
+    log(ANA, '2026-10-05T10:00:00Z', 120, 'Run');
+    log(BIA, '2026-10-05T10:00:00Z', 30, 'Ride');
+    ok(service.command(ANA, 'push.subscribe', { endpoint: PHONE, ...KEYS }));
+  });
+
+  it('are all on until I change them', () => {
+    expect(ok(service.query(ANA, 'seasonNotices', {}))).toEqual({ podium: true, title: true, year: true, devices: 1 });
+    expect(ok(service.command(ANA, 'seasonNotices.set', { podium: false, title: true, year: true }))).toMatchObject({ podium: false });
+    expect(service.command(ANA, 'seasonNotices.set', { podium: 'no' })).toEqual({ ok: false, error: 'invalid' });
+  });
+
+  it('say the year is over on 18 December, once, opening the tab', () => {
+    clock.set('2026-12-17T23:00:00Z');
+    expect(bodies()).toEqual([]);
+    clock.set('2026-12-18T00:10:00Z');
+    expect(bodies()).toEqual([{ body: '☀️🍁❄️🌸 O circuito 2026 acabou! Veja o resumo do ano.', url: '/estacoes', title: 'Corrida das Estações', tag: 'year:2026' }]);
+    expect(bodies()).toEqual([]);
+  });
+
+  it('say the podium is out and each title I took, when the stage closes', () => {
+    clock.set('2026-12-20T00:10:00Z');
+    service.seasonNoticesDue();
+    clock.set('2027-01-01T00:05:00Z');
+    service.tick();
+    expect(bodies().map((b) => b.body)).toEqual([
+      '🏅 Saiu o pódio da Primavera 2026! Veja quem levou cada título.',
+      'Você levou o título Mais atividades da Primavera 2026! 🏅',
+      'Você levou o título Mais horas da Primavera 2026! 🏅',
+    ]);
+    expect(bodies()).toEqual([]);
+  });
+
+  it('send nothing I turned off, and do not send it later', () => {
+    ok(service.command(ANA, 'seasonNotices.set', { podium: false, title: false, year: true }));
+    clock.set('2027-01-01T00:05:00Z');
+    service.tick();
+    expect(bodies()).toEqual([]);
+    ok(service.command(ANA, 'seasonNotices.set', { podium: true, title: true, year: true }));
+    expect(bodies()).toEqual([]);
+  });
+
+  it('names the person in the titles that are a person', () => {
+    clock.set('2027-01-01T00:05:00Z');
+    service.tick();
+    ok(service.command(BIA, 'push.subscribe', { endpoint: 'https://fcm.googleapis.com/fcm/send/bia', ...KEYS }));
+    expect(bodies().map((b) => b.body)).toContain('Você é a Multitalento da Primavera 2026! 🏅');
+  });
+});

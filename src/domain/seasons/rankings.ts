@@ -242,3 +242,14 @@ export function gapFor(ranking: Ranking, memberId: string): Gap {
   const missing = tied ? leader.tiebreak - entry.tiebreak : Math.abs(leader.value - entry.value);
   return { kind: 'behind', position: entry.position, missing, tied };
 }
+
+/**
+ * How far along the lane to the first place I am, from 0 to 1, for the Estações tab: my value over
+ * the first's (the first's over mine in the Relógio Suíço, where less is better).
+ */
+export function laneProgress(key: RankingKey, leader: number | null, mine: number | null, position: number | null): number {
+  if (position === 1) return 1;
+  if (leader === null || mine === null || leader <= 0 || mine <= 0) return 0;
+  const fraction = LOWER_IS_BETTER.has(key) ? leader / mine : mine / leader;
+  return Math.min(Math.max(fraction, 0), 1);
+}

@@ -441,6 +441,21 @@ export const strings = {
       `Um exercício hoje e o seu Índice de Aproveitamento ${rises ? 'sobe para' : 'fica em'} ${ifActive}%. Sem ele, cai para ${ifNot}%. Bora manter a janela aberta? 💪`,
   },
 
+  seasonNotices: {
+    title: 'Corrida das Estações',
+    about: 'Avisos quando o pódio de uma etapa sai, quando você leva um título e quando o ano acaba.',
+    podium: 'O pódio saiu',
+    myTitle: 'Eu levei um título',
+    year: 'O ano acabou',
+    receiveHere: 'Receber aqui',
+    notificationTitle: 'Corrida das Estações',
+    podiumBody: (ofStage: string) => `🏅 Saiu o pódio ${ofStage}! Veja quem levou cada título.`,
+    /** `isA`: the title names a person ("Você é a Maratonista"); else "Você levou o título Mais horas". */
+    titleBody: (title: string, ofStage: string, isA: boolean) =>
+      isA ? `Você é a ${title} ${ofStage}! 🏅` : `Você levou o título ${title} ${ofStage}! 🏅`,
+    yearBody: (year: number) => `☀️🍁❄️🌸 O circuito ${year} acabou! Veja o resumo do ano.`,
+  },
+
   tracking: {
     thisWeek: (period: string) => `Esta semana · ${period}`,
     streak: (weeks: number) => `${weeks}ª semana seguida`,
@@ -527,6 +542,8 @@ export const strings = {
     raceKicker: 'Corrida das',
     tab: 'Estações',
     names: { summer: 'Verão', autumn: 'Outono', winter: 'Inverno', spring: 'Primavera' },
+    /** "do Verão", "da Primavera". */
+    of: { summer: 'do', autumn: 'do', winter: 'do', spring: 'da' },
     /** "Verão 2027". */
     stage: (season: string, year: number) => `${season} ${year}`,
     shortMonths: ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'],
@@ -570,6 +587,54 @@ export const strings = {
       momentumZero: 'Você ainda não teve uma semana inteira entre 85% e 100%.',
       noIncrease: 'Você ainda não passou das horas da etapa anterior.',
     },
+    statusChip: { running: 'Parcial', counting: '⏳ Apuração', closed: '✓ Fechada' },
+    runningMeta: (daysLeft: number, end: string) =>
+      daysLeft <= 0 ? `Parcial · último dia · fecha em ${end}` : `Parcial · ${daysLeft === 1 ? 'falta 1 dia' : `faltam ${daysLeft} dias`} · fecha em ${end}`,
+    countingMeta: (end: string, closes: string) => `Acabou em ${end} · o resultado fecha em ${closes}`,
+    closedKicker: 'Pódio',
+    closedMeta: (titles: number, people: number) =>
+      `${titles === 1 ? '1 título' : `${titles} títulos`} · ${people === 1 ? '1 integrante' : `${people} integrantes`} no pódio`,
+    countingBanner: (from: string, to: string) =>
+      `De ${from} a ${to}, as atividades não contam para nenhuma etapa. Uma atividade da etapa que chegar atrasada ainda entra.`,
+    provisional: 'Resultado provisório',
+    provisionalTag: 'provisório',
+    provisionalMine: (position: number) => `Você · ${position}ª, provisória.`,
+    outProvisional: 'Você ficou de fora deste ranking.',
+    position: (position: number) => `${position}ª`,
+    you: 'você',
+    nobodyYet: 'ninguém ainda',
+    laneLabel: (ranking: string, leader: string) => `${ranking}: ${leader}. Toque para ver o seu lado.`,
+    noTitle: 'Ninguém levou',
+    and: (names: readonly string[]) => (names.length <= 1 ? (names[0] ?? '') : `${names.slice(0, -1).join(', ')} e ${names[names.length - 1]}`),
+    blockedNote: (names: string, plural: boolean, ranking: string, holders: string) =>
+      `${names} ${plural ? 'foram' : 'foi'} 1ª em ${ranking}, mas já ${plural ? 'tinham' : 'tinha'} 2 títulos. ${holders ? `O título foi para ${holders}.` : ''}`.trim(),
+    medalLabel: (stage: string) => `Corrida das Estações · ${stage} ·`,
+    medalName: (ranking: string, ofStage: string, holders: string) => `${ranking} ${ofStage}: ${holders}`,
+    previousStage: 'Etapa anterior',
+    nextStage: 'Próxima etapa',
+    previousYear: 'Ano anterior',
+    nextYear: 'Próximo ano',
+    yearsLink: 'Anos e etapas',
+    yearKicker: 'Circuito',
+    yearTitle: (year: number, closed: boolean) => (closed ? `${year} encerrado` : String(year)),
+    yearMeta: (stages: number, titles: number, people: number) =>
+      `${stages === 1 ? '1 etapa' : `${stages} etapas`} · ${titles === 1 ? '1 título' : `${titles} títulos`} · ${people === 1 ? '1 integrante' : `${people} integrantes`} no pódio`,
+    whoPodium: 'Quem subiu ao pódio',
+    countingLink: (ofStage: string) => `Apuração ${ofStage}`,
+    nextStarts: (stage: string, date: string) => `${stage} começa em ${date}`,
+    nextDates: (from: string, to: string) => `${from} → ${to}`,
+    yearEmpty: 'Ninguém levou título neste ano ainda.',
+    titles: (n: number) => (n === 1 ? '1 título' : `${n} títulos`),
+    stageStates: { running: 'em andamento', counting: 'em apuração', closed: 'fechada', upcoming: 'ainda não começou' },
+    circuitTitle: 'Meu circuito',
+    circuitOf: (name: string) => `Circuito de ${name}`,
+    titlesInYear: (n: number) => (n === 1 ? '1 título no ano' : `${n} títulos no ano`),
+    noTitles: 'Nenhum título',
+    profileLink: (year: number) => `${year} · ver o circuito`,
+    profileSummary: (n: number, year: number) => (n === 1 ? `1 título em ${year}` : `${n} títulos em ${year}`),
+    profileNone: (year: number) => `Nenhum título em ${year} ainda`,
+    profileStage: (stage: string, end: string) => `${stage} fecha em ${end}`,
+    profileOpen: 'Ver meu circuito',
     /** What each ranking adds to "Faltam N…" after the amount. */
     gapUnits: {
       activities: [' atividade', ' atividades'],

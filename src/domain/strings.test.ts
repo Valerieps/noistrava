@@ -27,3 +27,24 @@ describe('templates.daysLabel', () => {
     expect(label([0, 2, 4])).toBe('seg, qua e sex');
   });
 });
+
+describe('seasons', () => {
+  const s = strings.seasons;
+
+  it('joins names with "e"', () => {
+    expect(s.and([])).toBe('');
+    expect(s.and(['Ana'])).toBe('Ana');
+    expect(s.and(['Ana', 'Bia', 'Cris'])).toBe('Ana, Bia e Cris');
+  });
+
+  it('says who was first but already had 2 titles', () => {
+    expect(s.blockedNote('Bia', false, 'Sprint final', 'Carol')).toBe('Bia foi 1ª em Sprint final, mas já tinha 2 títulos. O título foi para Carol.');
+    expect(s.blockedNote('Ana e Bia', true, 'Multitalento', '')).toBe('Ana e Bia foram 1ª em Multitalento, mas já tinham 2 títulos.');
+  });
+
+  it('counts the days left of the stage', () => {
+    expect(s.runningMeta(38, '17 dez')).toBe('Parcial · faltam 38 dias · fecha em 17 dez');
+    expect(s.runningMeta(1, '17 dez')).toBe('Parcial · falta 1 dia · fecha em 17 dez');
+    expect(s.runningMeta(0, '17 dez')).toBe('Parcial · último dia · fecha em 17 dez');
+  });
+});

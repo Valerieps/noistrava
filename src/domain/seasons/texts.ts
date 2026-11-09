@@ -8,9 +8,15 @@ import { sprintStart, stageDates, type Stage } from './stages';
 
 const s = strings.seasons;
 
-/** "13 out". */
+/** "13 out", "1º jan". */
 export function shortDay(date: CalendarDate): string {
-  return `${Number(date.slice(8, 10))} ${s.shortMonths[Number(date.slice(5, 7)) - 1]}`;
+  const day = Number(date.slice(8, 10));
+  return `${day === 1 ? '1º' : day} ${s.shortMonths[Number(date.slice(5, 7)) - 1]}`;
+}
+
+/** "do Inverno 2026", "da Primavera 2026". */
+export function ofStageName(stage: Stage): string {
+  return `${s.of[stage.season]} ${stageName(stage)}`;
 }
 
 /** "Verão 2027". */

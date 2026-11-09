@@ -56,6 +56,39 @@
   --color-band: #f5f1f7;
   --color-hairline: #efeaf2;
 
+  /* Corrida das Estações: each season's color (icons, medal centers), ink (text on the sheet), hero
+     (the top of its screens) with the text on it, and soft (the lanes' fill). The ink and the text on
+     the hero stay at 4.5:1 or more. Metal is the medals' silver; ink-block, the closed year's top. */
+  --season-summer: #f2b400;
+  --season-summer-ink: #6b4f00;
+  --season-summer-hero: #f2b400;
+  --season-summer-on-hero: #2b2100;
+  --season-summer-soft: #fdeeb8;
+  --season-autumn: #e8602c;
+  --season-autumn-ink: #9e3a12;
+  --season-autumn-hero: #b9461b;
+  --season-autumn-on-hero: #ffffff;
+  --season-autumn-soft: #fbdccd;
+  --season-winter: #2e9bd6;
+  --season-winter-ink: #155e87;
+  --season-winter-hero: #1a6fa0;
+  --season-winter-on-hero: #ffffff;
+  --season-winter-soft: #d3ebf8;
+  --season-spring: #22a67f;
+  --season-spring-ink: #136148;
+  --season-spring-hero: #16805f;
+  --season-spring-on-hero: #ffffff;
+  --season-spring-soft: #cdeee1;
+  --color-metal-hi: #f1f2f5;
+  --color-metal-mid: #c5c8ce;
+  --color-metal-lo: #868a93;
+  --color-metal-in: #a9adb5;
+  --color-metal-ink: #4c5058;
+  --color-ink-block: #231942;
+  --color-on-ink-block: #ffffff;
+  --color-warn-soft: #fff3d6;
+  --color-warn-ink: #6b4f00;
+
   --font-sans: Figtree, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-display: 'Bricolage Grotesque', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-size-base: 15px;
@@ -130,6 +163,27 @@
     --color-sheet: #19131f;
     --color-band: #110d15;
     --color-hairline: #2c2337;
+
+    --season-summer-ink: #ffd75e;
+    --season-summer-soft: #4a3a0a;
+    --season-autumn-ink: #ff9b70;
+    --season-autumn-hero: #8f3412;
+    --season-autumn-soft: #4a2414;
+    --season-winter-ink: #7cc8f2;
+    --season-winter-hero: #12557d;
+    --season-winter-soft: #163a50;
+    --season-spring-ink: #6fd6b2;
+    --season-spring-hero: #0f5c44;
+    --season-spring-soft: #1d4a3b;
+    --color-metal-hi: #e6e8ec;
+    --color-metal-mid: #aeb2ba;
+    --color-metal-lo: #6c7079;
+    --color-metal-in: #8e929b;
+    --color-metal-ink: #34373d;
+    --color-ink-block: #0e0a12;
+    --color-on-ink-block: #f4eef7;
+    --color-warn-soft: #3a3016;
+    --color-warn-ink: #ffd75e;
   }
 }
 
@@ -176,4 +230,25 @@
   --color-sheet: #19131f;
   --color-band: #110d15;
   --color-hairline: #2c2337;
+
+  --season-summer-ink: #ffd75e;
+  --season-summer-soft: #4a3a0a;
+  --season-autumn-ink: #ff9b70;
+  --season-autumn-hero: #8f3412;
+  --season-autumn-soft: #4a2414;
+  --season-winter-ink: #7cc8f2;
+  --season-winter-hero: #12557d;
+  --season-winter-soft: #163a50;
+  --season-spring-ink: #6fd6b2;
+  --season-spring-hero: #0f5c44;
+  --season-spring-soft: #1d4a3b;
+  --color-metal-hi: #e6e8ec;
+  --color-metal-mid: #aeb2ba;
+  --color-metal-lo: #6c7079;
+  --color-metal-in: #8e929b;
+  --color-metal-ink: #34373d;
+  --color-ink-block: #0e0a12;
+  --color-on-ink-block: #f4eef7;
+  --color-warn-soft: #3a3016;
+  --color-warn-ink: #ffd75e;
 }

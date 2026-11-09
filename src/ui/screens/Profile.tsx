@@ -15,6 +15,7 @@ import { Link } from '../router';
 import { useQuery } from '../use-query';
 import { EarnedBadges, NextBadge } from './profile/Badges';
 import { MonthCalendar } from './profile/MonthCalendar';
+import { ProfileCircuit } from './Seasons';
 import { WindowIndex } from './profile/WindowIndex';
 
 const TOPICS = ['activities', 'challenge', 'history'] as const;
@@ -58,6 +59,8 @@ export function Profile({ me }: { me: MeView }) {
               </>
             )}
             <Habits tracking={t} />
+            {band}
+            <ProfileCircuit />
             {band}
             <section className="sheet-section">
               <div className="sheet-head">

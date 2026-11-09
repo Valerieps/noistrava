@@ -293,6 +293,15 @@ export interface SeasonCircuitView {
   }[];
 }
 
+/** My choice of the Corrida das Estações notices, all on until I change them. */
+export interface SeasonNoticesView {
+  readonly podium: boolean;
+  readonly title: boolean;
+  readonly year: boolean;
+  /** My devices that receive a push with content (ADR-013). */
+  readonly devices: number;
+}
+
 /** Reads: `POST /api/query/<name>`. They never change anything. */
 export interface Queries {
   me: { input: Record<string, never>; output: MeView };
@@ -322,6 +331,7 @@ export interface Queries {
   seasonYear: { input: { year?: number }; output: SeasonYearView };
   /** Without a member, mine; without a year, the current one. */
   seasonCircuit: { input: { memberId?: string; year?: number }; output: SeasonCircuitView };
+  seasonNotices: { input: Record<string, never>; output: SeasonNoticesView };
 }
 
 /** Writes: `POST /api/command/<name>`. Each runs alone, in one transaction. */
@@ -364,6 +374,7 @@ export interface Commands {
   /** Updates the keys of a device already mine; never takes another member's device. */
   'push.refreshKeys': { input: { endpoint: string } & PushKeys; output: ReminderView };
   'push.unsubscribe': { input: { endpoint: string }; output: ReminderView };
+  'seasonNotices.set': { input: { podium: boolean; title: boolean; year: boolean }; output: SeasonNoticesView };
 }
 
 export type QueryName = keyof Queries;

@@ -8,8 +8,10 @@ Um termo, um sentido. Estes nomes valem para os textos da interface e para as do
 
 - **Acompanhamento:** as métricas e os selos do meu perfil, que só eu vejo. (`spec/acompanhamento.md`)
 - **Admin:** integrante que convida, remove, dá papéis e apaga desafios. Sempre há pelo menos um. (`spec/acesso-e-membros.md`)
+- **Apuração:** as duas semanas depois de uma etapa da Corrida das Estações, em que as atividades não contam para nenhuma etapa e o resultado ainda é provisório. (`spec/corrida-das-estacoes.md`)
 - **Atividade:** um exercício de uma pessoa, com início, tempo total e modalidade; vem do Strava ou do registro manual. Pertence à pessoa, não ao desafio. (`spec/atividades.md`)
 - **Atividade modelo:** uma atividade que eu repito, cadastrada antes com modalidade, tempo, dias e hora, para registrar à mão só escolhendo e confirmando. (`spec/atividades.md`)
+- **Circuito:** os títulos que uma integrante levou em cada etapa de um ano, no losango das quatro estações. (`spec/corrida-das-estacoes.md`)
 - **Convite:** permissão para um e-mail entrar no grupo; pendente, aceito ou revogado. (`spec/acesso-e-membros.md`)
 - **Corrente:** tipo de desafio em que todo dia do período precisa de pelo menos uma Senhora ativa. (`spec/desafio-corrente.md`)
 - **Corrida das Estações:** a disputa trimestral de todo o grupo, com rankings e títulos, sem precisar aceitar um desafio. (`spec/corrida-das-estacoes.md`)

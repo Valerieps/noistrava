@@ -11,7 +11,8 @@ export async function sendReminders(env: Env, group: DurableObjectStub<Group>): 
   // Previews and local runs without the secret never send pushes; the reminders stay unsent.
   if (!key) return;
   const plain = ((await group.remindersDue()) as string[]).map((endpoint) => ({ endpoint, content: undefined }));
-  const window = ((await group.windowRemindersDue()) as PushMessage[]).map((m) => ({ endpoint: m.endpoint, content: { keys: m.keys, payload: m.payload } }));
+  const withContent = [...((await group.windowRemindersDue()) as PushMessage[]), ...((await group.seasonNoticesDue()) as PushMessage[])];
+  const window = withContent.map((m) => ({ endpoint: m.endpoint, content: { keys: m.keys, payload: m.payload } }));
   await Promise.all(
     [...plain, ...window].map(async ({ endpoint, content }) => {
       try {

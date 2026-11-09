@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { addDays } from '../time/zones';
-import { awardTitles, gapFor, standings, wholeWeeks, type RaceActivity, type RankingKey, type Standings } from './rankings';
+import { awardTitles, gapFor, laneProgress, standings, wholeWeeks, type RaceActivity, type RankingKey, type Standings } from './rankings';
 import {
   compareStages,
   inRace,
@@ -265,3 +265,13 @@ describe('gapFor and gapText', () => {
   });
 });
 
+
+describe('laneProgress', () => {
+  it('puts me along the lane by my value against the first', () => {
+    expect(laneProgress('hours', 100, 25, 3)).toBe(0.25);
+    expect(laneProgress('steady', 0.1, 0.4, 2)).toBe(0.25);
+    expect(laneProgress('hours', 100, 100, 1)).toBe(1);
+    expect(laneProgress('comeback', 100, -20, null)).toBe(0);
+    expect(laneProgress('weekend', null, 0, null)).toBe(0);
+  });
+});

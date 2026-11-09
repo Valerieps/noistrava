@@ -214,6 +214,22 @@ export const MIGRATIONS: readonly (readonly string[])[] = [
     )`,
     `CREATE INDEX season_results_member ON season_results(member_id)`,
   ],
+  // 13: the notices of the Corrida das Estações: each member's choice (no row: all on) and what
+  // already went to her, so nothing goes twice.
+  [
+    `CREATE TABLE season_notice_settings (
+      member_id TEXT PRIMARY KEY REFERENCES members(id),
+      podium INTEGER NOT NULL,
+      title INTEGER NOT NULL,
+      year INTEGER NOT NULL
+    )`,
+    `CREATE TABLE season_notices_sent (
+      member_id TEXT NOT NULL REFERENCES members(id),
+      notice TEXT NOT NULL,
+      sent_at TEXT NOT NULL,
+      PRIMARY KEY (member_id, notice)
+    )`,
+  ],
 ];
 
 export function migrate(sql: Sql): void {
