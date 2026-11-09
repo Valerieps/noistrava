@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { addDays } from '../time/zones';
-import { closingWindow, indexSeries, indexZone, monthIndex, windowStates } from './window-index';
+import { closingWindow, indexSeries, indexZone, monthIndex, weekIndex, windowStates } from './window-index';
 
 /** The active days of a timeline, `x` for an active day and `.` for a pause, ending on `today`. */
 function days(timeline: string, today: string): string[] {
@@ -99,6 +99,26 @@ describe('monthIndex', () => {
 
   it('is null for a month before my first active day', () => {
     expect(monthIndex(windowStates(days('x', TODAY), TODAY), '2026-10')).toBeNull();
+  });
+});
+
+describe('weekIndex', () => {
+  it('counts the whole week, across two months, up to today', () => {
+    // 2026-10-26 (Monday) to 2026-11-02: x . . . x x x x
+    const states = windowStates(days('x...xxxx', TODAY), TODAY);
+    expect(weekIndex(states, '2026-10-26')).toBe(57);
+    expect(weekIndex(states, '2026-11-02')).toBe(100);
+  });
+
+  it('counts only from my first active day', () => {
+    // 2026-10-29 to 2026-11-02: x . x . x
+    expect(weekIndex(windowStates(days('x.x.x', TODAY), TODAY), '2026-10-26')).toBe(100);
+  });
+
+  it('is null for a week before my first active day or after today', () => {
+    const states = windowStates(days('x', TODAY), TODAY);
+    expect(weekIndex(states, '2026-10-26')).toBeNull();
+    expect(weekIndex(states, '2026-11-09')).toBeNull();
   });
 });
 
