@@ -1,11 +1,11 @@
 // The month calendar of my window of benefits (docs/spec/acompanhamento.md, "O meu ritmo"): active
 // days with their sport, days kept by a short pause, days lost in a long one, today with a ring, the
-// days still to come dashed, the month's Índice de Aproveitamento, and arrows back to the months I
-// was active.
+// days still to come dashed, the month's Índice de Aproveitamento and each week's at the end of its
+// row, and arrows back to the months I was active.
 import { useState } from 'react';
 import type { DayTotal } from '../../../domain/tracking/tracking';
-import { visibleMonth, weekday } from '../../../domain/tracking/tracking';
-import { indexZone, monthIndex, windowStates, type WindowState } from '../../../domain/tracking/window-index';
+import { visibleMonth, weekday, weekStart } from '../../../domain/tracking/tracking';
+import { indexZone, monthIndex, weekIndex, windowStates, type WindowState } from '../../../domain/tracking/window-index';
 import { formatDuration } from '../../../domain/challenge/progress';
 import { strings } from '../../../domain/strings';
 import { formatDayMonth, formatMonth } from '../../format';
@@ -67,6 +67,7 @@ export function MonthCalendar({ days, today }: { days: readonly DayTotal[]; toda
             {initial}
           </span>
         ))}
+        <span />
       </div>
       <ol className="month-grid">
         {dates.map((date, i) => {
@@ -74,7 +75,9 @@ export function MonthCalendar({ days, today }: { days: readonly DayTotal[]; toda
           const future = date > today;
           const state = future ? undefined : states.get(date);
           const classes = ['month-day', future ? 'future' : state ? `window-${state}` : '', date === today ? 'today' : ''].join(' ');
-          return (
+          const weekEnds = weekday(date) === 6 || i === dates.length - 1;
+          const week = weekEnds ? weekIndex(states, weekStart(date)) : null;
+          return [
             <li
               key={date}
               className={classes}
@@ -83,8 +86,13 @@ export function MonthCalendar({ days, today }: { days: readonly DayTotal[]; toda
               aria-current={date === today ? 'date' : undefined}
             >
               {state === 'active' && day && (day.sports.length > 1 ? <SeveralSportsIcon /> : <SportIcon sport={day.sports[0]} />)}
-            </li>
-          );
+            </li>,
+            week !== null && (
+              <li key={`week-${date}`} className={`month-week-index index-percent-inline ${indexZone(week)}`} aria-label={t.weekIndexLabel(week)}>
+                {week}%
+              </li>
+            ),
+          ];
         })}
       </ol>
       <div className="month-legend" aria-hidden="true">

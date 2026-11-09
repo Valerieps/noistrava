@@ -70,19 +70,34 @@ export function windowStates(activeDays: readonly CalendarDate[], today: Calenda
   return new Map(windowDays(active, first, today).map((d) => [d.date, d.state]));
 }
 
+/** Of the given days that count (from my first active day up to today), the share that kept the window. */
+function keptShare(states: ReadonlyMap<CalendarDate, WindowState>, counts: (date: CalendarDate) => boolean): number | null {
+  let counted = 0;
+  let kept = 0;
+  for (const [date, state] of states) {
+    if (!counts(date)) continue;
+    counted++;
+    if (state !== 'lost') kept++;
+  }
+  return counted ? Math.round((kept / counted) * 100) : null;
+}
+
 /**
  * The index of a month, as known today: of its days from my first active day up to today, the
  * share that kept the window. Null when none of its days counts yet.
  */
 export function monthIndex(states: ReadonlyMap<CalendarDate, WindowState>, month: string): number | null {
-  let counted = 0;
-  let kept = 0;
-  for (const [date, state] of states) {
-    if (!date.startsWith(`${month}-`)) continue;
-    counted++;
-    if (state !== 'lost') kept++;
-  }
-  return counted ? Math.round((kept / counted) * 100) : null;
+  return keptShare(states, (date) => date.startsWith(`${month}-`));
+}
+
+/**
+ * The index of the week that starts on `monday`, as known today: of its seven days, those from my
+ * first active day up to today, the share that kept the window, whichever month they are in.
+ * Null when none of its days counts yet.
+ */
+export function weekIndex(states: ReadonlyMap<CalendarDate, WindowState>, monday: CalendarDate): number | null {
+  const sunday = addDays(monday, 6);
+  return keptShare(states, (date) => date >= monday && date <= sunday);
 }
 
 /**

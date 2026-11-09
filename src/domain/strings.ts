@@ -472,6 +472,7 @@ export const strings = {
     activeDays: (n: number) => (n === 1 ? '1 dia ativo' : `${n} dias ativos`),
     emptyMonth: 'Nenhuma atividade neste mês ainda.',
     monthIndex: 'Índice de Aproveitamento do mês',
+    weekIndexLabel: (percent: number) => `Índice de Aproveitamento da semana: ${percent}%`,
     windowStates: { active: 'ativo', kept: 'na janela', lost: 'pausa longa' },
     dayLabel: (day: string, time: string | null, state: string | null) =>
       `${day}: ${time ?? 'sem atividade'}${state && state !== 'ativo' ? `, ${state}` : ''}`,

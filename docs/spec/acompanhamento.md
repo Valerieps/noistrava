@@ -70,6 +70,11 @@ No meu perfil, eu acompanho o meu ritmo e ganho selos, para manter a constância
   dia que conte não mostra o índice. *(2)*
   Por quê: o calendário mostra onde a janela se manteve e onde se perdeu, que é o que o índice
   conta.
+- No fim de cada linha do calendário, eu vejo o Índice de Aproveitamento daquela semana, de
+  segunda a domingo, na cor da zona dele: dos dias da semana que contam, a porcentagem que manteve
+  a janela. Contam os mesmos dias do índice do mês, mas a semana é inteira mesmo quando cai entre
+  dois meses: ela aparece com o mesmo índice nos dois. Uma semana sem nenhum dia que conte não
+  mostra o índice. *(2)*
 - O meu normal é a média do meu tempo nas 4 semanas completas anteriores, contando as semanas
   paradas como zero. Sem nenhuma atividade nessas 4 semanas, eu não tenho normal e nenhuma
   comparação aparece. *(2)*
