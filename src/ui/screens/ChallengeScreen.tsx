@@ -14,7 +14,7 @@ import { MoreIcon, PlusIcon } from '../icons';
 import { Link, navigate } from '../router';
 import { useQuery } from '../use-query';
 import { ActivityLog } from './challenge/ActivityLog';
-import { ChainHero, ChainPanel } from './challenge/ChainPanel';
+import { ChainHero, ChainLinks, ChainPanel } from './challenge/ChainPanel';
 import { Highlights } from './challenge/Highlights';
 import { JourneyMap } from './challenge/JourneyMap';
 import { journeyNumbers, ProgressFigure, PaceNote, useProgressView, ViewPicker, type ProgressNumbers } from './challenge/ProgressPanel';
@@ -182,6 +182,7 @@ function Challenge({ me, challenge, reload }: { me: MeView; challenge: Challenge
       </header>
 
       <div className="sheet">
+        {open && chain && <ChainLinks chain={chain} />}
         {open && !chain && (journey ? (
           <ProgressFigure
             view={view}
