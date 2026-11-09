@@ -12,7 +12,7 @@ O que ainda não está pronto.
 | Feature | Fase | Spec | Observação |
 | --- | --- | --- | --- |
 | Jornada: postal de cada marco (foto e resumo do lugar), "Onde estamos" e números do caminho (países, rios) | 1 | `spec/desafio-horas.md` | Estão nos rascunhos; precisam de dados que o servidor não tem |
-| Corrida das Estações: etapas trimestrais, rankings e títulos | 2 | `spec/corrida-das-estacoes.md` | Depende do Índice de Aproveitamento da semana; fase em aberto |
+| Corrida das Estações: a aba Estações, etapas trimestrais, rankings, títulos, o circuito no perfil e os avisos | 2 | `spec/corrida-das-estacoes.md`, `spec/notificacoes.md` | Depende do Índice de Aproveitamento da semana |
 | Notificações do desafio (o lembrete do Fabrício já existe) | 2 | `spec/notificacoes.md`, `spec/desafio-horas.md`, `spec/desafio-corrente.md` | Regras em aberto |
 
 ## O código ainda não segue o spec
@@ -23,6 +23,9 @@ O que ainda não está pronto.
   só o fundo listrado.
 
 ## Revisar as lacunas que o agente decidiu
+
+- [ ] Avisos da Corrida das Estações (`spec/notificacoes.md`): quando cada um chega (o do ano, em
+  18 de dezembro) e os textos dos três.
 
 - [ ] Corrida das Estações (`spec/corrida-das-estacoes.md`): as atividades das duas semanas de
   apuração não contam para nenhuma etapa; na apuração, o resultado ainda muda, e fecha no primeiro

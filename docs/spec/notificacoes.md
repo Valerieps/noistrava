@@ -1,7 +1,7 @@
 # Notificações
 
-Eu recebo, no celular ou no computador, um lembrete para registrar as minhas atividades e um aviso
-no dia em que a minha janela de benefícios fecha.
+Eu recebo, no celular ou no computador, um lembrete para registrar as minhas atividades, um aviso
+no dia em que a minha janela de benefícios fecha e os avisos da Corrida das Estações.
 
 - **Entra aqui:** quais notificações existem, quem as recebe, quando chegam e como eu as configuro.
 - **Não entra aqui:** como o push funciona por dentro (ADR-012) e o registro de uma atividade
@@ -11,7 +11,6 @@ no dia em que a minha janela de benefícios fecha.
 
 - [ ] Quais notificações do desafio existem e quando chegam: as perguntas estão em
   [desafio-horas.md](desafio-horas.md) e [desafio-corrente.md](desafio-corrente.md).
-
 ## O lembrete do Fabrício
 
 - O primeiro lembrete é o de registrar as atividades. É uma brincadeira
@@ -54,3 +53,19 @@ no dia em que a minha janela de benefícios fecha.
   até uma hora depois, e vale para qualquer integrante. Tocar nele abre o app. *(2)*
 - Num navegador que não dá as chaves para cifrar o conteúdo do push, o lembrete da janela não
   liga, e o app avisa. *(2)*
+
+## Os avisos da Corrida das Estações
+
+- A [Corrida das Estações](corrida-das-estacoes.md) tem três avisos: *(2)*
+
+  | Aviso | Quando chega | Texto |
+  | --- | --- | --- |
+  | O pódio saiu | No primeiro dia do trimestre seguinte, quando o resultado da etapa fecha | "🏅 Saiu o pódio do Inverno 2026! Veja quem levou cada título." |
+  | Eu levei um título | Junto com o pódio, um por título | "Você é a Maratonista do Inverno 2026! 🏅" |
+  | O ano acabou | Em 18 de dezembro, quando a Primavera acaba e a aba abre no resumo do ano | "☀️🍁❄️🌸 O circuito 2026 acabou! Veja o resumo do ano." |
+
+- Eu escolho, na mesma tela dos lembretes, se recebo cada um dos três, separado dos outros. Até eu
+  mudar, os três ficam ligados. *(2)*
+- Eles chegam nos aparelhos em que eu liguei as notificações, na hora em que o servidor percebe o
+  momento, sem hora marcada, e valem para qualquer integrante. Tocar num deles abre a aba
+  Estações. *(2)*

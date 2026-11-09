@@ -3,14 +3,12 @@
 A cada trimestre, todo o grupo disputa rankings e títulos, sem precisar aceitar um desafio, para
 premiar quem se mexeu e de jeitos diferentes.
 
-- **Entra aqui:** as etapas e as datas delas, quem disputa, os rankings, os títulos e quem vê o quê.
+- **Entra aqui:** as etapas e as datas delas, quem disputa, os rankings, os títulos, quem vê o quê
+  e onde eu vejo.
 - **Não entra aqui:** como se calcula o Índice de Aproveitamento da semana
-  ([acompanhamento.md](acompanhamento.md)), os campos de uma atividade ([atividades.md](atividades.md))
-  e os desafios ([desafio-horas.md](desafio-horas.md), [desafio-corrente.md](desafio-corrente.md)).
-
-## Em aberto
-
-- [ ] De que fase é a Corrida das Estações? Até a decisão, este arquivo usa *(2)*.
+  ([acompanhamento.md](acompanhamento.md)), os campos de uma atividade ([atividades.md](atividades.md)),
+  os desafios ([desafio-horas.md](desafio-horas.md), [desafio-corrente.md](desafio-corrente.md)) e
+  os avisos ([notificacoes.md](notificacoes.md)).
 
 ## Etapas
 
@@ -92,8 +90,40 @@ continuando empatadas, elas dividem a posição.
 
 ## Quem vê
 
-- Todo o grupo vê os rankings e os títulos, da etapa em andamento e das etapas fechadas. *(2)*
+- Todo o grupo vê, de cada ranking, quem está em primeiro, e os títulos, da etapa em andamento e
+  das etapas fechadas. *(2)*
+- A minha posição em cada ranking, e o quanto me falta para chegar ao primeiro lugar, só eu vejo.
+  Ninguém vê a posição das outras, só a primeira colocada. *(2)*
+- Quando eu estou em primeiro, eu vejo só isso, sem a minha vantagem sobre a segunda. *(2)*
 - Do Sem Perder o Embalo, o grupo vê só quantas semanas cada uma teve entre 85% e 100%. O índice de cada semana, o
   calendário e o resto do meu acompanhamento continuam só meus. *(2)*
   Por quê: é a única exceção à regra de que o acompanhamento não vira ranking, e ela mostra só o
   resultado, não os detalhes.
+- Eu posso ver os títulos que cada integrante levou ao longo do ano. *(2)*
+
+## Onde eu vejo
+
+- A Corrida das Estações tem a sua aba no menu de baixo, "Estações", a segunda, entre Desafio e
+  Histórico. O ícone da aba é o da etapa em andamento: sol no Verão, folha no Outono, floco no
+  Inverno e flor na Primavera. *(2)*
+- Cada etapa tem a cor e o ícone da sua estação. Cada título é uma medalha: o símbolo do ranking no
+  centro, na cor da estação, e o ícone da estação no selo da borda. *(2)*
+  Por quê: é uma brincadeira com uma corrida de rua famosa no Brasil, que dá uma medalha com o
+  ícone da estação em cada etapa.
+- Durante a etapa, a aba mostra a etapa em andamento: de cada ranking, quem está em primeiro e, só
+  para mim, a minha posição e o quanto me falta para chegar ao primeiro lugar. *(2)*
+- Na apuração, eu vejo a minha posição como provisória, sem o quanto falta. A aba avisa que as
+  atividades desses dias não contam para nenhuma etapa. *(2)*
+- Quando a etapa fecha, eu vejo o pódio dela: a medalha de cada ranking e quem levou. *(2)*
+- Quando a Primavera acaba, de 18 a 31 de dezembro, a aba abre no resumo do ano. No 1º de janeiro, o
+  Verão começa e a aba passa a abrir nele. *(2)*
+  Por quê: o início de uma estação nova sempre toma o lugar da tela anterior.
+- O resumo do ano mostra as integrantes que levaram título, em ordem alfabética, com os títulos de
+  cada uma; tocando no nome de uma, eu vejo os títulos que ela levou no ano. Até 31 de dezembro, os
+  títulos da Primavera aparecem como provisórios. *(2)*
+- Eu vejo as etapas e os anos já fechados, com os pódios e os títulos. *(2)*
+- No meu perfil, logo acima dos Selos, eu vejo os meus títulos do ano num losango com as quatro
+  estações, com o número de títulos em cada uma. Tocando nele, eu abro o meu circuito: as medalhas
+  que levei em cada etapa do ano, e os anos anteriores. *(2)*
+- Eu recebo um aviso quando uma etapa fecha, quando eu levo um título e quando o ano fecha
+  ([notificacoes.md](notificacoes.md)). *(2)*
