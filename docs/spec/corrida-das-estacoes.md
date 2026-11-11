@@ -99,12 +99,17 @@ continuando empatadas, elas dividem a posição.
 - Todo o grupo vê, de cada ranking, quem está em primeiro, e os títulos, da etapa em andamento e
   das etapas fechadas. *(2)*
 - A minha posição em cada ranking, e o quanto me falta para chegar ao primeiro lugar, só eu vejo.
-  Ninguém vê a posição das outras, só a primeira colocada. *(2)*
+  Das outras, ninguém vê o nome nem a posição, só a primeira colocada. *(2)*
+- Na faixa de cada ranking, eu vejo onde estão as outras integrantes do ranking, cada uma como um
+  círculo vazio, sem nome e sem foto. Quem empata fica no mesmo ponto, com os círculos um pouco
+  sobrepostos. *(2)*
+  Por quê: saber se eu estou no meio do pelotão ou sozinha lá atrás, sem expor quem é quem.
 - O quanto falta é para eu igualar a primeira no que o ranking conta, como "Faltam 8 atividades para
   alcançar a 1ª". Quando eu já igualo e perco no desempate, eu vejo qual é o desempate. Fora de um
   ranking, eu vejo por quê: o Sprint final ainda não começou, ou faltou atividade numa semana do
   Relógio Suíço. *(2)*
-- Quando eu estou em primeiro, eu vejo só isso, sem a minha vantagem sobre a segunda. *(2)*
+- Quando eu estou em primeiro, o texto diz só isso, sem a minha vantagem sobre a segunda; a faixa
+  mostra a distância até os círculos das outras, sem número. *(2)*
 - Do Sem Perder o Embalo, o grupo vê só quantas semanas cada uma teve entre 85% e 100%. O índice de cada semana, o
   calendário e o resto do meu acompanhamento continuam só meus. *(2)*
   Por quê: é a única exceção à regra de que o acompanhamento não vira ranking, e ela mostra só o

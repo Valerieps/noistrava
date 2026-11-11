@@ -154,6 +154,21 @@ function leaderText(r: SeasonRankingView, meId: string): string {
   return `${s.and(r.leaders.map((p) => (p.memberId === meId ? s.you : p.name)))} · ${valueText(r.key, r.leaderValue)}`;
 }
 
+/** How far a tied circle moves from the next one: they overlap a little, so a tie still shows. */
+const TIE_SHIFT = 6;
+
+/** The others' anonymous circles: where each one is, and tied ones spread around the same point. */
+function othersOnLane(r: SeasonRankingView): { progress: number; shift: number }[] {
+  const ties = new Map<number, number>();
+  for (const value of r.others) ties.set(value, (ties.get(value) ?? 0) + 1);
+  const seen = new Map<number, number>();
+  return r.others.map((value) => {
+    const i = seen.get(value) ?? 0;
+    seen.set(value, i + 1);
+    return { progress: laneProgress(r.key, r.leaderValue, value, null), shift: (i - ((ties.get(value) ?? 1) - 1) / 2) * TIE_SHIFT };
+  });
+}
+
 function Lane({
   ranking: r,
   view,
@@ -188,9 +203,13 @@ function Lane({
           <span className="lane-leader">{leader}</span>
         </span>
         <span className={`lane-track${r.leaders.length === 0 ? ' off' : ''}`} aria-hidden="true">
+          {r.me.position !== null || progress > 0 ? <span className="lane-fill" style={{ width: `${progress * 100}%` }} /> : null}
+          {r.leaders.length > 0 &&
+            othersOnLane(r).map((o, i) => (
+              <span key={i} className="lane-other" style={{ left: `calc(12px + (100% - 24px) * ${o.progress} + ${o.shift}px)` }} />
+            ))}
           {r.me.position !== null || progress > 0 ? (
             <>
-              <span className="lane-fill" style={{ width: `${progress * 100}%` }} />
               <span className="lane-me" style={{ left: `calc(12px + (100% - 24px) * ${progress})` }}>
                 {r.me.position ? s.position(r.me.position) : ''}
               </span>
