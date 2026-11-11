@@ -13,7 +13,9 @@
     "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.server.json && tsc --noEmit -p tsconfig.worker-test.json",
     "deploy": "wrangler deploy",
     "docs:check": "node scripts/check-docs.mjs",
-    "setup:repo": "node scripts/setup-repo.mjs"
+    "setup:repo": "node scripts/setup-repo.mjs",
+    "ship": "node scripts/ship.mjs",
+    "branches": "node scripts/branches.mjs"
   },
   "dependencies": {
     "leaflet": "1.9.4",
