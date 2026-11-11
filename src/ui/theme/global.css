@@ -3045,12 +3045,8 @@ button:disabled {
   height: 11px;
   border-radius: 50%;
   border: 1.5px solid var(--color-sheet);
-  background: var(--season);
+  background: var(--color-hero);
   transform: translate(-50%, -50%);
-}
-
-.lanes.counting .lane-other {
-  background: var(--color-metal-lo);
 }
 
 .lane-lead {
