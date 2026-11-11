@@ -58,15 +58,13 @@ describe('seasonStage', () => {
     expect(ranking(BIA, 'hours')).toMatchObject({ leaders: [{ name: 'Ana' }], leaderValue: 180 * 60 });
   });
 
-  it('gives me my own place and what I miss, and nobody else’s place', () => {
+  it('gives me my own place and what I miss, and the others only as anonymous values', () => {
     expect(ranking(BIA, 'hours').me).toEqual({ position: 2, value: 30 * 60, gap: { kind: 'behind', position: 2, missing: 150 * 60, tied: false } });
     expect(ranking(ANA, 'hours').me).toEqual({ position: 1, value: 180 * 60, gap: { kind: 'leader' } });
-    // Cris's third place and Bia's lead over her reach neither Ana nor Bia.
-    for (const hash of [ANA, BIA]) {
-      const text = JSON.stringify(stage(hash));
-      expect(text).not.toContain(String(20 * 60));
-      expect(text).not.toContain('Cris');
-    }
+    expect(ranking(BIA, 'hours').others).toEqual([20 * 60]);
+    expect(ranking(ANA, 'hours').others).toEqual([20 * 60, 30 * 60]);
+    // Cris is a value on the lane, never a name or a place.
+    for (const hash of [ANA, BIA]) expect(JSON.stringify(stage(hash))).not.toContain('Cris');
   });
 
   it('follows a new activity at once', () => {

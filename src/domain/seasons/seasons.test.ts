@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { addDays } from '../time/zones';
-import { awardTitles, gapFor, laneProgress, standings, wholeWeeks, type RaceActivity, type RankingKey, type Standings } from './rankings';
+import { awardTitles, gapFor, laneProgress, othersOf, standings, wholeWeeks, type RaceActivity, type RankingKey, type Standings } from './rankings';
 import {
   compareStages,
   inRace,
@@ -265,6 +265,21 @@ describe('gapFor and gapText', () => {
   });
 });
 
+
+describe('othersOf', () => {
+  it('leaves out me and the first ones, smallest first', () => {
+    const entries = [
+      { memberId: 'a', position: 1, value: 9 },
+      { memberId: 'b', position: 1, value: 9 },
+      { memberId: 'c', position: 3, value: 7 },
+      { memberId: 'me', position: 4, value: 5 },
+      { memberId: 'd', position: 5, value: 2 },
+      { memberId: 'e', position: 5, value: 2 },
+    ];
+    expect(othersOf(entries, 'me')).toEqual([2, 2, 7]);
+    expect(othersOf(entries, 'a')).toEqual([2, 2, 5, 7]);
+  });
+});
 
 describe('laneProgress', () => {
   it('puts me along the lane by my value against the first', () => {

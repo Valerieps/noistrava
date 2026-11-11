@@ -244,6 +244,17 @@ export function gapFor(ranking: Ranking, memberId: string): Gap {
 }
 
 /**
+ * The values of the others in a ranking, for their anonymous circles on my lane: everyone but me and
+ * the first ones (already at the finish), smallest first, so the order says nothing of who is who.
+ */
+export function othersOf(entries: readonly { readonly memberId: string; readonly position: number; readonly value: number }[], meId: string): number[] {
+  return entries
+    .filter((e) => e.position !== 1 && e.memberId !== meId)
+    .map((e) => e.value)
+    .sort((a, b) => a - b);
+}
+
+/**
  * How far along the lane to the first place I am, from 0 to 1, for the Estações tab: my value over
  * the first's (the first's over mine in the Relógio Suíço, where less is better).
  */

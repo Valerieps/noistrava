@@ -1,7 +1,8 @@
 // The Corrida das Estações (docs/spec/corrida-das-estacoes.md): the live rankings of a stage, its
 // result once it closes, and each member's titles. The nine rankings are computed together, once
 // per change of the activities, and shared by every read until the next change. Privacy: of each
-// ranking, the API gives the first place to everyone and the viewer only her own place.
+// ranking, the API gives the first place to everyone, the viewer her own place, and the others'
+// values without names or positions.
 import type {
   SeasonCircuitView,
   SeasonPerson,
@@ -11,7 +12,7 @@ import type {
   SeasonTitleView,
   SeasonYearView,
 } from '../../src/application/api-contract';
-import { awardTitles, gapFor, leadersOf, RANKINGS, standings, type RaceMember, type RankingKey, type Standings } from '../../src/domain/seasons/rankings';
+import { awardTitles, gapFor, leadersOf, othersOf, RANKINGS, standings, type RaceMember, type RankingKey, type Standings } from '../../src/domain/seasons/rankings';
 import {
   compareStages,
   FIRST_STAGE,
@@ -176,6 +177,7 @@ function liveView(ctx: Context, actor: Member, stage: Stage, status: 'running' |
       leaderValue: leaders[0]?.value ?? null,
       titleHolders: titles ? titles[key].holders.map(person) : [],
       blockedLeaders: titles ? titles[key].blockedLeaders.map(person) : [],
+      others: othersOf(ranking.entries, actor.id),
       me: { position: entry?.position ?? null, value, gap: status === 'running' ? gapFor(ranking, actor.id) : null },
     };
   });
@@ -204,6 +206,7 @@ function closedView(ctx: Context, actor: Member, stage: Stage): SeasonRankingVie
       leaderValue: leaders[0]?.value ?? null,
       titleHolders: ranking.filter((r) => r.title === 1).map(person),
       blockedLeaders: leaders.filter((r) => r.title === 0).map(person),
+      others: othersOf(ranking.map((r) => ({ memberId: r.member_id, position: r.position, value: r.value })), actor.id),
       me: { position: mine?.position ?? null, value: mine?.value ?? null, gap: null },
     };
   });

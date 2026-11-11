@@ -233,8 +233,8 @@ export interface SeasonPerson {
 }
 
 /**
- * One ranking as I may see it: the first place, which the whole group sees, and my own place only.
- * Never anyone else's position, nor the first's lead over the second.
+ * One ranking as I may see it: the first place, which the whole group sees, my own place, and the
+ * others' values without names. Never anyone else's position or name, nor the first's lead as text.
  */
 export interface SeasonRankingView {
   readonly key: RankingKey;
@@ -244,6 +244,8 @@ export interface SeasonRankingView {
   /** Once the stage closes: who took the title, and the first ones who already had 2. */
   readonly titleHolders: readonly SeasonPerson[];
   readonly blockedLeaders: readonly SeasonPerson[];
+  /** The values of everyone else in the ranking but the first ones, anonymous, smallest first. */
+  readonly others: readonly number[];
   readonly me: {
     /** Null when I am not in the ranking. */
     readonly position: number | null;
