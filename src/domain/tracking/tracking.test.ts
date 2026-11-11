@@ -8,7 +8,7 @@ const NOW = new Date('2026-10-28T12:00:00Z');
 
 describe('dates', () => {
   it('reads an activity in its own zone, and weeks start on Monday', () => {
-    expect(localTime('2026-10-27T02:00:00Z', 'America/Sao_Paulo')).toEqual({ date: '2026-10-26', hour: 23 });
+    expect(localTime('2026-10-27T02:00:00Z', 'America/Sao_Paulo')).toEqual({ date: '2026-10-26', hour: 23, minute: 0 });
     expect(weekStart('2026-11-01')).toBe('2026-10-26');
     expect(weekStart('2026-10-26')).toBe('2026-10-26');
   });

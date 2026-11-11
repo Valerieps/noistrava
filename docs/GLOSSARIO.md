@@ -33,5 +33,5 @@ Um termo, um sentido. Estes nomes valem para os textos da interface e para as do
 - **Semana ativa:** semana de segunda a domingo com pelo menos uma atividade minha. (`spec/acompanhamento.md`)
 - **Sem Perder o Embalo:** ranking da Corrida das Estações: as semanas da etapa com o Índice de Aproveitamento da semana entre 85% e 100%. (`spec/corrida-das-estacoes.md`)
 - **Senhora:** integrante que aceitou participar de um desafio; o plural é Senhoras. Em alguns lugares aparece antes do nome, como "Senhora Renato". (`spec/desafio-horas.md`)
-- **Título:** o prêmio de quem fica em primeiro num ranking da Corrida das Estações; cada integrante leva no máximo 2 por etapa. (`spec/corrida-das-estacoes.md`)
+- **Título:** o prêmio de quem fica em primeiro num ranking da Corrida das Estações, sem limite por integrante. (`spec/corrida-das-estacoes.md`)
 - **Torcida:** integrantes que não participam de um desafio: veem tudo e reagem, mas não registram nem editam nada nele. (`spec/desafio-horas.md`)

@@ -15,10 +15,10 @@ export function isRankingKey(value: unknown): value is RankingKey {
   return typeof value === 'string' && (RANKINGS as readonly string[]).includes(value);
 }
 
-/** The most titles one member takes in a stage. */
-export const MAX_TITLES = 2;
-/** Relógio Suíço: the fewest whole weeks a variation can be measured over. */
-export const STEADY_MIN_WEEKS = 2;
+/** Relógio Suíço: the fewest activities in the stage to enter it. */
+export const STEADY_MIN_ACTIVITIES = 5;
+/** Relógio Suíço: how far apart two starts on the same weekday may be and still count as the same time. */
+export const STEADY_WINDOW_MINUTES = 30;
 
 export interface RaceActivity {
   readonly memberId: string;
@@ -37,19 +37,17 @@ export interface RaceMember {
 
 /**
  * Why a member who moved in the stage is not in a ranking: `zero` (nothing of what it counts yet),
- * `noIncrease` (Volta por cima), `notOpen` (the Sprint final's days have not come), `fewWeeks` and
- * `missedWeek` (Relógio Suíço).
+ * `noIncrease` (Volta por cima), `notOpen` (the Sprint final's days have not come), `fewActivities`
+ * (Relógio Suíço).
  */
-export type OutReason = 'zero' | 'noIncrease' | 'notOpen' | 'fewWeeks' | 'missedWeek';
+export type OutReason = 'zero' | 'noIncrease' | 'notOpen' | 'fewActivities';
 
 export interface Score {
   readonly memberId: string;
-  /** What the ranking orders by: a count, seconds, or (Relógio Suíço) the variation, a fraction. */
+  /** What the ranking orders by: a count, seconds, or (Relógio Suíço) a fraction of the activities. */
   readonly value: number;
   readonly tiebreak: number;
   readonly out: OutReason | null;
-  /** With `missedWeek`, the Monday of the first week without activity. */
-  readonly week?: CalendarDate;
 }
 
 export interface Entry extends Score {
@@ -67,11 +65,10 @@ export interface Ranking {
 
 export type Standings = { readonly [K in RankingKey]: Ranking };
 
-/** Whether a smaller value is better; every tie-break is better larger. */
-const LOWER_IS_BETTER: ReadonlySet<RankingKey> = new Set(['steady']);
-
 interface Located extends RaceActivity {
   readonly date: CalendarDate;
+  /** Minutes since midnight, in the activity's zone. */
+  readonly minutes: number;
 }
 
 /** The Mondays of the stage's whole weeks that are already over on `asOf`. */
@@ -85,11 +82,17 @@ export function wholeWeeks(stage: Stage, asOf: CalendarDate): CalendarDate[] {
 
 const sum = (activities: readonly Located[]) => activities.reduce((n, a) => n + a.durationSeconds, 0);
 
-/** Population standard deviation over the mean. */
-function variation(values: readonly number[]): number {
-  const mean = values.reduce((n, v) => n + v, 0) / values.length;
-  const deviation = Math.sqrt(values.reduce((n, v) => n + (v - mean) ** 2, 0) / values.length);
-  return deviation / mean;
+/**
+ * Relógio Suíço: the share of the activities that start on the same weekday and around the same time
+ * as another one of hers in another week.
+ */
+function onSchedule(activities: readonly Located[]): number {
+  const repeated = activities.filter((a) =>
+    activities.some(
+      (b) => b.date !== a.date && weekday(b.date) === weekday(a.date) && Math.abs(b.minutes - a.minutes) <= STEADY_WINDOW_MINUTES,
+    ),
+  );
+  return repeated.length / activities.length;
 }
 
 /** One member's score in each ranking, from her activities: all of them, for the window index. */
@@ -107,7 +110,8 @@ function scoresOf(stage: Stage, member: RaceMember, all: readonly Located[]): { 
   const seconds = sum(inStage);
   const weekend = inStage.filter((a) => weekday(a.date) >= 5);
   const durations = inStage.map((a) => a.durationSeconds).sort((a, b) => b - a);
-  const increase = seconds - sum(all.filter((a) => stageOfKey(a.date) === previous));
+  const previousSeconds = sum(all.filter((a) => stageOfKey(a.date) === previous));
+  const increase = seconds - previousSeconds;
 
   const sprintFrom = sprintStart(stage);
   const sprint = inStage.filter((a) => a.date >= sprintFrom);
@@ -123,12 +127,8 @@ function scoresOf(stage: Stage, member: RaceMember, all: readonly Located[]): { 
   const greenWeeks = indexes.filter((i) => i >= GREEN_FROM).length;
   const averageIndex = indexes.length ? indexes.reduce((n, i) => n + i, 0) / indexes.length : 0;
 
-  const weekSeconds = weeks.map((monday) => sum(inStage.filter((a) => a.date >= monday && a.date <= addDays(monday, 6))));
-  const missed = weeks.find((_, i) => weekSeconds[i] === 0);
-  let steady: Score;
-  if (weeks.length < STEADY_MIN_WEEKS) steady = { memberId: id, value: 0, tiebreak: seconds, out: 'fewWeeks' };
-  else if (missed) steady = { memberId: id, value: 0, tiebreak: seconds, out: 'missedWeek', week: missed };
-  else steady = { memberId: id, value: variation(weekSeconds), tiebreak: seconds, out: null };
+  const steady =
+    inStage.length < STEADY_MIN_ACTIVITIES ? score(0, inStage.length, 'fewActivities') : score(onSchedule(inStage), inStage.length);
 
   return {
     activities: score(inStage.length, seconds),
@@ -137,23 +137,23 @@ function scoresOf(stage: Stage, member: RaceMember, all: readonly Located[]): { 
     weekend: score(weekend.length, sum(weekend)),
     variety: score(new Set(inStage.map((a) => a.sport)).size, inStage.length),
     marathon: score(durations[0] ?? 0, durations[1] ?? 0),
-    comeback: score(increase, seconds, increase > 0 ? null : 'noIncrease'),
+    // Fewer hours in the previous stage goes ahead: every tie-break is better larger.
+    comeback: score(increase, -previousSeconds, increase > 0 ? null : 'noIncrease'),
     sprint: member.today < sprintFrom && sprint.length === 0 ? { ...sprintScore, out: 'notOpen' } : sprintScore,
     steady,
   };
 }
 
-/** Negative when `a` goes ahead of `b`. */
-function compareScores(key: RankingKey, a: Score, b: Score): number {
-  const primary = LOWER_IS_BETTER.has(key) ? a.value - b.value : b.value - a.value;
-  return primary || b.tiebreak - a.tiebreak;
+/** Negative when `a` goes ahead of `b`: every value and tie-break is better larger. */
+function compareScores(a: Score, b: Score): number {
+  return b.value - a.value || b.tiebreak - a.tiebreak;
 }
 
-function rank(key: RankingKey, scores: readonly Score[]): Entry[] {
-  const sorted = scores.filter((s) => s.out === null).sort((a, b) => compareScores(key, a, b) || a.memberId.localeCompare(b.memberId));
+function rank(scores: readonly Score[]): Entry[] {
+  const sorted = scores.filter((s) => s.out === null).sort((a, b) => compareScores(a, b) || a.memberId.localeCompare(b.memberId));
   const entries: Entry[] = [];
   sorted.forEach((s, i) => {
-    const tied = i > 0 && compareScores(key, sorted[i - 1], s) === 0;
+    const tied = i > 0 && compareScores(sorted[i - 1], s) === 0;
     entries.push({ ...s, position: tied ? entries[i - 1].position : i + 1 });
   });
   return entries;
@@ -168,7 +168,8 @@ export function standings(stage: Stage, members: readonly RaceMember[], activiti
   const byMember = new Map<string, Located[]>();
   for (const a of activities) {
     const list = byMember.get(a.memberId) ?? [];
-    list.push({ ...a, date: localTime(a.startedAt, a.timezone).date });
+    const local = localTime(a.startedAt, a.timezone);
+    list.push({ ...a, date: local.date, minutes: local.hour * 60 + local.minute });
     byMember.set(a.memberId, list);
   }
   const key = stageKey(stage);
@@ -178,7 +179,7 @@ export function standings(stage: Stage, members: readonly RaceMember[], activiti
   const result = {} as { [K in RankingKey]: Ranking };
   for (const k of RANKINGS) {
     const list = scores.map((s) => s[k]);
-    result[k] = { key: k, entries: rank(k, list), scores: new Map(list.map((s) => [s.memberId, s])) };
+    result[k] = { key: k, entries: rank(list), scores: new Map(list.map((s) => [s.memberId, s])) };
   }
   return result;
 }
@@ -188,29 +189,10 @@ export function leadersOf(ranking: Ranking): Entry[] {
   return ranking.entries.filter((e) => e.position === 1);
 }
 
-export interface TitleAward {
-  readonly holders: readonly string[];
-  /** First in the ranking, but already with the most titles: the title went on. */
-  readonly blockedLeaders: readonly string[];
-}
-
-/**
- * The titles, in the order of the table: each goes to the best-placed members who still have room,
- * all the tied ones at that position together, and counts towards each one's limit.
- */
-export function awardTitles(standings: Standings): { [K in RankingKey]: TitleAward } {
-  const count = new Map<string, number>();
-  const result = {} as { [K in RankingKey]: TitleAward };
-  for (const key of RANKINGS) {
-    const entries = standings[key].entries;
-    let holders: string[] = [];
-    for (const position of [...new Set(entries.map((e) => e.position))]) {
-      holders = entries.filter((e) => e.position === position && (count.get(e.memberId) ?? 0) < MAX_TITLES).map((e) => e.memberId);
-      if (holders.length) break;
-    }
-    for (const id of holders) count.set(id, (count.get(id) ?? 0) + 1);
-    result[key] = { holders, blockedLeaders: leadersOf(standings[key]).map((e) => e.memberId).filter((id) => !holders.includes(id)) };
-  }
+/** The titles: each goes to the first of its ranking, all the tied ones together, with no limit per member. */
+export function awardTitles(standings: Standings): { [K in RankingKey]: readonly string[] } {
+  const result = {} as { [K in RankingKey]: readonly string[] };
+  for (const key of RANKINGS) result[key] = leadersOf(standings[key]).map((e) => e.memberId);
   return result;
 }
 
@@ -223,7 +205,7 @@ export function awardTitles(standings: Standings): { [K in RankingKey]: TitleAwa
 export type Gap =
   | { readonly kind: 'leader' }
   | { readonly kind: 'behind'; readonly position: number; readonly missing: number; readonly tied: boolean }
-  | { readonly kind: 'out'; readonly reason: OutReason; readonly missing: number | null; readonly week?: CalendarDate }
+  | { readonly kind: 'out'; readonly reason: OutReason; readonly missing: number | null }
   /** No activity in the stage. */
   | { readonly kind: 'absent' };
 
@@ -231,15 +213,11 @@ export function gapFor(ranking: Ranking, memberId: string): Gap {
   const mine = ranking.scores.get(memberId);
   if (!mine) return { kind: 'absent' };
   const leader = ranking.entries[0];
-  const lower = LOWER_IS_BETTER.has(ranking.key);
-  if (mine.out !== null) {
-    const missing = leader && !lower ? Math.max(leader.value - mine.value, 0) : null;
-    return mine.week ? { kind: 'out', reason: mine.out, missing, week: mine.week } : { kind: 'out', reason: mine.out, missing };
-  }
+  if (mine.out !== null) return { kind: 'out', reason: mine.out, missing: leader ? Math.max(leader.value - mine.value, 0) : null };
   const entry = ranking.entries.find((e) => e.memberId === memberId)!;
   if (entry.position === 1) return { kind: 'leader' };
   const tied = entry.value === leader.value;
-  const missing = tied ? leader.tiebreak - entry.tiebreak : Math.abs(leader.value - entry.value);
+  const missing = tied ? leader.tiebreak - entry.tiebreak : leader.value - entry.value;
   return { kind: 'behind', position: entry.position, missing, tied };
 }
 
@@ -256,11 +234,10 @@ export function othersOf(entries: readonly { readonly memberId: string; readonly
 
 /**
  * How far along the lane to the first place I am, from 0 to 1, for the Estações tab: my value over
- * the first's (the first's over mine in the Relógio Suíço, where less is better).
+ * the first's.
  */
-export function laneProgress(key: RankingKey, leader: number | null, mine: number | null, position: number | null): number {
+export function laneProgress(leader: number | null, mine: number | null, position: number | null): number {
   if (position === 1) return 1;
   if (leader === null || mine === null || leader <= 0 || mine <= 0) return 0;
-  const fraction = LOWER_IS_BETTER.has(key) ? leader / mine : mine / leader;
-  return Math.min(Math.max(fraction, 0), 1);
+  return Math.min(Math.max(mine / leader, 0), 1);
 }

@@ -116,11 +116,11 @@ describe('closing a stage', () => {
     expect(service.tick()).not.toContain('seasons');
   });
 
-  it('keeps the titles, at most 2 each, and the note of the first who already had 2', () => {
+  it('keeps the titles, each with the first of its ranking', () => {
     clock.set('2027-01-01T00:05:00Z');
     service.tick();
     const variety = ranking(ANA, 'variety', { stage: '2026-spring' });
-    expect(variety).toMatchObject({ leaders: [{ name: 'Ana' }], titleHolders: [{ name: 'Bia' }], blockedLeaders: [{ name: 'Ana' }], me: { position: 1, gap: null } });
+    expect(variety).toMatchObject({ leaders: [{ name: 'Ana' }], titleHolders: [{ name: 'Ana' }], me: { position: 1, gap: null } });
     expect(ranking(ANA, 'activities', { stage: '2026-spring' }).titleHolders).toMatchObject([{ name: 'Ana' }]);
   });
 
@@ -129,7 +129,7 @@ describe('closing a stage', () => {
     service.tick();
     ok(service.command(ANA, 'member.remove', { memberId: memberId(BIA) }));
     log(CRIS, '2026-10-05T10:00:00Z', 1000);
-    expect(ranking(ANA, 'variety', { stage: '2026-spring' }).titleHolders).toMatchObject([{ name: 'Bia' }]);
+    expect(ranking(ANA, 'variety', { stage: '2026-spring' }).titleHolders).toMatchObject([{ name: 'Ana' }]);
     expect(ranking(ANA, 'hours', { stage: '2026-spring' }).leaders).toMatchObject([{ name: 'Ana' }]);
   });
 
@@ -153,6 +153,8 @@ describe('seasonYear and seasonCircuit', () => {
   });
 
   it('lists who took titles, in alphabetical order, provisional in the count', () => {
+    // Bia takes the Guerreira de fim de semana with a Saturday.
+    log(BIA, '2026-10-10T10:00:00Z', 30, 'Run');
     clock.set('2026-12-20T12:00:00Z');
     const year = ok<Queries['seasonYear']['output']>(service.query(BIA, 'seasonYear', {}));
     expect(year.members.map((m) => m.name)).toEqual(['Ana', 'Bia']);
@@ -169,9 +171,9 @@ describe('seasonYear and seasonCircuit', () => {
     service.tick();
     const mine = ok<Queries['seasonCircuit']['output']>(service.query(ANA, 'seasonCircuit', { year: 2026 }));
     expect(mine.person.name).toBe('Ana');
-    expect(mine.stages[0].titles.map((t) => t.ranking)).toEqual(['activities', 'hours']);
+    expect(mine.stages[0].titles.map((t) => t.ranking).sort()).toEqual(['activities', 'comeback', 'hours', 'marathon', 'variety']);
     const bias = ok<Queries['seasonCircuit']['output']>(service.query(ANA, 'seasonCircuit', { year: 2026, memberId: memberId(BIA) }));
-    expect(bias.stages[0].titles.length).toBeGreaterThan(0);
+    expect(bias.stages[0].titles).toEqual([]);
     expect(service.query(ANA, 'seasonCircuit', { memberId: 'nobody' })).toEqual({ ok: false, error: 'not_found' });
     expect(service.query(ANA, 'seasonYear', { year: 2025 })).toEqual({ ok: false, error: 'not_found' });
   });
@@ -211,6 +213,9 @@ describe('the notices', () => {
       '🏅 Saiu o pódio da Primavera 2026! Veja quem levou cada título.',
       'Você levou o título Mais atividades da Primavera 2026! 🏅',
       'Você levou o título Mais horas da Primavera 2026! 🏅',
+      'Você é a Multitalento da Primavera 2026! 🏅',
+      'Você é a Maratonista da Primavera 2026! 🏅',
+      'Você levou o título Volta por cima da Primavera 2026! 🏅',
     ]);
     expect(bodies()).toEqual([]);
   });

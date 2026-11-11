@@ -165,7 +165,7 @@ function othersOnLane(r: SeasonRankingView): { progress: number; shift: number }
   return r.others.map((value) => {
     const i = seen.get(value) ?? 0;
     seen.set(value, i + 1);
-    return { progress: laneProgress(r.key, r.leaderValue, value, null), shift: (i - ((ties.get(value) ?? 1) - 1) / 2) * TIE_SHIFT };
+    return { progress: laneProgress(r.leaderValue, value, null), shift: (i - ((ties.get(value) ?? 1) - 1) / 2) * TIE_SHIFT };
   });
 }
 
@@ -182,7 +182,7 @@ function Lane({
   open: boolean;
   onToggle: () => void;
 }) {
-  const progress = laneProgress(r.key, r.leaderValue, r.me.value, r.me.position);
+  const progress = laneProgress(r.leaderValue, r.me.value, r.me.position);
   const name = s.rankings[r.key];
   const leader = leaderText(r, meId);
   const leaderPerson = r.me.position === 1 ? null : r.leaders[0];
@@ -230,14 +230,12 @@ function Lane({
   );
 }
 
-/** The closed stage: each ranking's medal and who took it, and the note of a first who already had 2. */
+/** The closed stage: each ranking's medal and who took it. */
 function Podium({ view }: { view: SeasonStageView }) {
   const stage = asStage(view.stage);
   const label = s.medalLabel(stageName(stage));
-  const notes = view.rankings.filter((r) => r.blockedLeaders.length > 0);
   return (
-    <>
-      <ul className="podium">
+    <ul className="podium">
         {view.rankings.map((r) => {
           const holders = s.and(r.titleHolders.map((p) => p.name));
           return (
@@ -249,17 +247,6 @@ function Podium({ view }: { view: SeasonStageView }) {
           );
         })}
       </ul>
-      {notes.map((r) => (
-        <p key={r.key} className="season-note">
-          {s.blockedNote(
-            s.and(r.blockedLeaders.map((p) => p.name)),
-            r.blockedLeaders.length > 1,
-            s.rankings[r.key],
-            s.and(r.titleHolders.map((p) => p.name)),
-          )}
-        </p>
-      ))}
-    </>
   );
 }
 

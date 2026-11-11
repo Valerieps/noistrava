@@ -61,38 +61,38 @@ continuando empatadas, elas dividem a posição.
 | **Guerreira de fim de semana** | Mais atividades aos sábados e domingos | Mais horas nesses dias |
 | **Multitalento** | Mais modalidades diferentes | Mais atividades |
 | **Maratonista** | A atividade mais longa da etapa | A segunda atividade mais longa |
-| **Volta por cima** | Maior aumento de horas em relação à etapa anterior | Mais horas na etapa |
+| **Volta por cima** | Maior aumento de horas em relação à etapa anterior | Menos horas na etapa anterior |
 | **Sprint final** | Mais atividades nos últimos 7 dias da etapa | Mais horas nesses dias |
-| **Relógio Suíço** | O tempo de cada semana mais perto da média dela na etapa | Mais horas |
+| **Relógio Suíço** | A maior parte das atividades no mesmo dia da semana e horário de outra semana | Mais atividades |
 
 *(2)*
 
 - No Sem Perder o Embalo, contam só as semanas inteiras dentro da etapa, de segunda a domingo. *(2)*
   Por quê: uma semana cortada pelo início ou pelo fim da etapa teria um índice de outro período.
-- Durante a etapa, uma semana só entra no Sem Perder o Embalo e no Relógio Suíço depois que acaba. *(2)*
+- Durante a etapa, uma semana só entra no Sem Perder o Embalo depois que acaba. *(2)*
 - No Volta por cima, a etapa anterior conta mesmo que tenha sido antes da Corrida das Estações
   existir no app. Só entra quem aumentou as horas. *(2)*
-- No Relógio Suíço, contam as mesmas semanas inteiras do Sem Perder o Embalo, e só entra quem tem
-  atividade em todas elas. Quem
-  fica na frente é quem tem a menor variação relativa do tempo semanal (o desvio dividido pela
-  média). Eu vejo essa variação como "variou só ±N% entre as semanas". *(2)*
-  Por quê: sem esse mínimo, quem não fez nada teria variação zero.
-- O Relógio Suíço só começa a contar com duas semanas inteiras acabadas na etapa. *(2)*
-  Por quê: com uma semana só, todas teriam variação zero.
+- No Volta por cima, quando o aumento empata, fica na frente quem tinha menos horas na etapa
+  anterior. *(2)*
+  Por quê: ela partiu de mais longe.
+- O Relógio Suíço premia a regularidade de dia e hora: uma atividade conta quando começa no mesmo
+  dia da semana e até 30 minutos antes ou depois de outra atividade minha numa outra semana da
+  etapa, na hora do meu fuso. Quem fica na frente é quem tem a maior parte das atividades da
+  etapa assim. Eu vejo como "80% no mesmo dia e hora". *(2)*
+  Por quê: a regularidade de semana a semana já é premiada no Sem Perder o Embalo.
+- No Relógio Suíço, só entra quem tem pelo menos 5 atividades na etapa. Contam todas, as
+  registradas à mão também. *(2)*
+  Por quê: com uma ou duas atividades, qualquer uma chegaria a 100%.
 - Durante a etapa, eu vejo os rankings ao vivo, como parciais. *(2)*
 
 ## Títulos
 
 - Quando a etapa fecha, a primeira de cada ranking leva o título dele, como "Maratonista do Verão
   2027". *(2)*
-- Cada integrante leva no máximo 2 títulos por etapa. Quando a primeira de um ranking já tem 2,
-  o título vai para a próxima colocada que ainda pode recebê-lo. *(2)*
-  Por quê: espalhar os prêmios, para que mais gente suba ao pódio.
-- Os títulos são distribuídos na ordem da tabela de rankings, de cima para baixo. *(2)*
-- No ranking, quem ficou em primeiro mas não levou o título continua em primeiro, com uma nota
-  dizendo que ela já levou 2 títulos. *(2)*
-- Empatadas na primeira posição, depois do desempate, levam o título juntas, e ele conta para o
-  limite de cada uma. *(2)*
+- Não há limite de títulos por integrante: quem fica em primeiro leva o título, mesmo que já
+  tenha levado outros na etapa. *(2)*
+  Por quê: com limite, o título ia para quem não ficou em primeiro, e os rankings perdiam o sentido.
+- Empatadas na primeira posição, depois do desempate, levam o título juntas. *(2)*
 
 ## Quem vê
 
@@ -106,8 +106,8 @@ continuando empatadas, elas dividem a posição.
   Por quê: saber se eu estou no meio do pelotão ou sozinha lá atrás, sem expor quem é quem.
 - O quanto falta é para eu igualar a primeira no que o ranking conta, como "Faltam 8 atividades para
   alcançar a 1ª". Quando eu já igualo e perco no desempate, eu vejo qual é o desempate. Fora de um
-  ranking, eu vejo por quê: o Sprint final ainda não começou, ou faltou atividade numa semana do
-  Relógio Suíço. *(2)*
+  ranking, eu vejo por quê: o Sprint final ainda não começou, ou eu ainda não tenho 5 atividades
+  para o Relógio Suíço. *(2)*
 - Quando eu estou em primeiro, o texto diz só isso, sem a minha vantagem sobre a segunda; a faixa
   mostra a distância até os círculos das outras, sem número. *(2)*
 - Do Sem Perder o Embalo, o grupo vê só quantas semanas cada uma teve entre 85% e 100%. O índice de cada semana, o

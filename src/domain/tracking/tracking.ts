@@ -26,6 +26,7 @@ const PERIODS: readonly DayPeriod[] = ['dawn', 'morning', 'afternoon', 'night'];
 export interface LocalTime {
   readonly date: CalendarDate;
   readonly hour: number;
+  readonly minute: number;
 }
 
 const formatters = new Map<string, Intl.DateTimeFormat>();
@@ -33,7 +34,7 @@ const formatters = new Map<string, Intl.DateTimeFormat>();
 function formatter(timeZone: string): Intl.DateTimeFormat {
   let found = formatters.get(timeZone);
   if (!found) {
-    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23' };
+    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' };
     try {
       found = new Intl.DateTimeFormat('en-US', { ...options, timeZone });
     } catch {
@@ -44,11 +45,11 @@ function formatter(timeZone: string): Intl.DateTimeFormat {
   return found;
 }
 
-/** The calendar date and hour of an instant in `timeZone`. */
+/** The calendar date, hour and minute of an instant in `timeZone`. */
 export function localTime(instant: string | Date, timeZone: string): LocalTime {
   const parts = formatter(timeZone).formatToParts(new Date(instant));
   const get = (type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)?.value ?? '0';
-  return { date: `${get('year')}-${get('month')}-${get('day')}`, hour: Number(get('hour')) % 24 };
+  return { date: `${get('year')}-${get('month')}-${get('day')}`, hour: Number(get('hour')) % 24, minute: Number(get('minute')) };
 }
 
 /**

@@ -159,6 +159,22 @@ describe('standings', () => {
     expect(s.comeback.scores.get('bia')).toMatchObject({ out: 'noIncrease', value: -240 * 60 });
   });
 
+  it('breaks a comeback tie in favour of fewer hours in the previous stage', () => {
+    const s = standings(SPRING, members('2026-11-09', 'ana', 'bia'), [
+      act('ana', '2026-08-01', 120),
+      act('ana', '2026-10-05', 180),
+      act('bia', '2026-08-01', 60),
+      act('bia', '2026-10-05', 120),
+    ]);
+    expect(positions(s, 'comeback')).toEqual([
+      ['bia', 1],
+      ['ana', 2],
+    ]);
+    expect(gapText('comeback', gapFor(s.comeback, 'ana'), 3600, 3600, SPRING)).toBe(
+      'Você empata com a 1ª, mas perde no desempate: menos horas na etapa anterior.',
+    );
+  });
+
   it('counts the whole weeks with the week index in the green, finished ones only', () => {
     // Ana moves every other day from 1 Oct: every week in the green. Bia moves once a week.
     const ana = Array.from({ length: 20 }, (_, i) => act('ana', addDays('2026-10-01', i * 2), 30));
@@ -169,21 +185,48 @@ describe('standings', () => {
     expect(s.momentum.scores.get('bia')?.out).toBe('zero');
   });
 
-  it('ranks the steadiest weekly time, among those active in every whole week', () => {
-    const s = standings(SPRING, members('2026-10-19', 'ana', 'bia', 'cris'), [
-      act('ana', '2026-10-05', 60),
-      act('ana', '2026-10-12', 60),
-      act('bia', '2026-10-05', 30),
-      act('bia', '2026-10-12', 90),
-      act('cris', '2026-10-05', 600),
+  it('ranks the share of activities on the same weekday and time as in another week', () => {
+    // Ana: Monday 7h every week and a Friday once: 4 of 5 repeat. Bia: Monday 7h, then 8h, 9h, 7h45 and 7h40.
+    const ana = ['2026-10-05', '2026-10-12', '2026-10-19', '2026-10-26'].map((d) => act('ana', d, 30, 'Run', '07:00:00'));
+    const bia = [
+      act('bia', '2026-10-05', 30, 'Run', '07:00:00'),
+      act('bia', '2026-10-12', 30, 'Run', '08:00:00'),
+      act('bia', '2026-10-19', 30, 'Run', '09:00:00'),
+      act('bia', '2026-10-26', 30, 'Run', '07:45:00'),
+      act('bia', '2026-11-02', 30, 'Run', '07:40:00'),
+    ];
+    // Cris repeats every slot, but in her own zone: 22h in São Paulo is 1h UTC the next day.
+    const cris = ['2026-10-06', '2026-10-13', '2026-10-20', '2026-10-27', '2026-11-03'].map((d) =>
+      act('cris', d, 30, 'Run', '01:00:00', 'America/Sao_Paulo'),
+    );
+    const s = standings(SPRING, members('2026-11-09', 'ana', 'bia', 'cris', 'dani'), [
+      ...ana,
+      act('ana', '2026-10-09', 30, 'Run', '07:00:00'),
+      ...bia,
+      ...cris,
+      act('dani', '2026-10-05', 30),
     ]);
     expect(s.steady.entries).toMatchObject([
-      { memberId: 'ana', value: 0, position: 1 },
-      { memberId: 'bia', value: 0.5, position: 2 },
+      { memberId: 'cris', value: 1, tiebreak: 5, position: 1 },
+      { memberId: 'ana', value: 0.8, position: 2 },
+      { memberId: 'bia', value: 0.6, position: 3 },
     ]);
-    expect(s.steady.scores.get('cris')).toMatchObject({ out: 'missedWeek', week: '2026-10-12' });
-    const early = standings(SPRING, members('2026-10-12', 'ana'), [act('ana', '2026-10-05', 60)]);
-    expect(early.steady.scores.get('ana')?.out).toBe('fewWeeks');
+    expect(s.steady.scores.get('dani')).toMatchObject({ out: 'fewActivities' });
+  });
+
+  it('breaks a Relógio Suíço tie by more activities, and leaves out a share of zero', () => {
+    const weekly = (id: string, days: string[]) => days.map((d) => act(id, d, 30, 'Run', '07:00:00'));
+    const mondays = ['2026-10-05', '2026-10-12', '2026-10-19', '2026-10-26', '2026-11-02', '2026-11-09'];
+    const s = standings(SPRING, members('2026-11-10', 'ana', 'bia', 'cris'), [
+      ...weekly('ana', mondays.slice(0, 5)),
+      ...weekly('bia', mondays),
+      ...['2026-10-05', '2026-10-06', '2026-10-07', '2026-10-08', '2026-10-09'].map((d) => act('cris', d, 30)),
+    ]);
+    expect(positions(s, 'steady')).toEqual([
+      ['bia', 1],
+      ['ana', 2],
+    ]);
+    expect(s.steady.scores.get('cris')).toMatchObject({ out: 'zero', value: 0 });
   });
 
   it('leaves out the members not given, such as those who left', () => {
@@ -193,8 +236,7 @@ describe('standings', () => {
 });
 
 describe('awardTitles', () => {
-  it('gives each member at most 2 titles, in the order of the table', () => {
-    // Ana leads activities, hours and variety; the variety title goes to Bia, second.
+  it('gives each title to the first, however many titles she already has', () => {
     const s = standings(SPRING, members('2026-11-09', 'ana', 'bia'), [
       act('ana', '2026-10-05', 120, 'Run'),
       act('ana', '2026-10-06', 120, 'Yoga'),
@@ -203,18 +245,17 @@ describe('awardTitles', () => {
       act('bia', '2026-10-06', 30, 'Ride'),
     ]);
     const titles = awardTitles(s);
-    expect(titles.activities).toEqual({ holders: ['ana'], blockedLeaders: [] });
-    expect(titles.hours).toEqual({ holders: ['ana'], blockedLeaders: [] });
-    expect(titles.variety).toEqual({ holders: ['bia'], blockedLeaders: ['ana'] });
+    expect(titles.activities).toEqual(['ana']);
+    expect(titles.hours).toEqual(['ana']);
+    expect(titles.variety).toEqual(['ana']);
   });
 
-  it('gives a title to everyone tied first, counting it towards each limit', () => {
+  it('gives a title to everyone tied first, and none to an empty ranking', () => {
     const s = standings(SPRING, members('2026-11-09', 'ana', 'bia'), [act('ana', '2026-10-05', 60, 'Run'), act('bia', '2026-10-05', 60, 'Run')]);
     const titles = awardTitles(s);
-    expect(titles.activities.holders).toEqual(['ana', 'bia']);
-    expect(titles.hours.holders).toEqual(['ana', 'bia']);
-    expect(titles.variety.holders).toEqual([]);
-    expect(titles.variety.blockedLeaders).toEqual(['ana', 'bia']);
+    expect(titles.activities).toEqual(['ana', 'bia']);
+    expect(titles.variety).toEqual(['ana', 'bia']);
+    expect(titles.steady).toEqual([]);
   });
 });
 
@@ -249,18 +290,21 @@ describe('gapFor and gapText', () => {
   it('explains why I am out of a ranking', () => {
     expect(gapFor(s.activities, 'nobody')).toEqual({ kind: 'absent' });
     expect(gapText('sprint', gapFor(s.sprint, 'bia'), null, 0, SPRING)).toBe('Conta só os últimos 7 dias da etapa: de 11 dez a 17 dez.');
-    expect(gapText('steady', { kind: 'out', reason: 'missedWeek', missing: null, week: '2026-10-12' }, 0.1, null, SPRING)).toBe(
-      'Você ficou de fora: não teve atividade na semana de 12 out.',
+    expect(gapText('steady', { kind: 'out', reason: 'fewActivities', missing: 0.8 }, 0.8, null, SPRING)).toBe('Conta a partir de 5 atividades na etapa.');
+    expect(gapText('steady', { kind: 'out', reason: 'zero', missing: 0.8 }, 0.8, 0, SPRING)).toBe(
+      'Nenhuma atividade sua repetiu ainda o dia da semana e a hora de outra semana.',
     );
     expect(gapText('weekend', { kind: 'out', reason: 'zero', missing: 1 }, 1, 0, SPRING)).toBe('Falta 1 atividade num sábado ou domingo para alcançar a 1ª.');
-    expect(gapText('steady', { kind: 'behind', position: 2, missing: 0.1, tied: false }, 0.08, 0.18, SPRING)).toBe('A 1ª variou ±8%; você, ±18%.');
+    expect(gapText('steady', { kind: 'behind', position: 2, missing: 0.1, tied: false }, 0.9, 0.8, SPRING)).toBe(
+      'A 1ª tem 90% das atividades no mesmo dia e hora; você, 80%.',
+    );
   });
 
   it('writes the values as the group sees them', () => {
     expect(valueText('activities', 1)).toBe('1 atividade');
     expect(valueText('momentum', 5)).toBe('5 semanas');
     expect(valueText('comeback', 14 * 3600)).toBe('+14h00');
-    expect(valueText('steady', 0.083)).toBe('variou só ±8%');
+    expect(valueText('steady', 0.8)).toBe('80% no mesmo dia e hora');
     expect(shortDay('2026-10-05')).toBe('5 out');
   });
 });
@@ -283,10 +327,10 @@ describe('othersOf', () => {
 
 describe('laneProgress', () => {
   it('puts me along the lane by my value against the first', () => {
-    expect(laneProgress('hours', 100, 25, 3)).toBe(0.25);
-    expect(laneProgress('steady', 0.1, 0.4, 2)).toBe(0.25);
-    expect(laneProgress('hours', 100, 100, 1)).toBe(1);
-    expect(laneProgress('comeback', 100, -20, null)).toBe(0);
-    expect(laneProgress('weekend', null, 0, null)).toBe(0);
+    expect(laneProgress(100, 25, 3)).toBe(0.25);
+    expect(laneProgress(0.8, 0.4, 2)).toBe(0.5);
+    expect(laneProgress(100, 100, 1)).toBe(1);
+    expect(laneProgress(100, -20, null)).toBe(0);
+    expect(laneProgress(null, 0, null)).toBe(0);
   });
 });
