@@ -599,7 +599,9 @@ export const strings = {
     provisional: 'Resultado provisório',
     provisionalTag: 'provisório',
     provisionalMine: (position: number) => `Você · ${position}ª, provisória.`,
-    outProvisional: 'Você ficou de fora deste ranking.',
+    /** What I have in a ranking, when a lane is open: "Você: 31 atividades". */
+    mine: (value: string) => `Você: ${value}`,
+    outProvisional:'Você ficou de fora deste ranking.',
     position: (position: number) => `${position}ª`,
     you: 'você',
     nobodyYet: 'ninguém ainda',
