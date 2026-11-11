@@ -191,7 +191,9 @@ function Lane({
       ? r.me.position === null
         ? s.outProvisional
         : s.provisionalMine(r.me.position)
-      : `${r.me.position !== null && r.me.position > 1 ? `${s.position(r.me.position)} · ` : ''}${gapText(r.key, r.me.gap ?? { kind: 'absent' }, r.leaderValue, r.me.value, asStage(view.stage))}`;
+      : r.me.gap?.kind === 'behind' || r.me.gap?.kind === 'leader'
+        ? `${r.me.position !== null && r.me.position > 1 ? `${s.position(r.me.position)} · ` : ''}${r.me.value !== null ? s.mine(valueText(r.key, r.me.value)) : gapText(r.key, r.me.gap, r.leaderValue, r.me.value, asStage(view.stage))}`
+        : gapText(r.key, r.me.gap ?? { kind: 'absent' }, r.leaderValue, r.me.value, asStage(view.stage));
   return (
     <li className={`lane${open ? ' open' : ''}`}>
       <button type="button" className="lane-button" aria-expanded={open} aria-label={s.laneLabel(name, leader)} onClick={onToggle}>

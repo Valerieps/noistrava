@@ -2992,6 +2992,12 @@ button:disabled {
   text-overflow: ellipsis;
 }
 
+.lane.open .lane-leader {
+  white-space: normal;
+  overflow: visible;
+  text-align: right;
+}
+
 .lane-track {
   position: relative;
   display: block;
