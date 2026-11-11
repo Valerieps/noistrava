@@ -62,7 +62,10 @@ Product docs are written in Brazilian Portuguese; ADRs, code and this file in En
 - Business-rule questions found during a task go in one batch, before implementing.
 - When she asks what you think of the app, she wants a frank assessment, including the risks.
 - Verify with the typecheck and unit tests; use the browser only when she asks.
-- Merge your own PR once its build passes.
+- Ship with `npm run ship -- "<commit message>"`: it commits, opens the PR, turns on auto-merge and
+  waits until GitHub merges it. Do not run the `gh pr` steps by hand or poll with `sleep`.
+- Asked whether everything is merged or the session can be archived: run `npm run branches` and
+  report its answer.
 
 ### Fewer rounds, fewer tokens
 Each step rereads the whole conversation, so long sessions and back-and-forth cost the most.
@@ -105,7 +108,7 @@ Each step rereads the whole conversation, so long sessions and back-and-forth co
 - `wrangler.jsonc` - the Worker: assets, Durable Object, cron, vars. Secrets via `wrangler secret put`; locally in `.dev.vars` (see `.dev.vars.example`).
 - `public/` - static files: manifest, icons, `_headers`.
 - `network-policy.ts` - the servers the app (`ALLOWED_ORIGINS`, `IMAGE_ORIGINS`) and the Worker (`SERVER_ORIGINS`) may talk to.
-- `scripts/` - `check-docs.mjs` (run by CI), `setup-repo.mjs` (once per new repository) and `vapid-key.mjs` (the reminder's push key, ADR-012).
+- `scripts/` - `check-docs.mjs` (run by CI), `setup-repo.mjs` (once per new repository), `vapid-key.mjs` (the reminder's push key, ADR-012), and `ship.mjs` and `branches.mjs` (see Commands).
 
 ## Commands
 - `npm ci` - install exactly what the lockfile pins
@@ -116,14 +119,16 @@ Each step rereads the whole conversation, so long sessions and back-and-forth co
 - `npm run preview` - serve the built app and the Worker together, as in production
 - `npm run deploy` - deploy the Worker (normally Workers Builds does it from `main`)
 - `npm run docs:check` - broken links between docs, ADRs without a status, repeated ADR numbers
+- `npm run ship -- "<message>"` - commit, push, open the PR, auto-merge and wait for the merge; `--no-wait` stops after auto-merge is on
+- `npm run branches` - what is not merged yet, per branch and worktree; `-- --clean` deletes merged local branches
 
 ## Deployment
 Cloudflare Workers Builds, from the GitHub repository. Build command `npm run build`, deploy
 command `npx wrangler deploy` for `main`; other branches get a preview version (ADR-004). Sign-in
 only works where Google has the redirect URI registered: production and localhost (ADR-005). GitHub Actions (`.github/workflows/ci.yml`) runs the same build and the docs check on every
 pull request. Branch protection on `main` requires the `build` check and a branch up to date with
-`main` (ADR-003): wait with `gh pr checks <n> --watch`, and if the merge is refused because the
-branch is behind, bring it up to date and wait again. No direct pushes to `main`. No `dev` branch:
+`main` (ADR-003): `npm run ship` waits for that check and brings a branch that fell behind up to
+date by itself. No direct pushes to `main`. No `dev` branch:
 each branch's Cloudflare preview is the staging.
 
 ## Code Conventions
