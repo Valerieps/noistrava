@@ -241,9 +241,8 @@ export interface SeasonRankingView {
   /** Several when tied; empty while nobody is in the ranking. */
   readonly leaders: readonly SeasonPerson[];
   readonly leaderValue: number | null;
-  /** Once the stage closes: who took the title, and the first ones who already had 2. */
+  /** Once the stage closes: who took the title, every first one. */
   readonly titleHolders: readonly SeasonPerson[];
-  readonly blockedLeaders: readonly SeasonPerson[];
   /** The values of everyone else in the ranking but the first ones, anonymous, smallest first. */
   readonly others: readonly number[];
   readonly me: {

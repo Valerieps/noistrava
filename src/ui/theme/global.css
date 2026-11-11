@@ -3141,13 +3141,6 @@ button:disabled {
   color: var(--color-text-muted);
 }
 
-.season-note {
-  margin: 0;
-  font-size: var(--text-sm);
-  font-style: italic;
-  color: var(--color-text-muted);
-}
-
 .season-diamond {
   display: flex;
   justify-content: center;

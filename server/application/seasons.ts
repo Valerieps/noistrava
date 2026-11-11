@@ -131,7 +131,7 @@ export function closeDueStages(ctx: Context): Stage[] {
             names.get(entry.memberId) ?? '',
             entry.position,
             entry.value,
-            titles[key].holders.includes(entry.memberId) ? 1 : 0,
+            titles[key].includes(entry.memberId) ? 1 : 0,
           );
         }
       }
@@ -175,8 +175,7 @@ function liveView(ctx: Context, actor: Member, stage: Stage, status: 'running' |
       key,
       leaders: leaders.map((e) => person(e.memberId)),
       leaderValue: leaders[0]?.value ?? null,
-      titleHolders: titles ? titles[key].holders.map(person) : [],
-      blockedLeaders: titles ? titles[key].blockedLeaders.map(person) : [],
+      titleHolders: titles ? titles[key].map(person) : [],
       others: othersOf(ranking.entries, actor.id),
       me: { position: entry?.position ?? null, value, gap: status === 'running' ? gapFor(ranking, actor.id) : null },
     };
@@ -205,7 +204,6 @@ function closedView(ctx: Context, actor: Member, stage: Stage): SeasonRankingVie
       leaders: leaders.map(person),
       leaderValue: leaders[0]?.value ?? null,
       titleHolders: ranking.filter((r) => r.title === 1).map(person),
-      blockedLeaders: leaders.filter((r) => r.title === 0).map(person),
       others: othersOf(ranking.map((r) => ({ memberId: r.member_id, position: r.position, value: r.value })), actor.id),
       me: { position: mine?.position ?? null, value: mine?.value ?? null, gap: null },
     };
@@ -244,7 +242,7 @@ function yearTitles(ctx: Context, actor: Member, year: number): { stages: Season
       const awarded = awardTitles(liveStandings(ctx, stage));
       const who = people(ctx);
       for (const key of RANKINGS)
-        for (const id of awarded[key].holders) titles.push({ memberId: id, name: who.get(id)?.name ?? '', title: { ...base, ranking: key, provisional: true } });
+        for (const id of awarded[key]) titles.push({ memberId: id, name: who.get(id)?.name ?? '', title: { ...base, ranking: key, provisional: true } });
     }
     return { stage: stageRef(stage), status };
   });

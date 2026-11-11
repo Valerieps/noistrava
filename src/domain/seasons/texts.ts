@@ -1,5 +1,5 @@
 // How a ranking's value and "quanto falta" read (docs/spec/corrida-das-estacoes.md, "Onde eu vejo"):
-// each ranking has its own unit, and the Relógio Suíço compares variations instead of a distance.
+// each ranking has its own unit, and the Relógio Suíço's is a share of the activities.
 import { formatDuration } from '../challenge/progress';
 import { strings } from '../strings';
 import type { CalendarDate } from '../time/zones';
@@ -24,10 +24,10 @@ export function stageName(stage: Stage): string {
   return s.stage(s.names[stage.season], stage.year);
 }
 
-/** The variation of the Relógio Suíço, in whole percent. */
+/** The Relógio Suíço's share, in whole percent. */
 const percent = (fraction: number) => Math.round(fraction * 100);
 
-/** A ranking's value as the group sees the first's: "31 atividades", "38h20", "variou só ±8%". */
+/** A ranking's value as the group sees the first's: "31 atividades", "38h20", "80% no mesmo dia e hora". */
 export function valueText(key: RankingKey, value: number): string {
   switch (key) {
     case 'activities':
@@ -44,7 +44,7 @@ export function valueText(key: RankingKey, value: number): string {
     case 'comeback':
       return `+${formatDuration(value)}`;
     case 'steady':
-      return s.variation(percent(value));
+      return s.onSchedule(percent(value));
   }
 }
 
@@ -59,7 +59,7 @@ function missingText(key: RankingKey, missing: number, leader: number): string {
 
 /**
  * The sentence of what I miss to reach the first place. `leader` is the first's value; `mine`, my
- * own (only the Relógio Suíço needs it, to compare the variations).
+ * own (only the Relógio Suíço needs it, to compare the shares).
  */
 export function gapText(key: RankingKey, gap: Gap, leader: number | null, mine: number | null, stage: Stage): string {
   switch (gap.kind) {
@@ -73,8 +73,8 @@ export function gapText(key: RankingKey, gap: Gap, leader: number | null, mine: 
       return missingText(key, gap.missing, leader ?? 0);
     case 'out':
       if (gap.reason === 'notOpen') return s.gap.notOpen(shortDay(sprintStart(stage)), shortDay(stageDates(stage).end));
-      if (gap.reason === 'fewWeeks') return s.gap.fewWeeks;
-      if (gap.reason === 'missedWeek') return s.gap.missedWeek(shortDay(gap.week ?? stageDates(stage).start));
+      if (gap.reason === 'fewActivities') return s.gap.fewActivities;
+      if (key === 'steady') return s.gap.steadyZero;
       if (gap.missing !== null && leader !== null) return missingText(key, gap.missing, leader);
       if (key === 'momentum') return s.gap.momentumZero;
       if (gap.reason === 'noIncrease') return s.gap.noIncrease;

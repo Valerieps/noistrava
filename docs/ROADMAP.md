@@ -28,14 +28,17 @@ O que ainda não está pronto.
 
 - [ ] Corrida das Estações (`spec/corrida-das-estacoes.md`): as atividades das duas semanas de
   apuração não contam para nenhuma etapa; na apuração, o resultado ainda muda, e fecha no primeiro
-  dia do trimestre seguinte; o Sem Perder o Embalo e o Relógio Suíço contam só as semanas inteiras da etapa;
-  os critérios de desempate; o Volta por cima mede o aumento em horas, não em porcentagem; o
-  Relógio Suíço exige atividade em todas as semanas; os títulos são distribuídos na ordem da tabela;
+  dia do trimestre seguinte; o Sem Perder o Embalo conta só as semanas inteiras da etapa;
+  os critérios de desempate; o Volta por cima mede o aumento em horas, não em porcentagem;
   empatadas em primeiro levam o título juntas; do Sem Perder o Embalo, o grupo vê só a quantidade de semanas.
 
 - [ ] Corrida das Estações (`spec/corrida-das-estacoes.md`): durante a etapa, uma semana só entra
-  no Sem Perder o Embalo e no Relógio Suíço depois que acaba; o Relógio Suíço começa com duas
-  semanas inteiras acabadas; o quanto falta é para igualar a 1ª, e quem iguala vê o desempate.
+  no Sem Perder o Embalo depois que acaba; o quanto falta é para igualar a 1ª, e quem iguala vê o desempate.
+
+- [ ] Relógio Suíço (`spec/corrida-das-estacoes.md`): uma atividade conta quando repete o dia da
+  semana e começa até 30 minutos antes ou depois de outra numa outra semana; o valor é a parte das
+  atividades da etapa assim; entra a partir de 5 atividades; contam as registradas à mão (e as dos
+  modelos, que já vêm com horário fixo); desempate por mais atividades.
 
 - [ ] Avisos da Corrida das Estações (`spec/notificacoes.md`): o de fim de ano no 18 de dezembro do
   meu fuso; o do pódio e os dos títulos até 3 dias depois de a etapa fechar; cada aviso uma vez só,
