@@ -6,7 +6,7 @@ import type { Journey } from '../../src/domain/challenge/challenge';
 import { MIGRATIONS } from '../application/schema';
 import { LOGIN_COOKIE, SESSION_COOKIE, STRAVA_COOKIE } from '../infrastructure/cookies';
 import { testWorker, type TestWorker } from '../testing/worker';
-import worker from './worker';
+import worker, { Cron, runCron } from './worker';
 
 const ORIGIN = 'http://localhost:8787';
 const TOKEN_KEY = btoa(String.fromCharCode(...new Uint8Array(32).fill(7)));
@@ -639,6 +639,26 @@ describe('the Group Durable Object', () => {
     await cron();
     expect(await value(query(ana, 'challenge'))).toEqual({ challenge: null });
     expect(await value(query(ana, 'history'))).toEqual([expect.objectContaining({ id, state: 'failed', totalSeconds: 14_400, percent: 40 })]);
+    expect(anaApp.sent).toEqual([
+      { type: 'changed', topics: ['challenge', 'history'] },
+      { type: 'changed', topics: ['challenge', 'history'] },
+    ]);
+  });
+
+  it('does the same through runCron and the Cron entrypoint (central cron)', async () => {
+    const { ana, anaId } = await group();
+    const { id } = await value<ChallengeView>(command(ana, 'challenge.create', week));
+    await value(command(ana, 'activity.create', run('2026-11-02T08:00:00Z', 4)));
+    const anaApp = app.durableObject.connect(anaId);
+    const ctx = {} as ExecutionContext;
+
+    vi.setSystemTime(new Date('2026-11-09T00:05:00Z'));
+    await runCron(app.env, ctx);
+    expect(await value<{ challenge: ChallengeView }>(query(ana, 'challenge'))).toMatchObject({ challenge: { id, state: 'failed', closed: false } });
+
+    vi.setSystemTime(new Date('2026-11-10T00:05:00Z'));
+    await new Cron(ctx, app.env).tick();
+    expect(await value(query(ana, 'challenge'))).toEqual({ challenge: null });
     expect(anaApp.sent).toEqual([
       { type: 'changed', topics: ['challenge', 'history'] },
       { type: 'changed', topics: ['challenge', 'history'] },
