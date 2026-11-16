@@ -105,7 +105,7 @@ Each step rereads the whole conversation, so long sessions and back-and-forth co
 - `src/ui` - React components. All colors, fonts and spacing live in `src/ui/theme/tokens.css`.
 - `server/application` - the server's use cases (`GroupService`), synchronous, on the `Sql`/`Clock`/`IdGenerator` ports; `schema.ts` holds the migrations.
 - `server/infrastructure`, `server/entry` - Durable Object, Worker, Google sign-in, cookies. `server/testing` - `node:sqlite` for tests, and the Worker with the Durable Object in Node (ADR-010).
-- `wrangler.jsonc` - the Worker: assets, Durable Object, cron, vars. Secrets via `wrangler secret put`; locally in `.dev.vars` (see `.dev.vars.example`).
+- `wrangler.jsonc` - the Worker: assets, Durable Object, vars. No cron trigger here: the Worker `cron-central` calls the `Cron` entrypoint (`runCron`) every 5 min (ADR-014). Secrets via `wrangler secret put`; locally in `.dev.vars` (see `.dev.vars.example`).
 - `public/` - static files: manifest, icons, `_headers`.
 - `network-policy.ts` - the servers the app (`ALLOWED_ORIGINS`, `IMAGE_ORIGINS`) and the Worker (`SERVER_ORIGINS`) may talk to.
 - `scripts/` - `check-docs.mjs` (run by CI), `setup-repo.mjs` (once per new repository), `vapid-key.mjs` (the reminder's push key, ADR-012), and `ship.mjs` and `branches.mjs` (see Commands).

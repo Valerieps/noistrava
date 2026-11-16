@@ -457,7 +457,7 @@ describe('activities from Strava (ADR-008)', () => {
 
     // The cron finds nothing left to bring.
     calls.length = 0;
-    await worker.scheduled({} as ScheduledController, app.env, {} as ExecutionContext);
+    await runCron(app.env, {} as ExecutionContext);
     expect(calls).toEqual([]);
   });
 
@@ -628,7 +628,7 @@ describe('the Group Durable Object', () => {
     const { id } = await value<ChallengeView>(command(ana, 'challenge.create', week));
     await value(command(ana, 'activity.create', run('2026-11-02T08:00:00Z', 4)));
     const anaApp = app.durableObject.connect(anaId);
-    const cron = () => worker.scheduled({} as ScheduledController, app.env, {} as ExecutionContext);
+    const cron = () => runCron(app.env, {} as ExecutionContext);
 
     vi.setSystemTime(new Date('2026-11-09T00:05:00Z'));
     await cron();

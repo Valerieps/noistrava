@@ -33,3 +33,5 @@ for the cron (two deploys, two origins); Firebase (a second vendor, and its SDK 
 fix is the US$ 5 Workers Paid plan, not a redesign. One object serves one group: an app for many
 independent groups needs one object per group (`idFromName(groupId)`), a new ADR. The data cannot
 be browsed in a dashboard as with D1: an admin export is the usual answer.
+
+**Update (2026-11-16):** the cron trigger moved to the Worker `cron-central` (ADR-014); the cadence and `tick` are unchanged.
