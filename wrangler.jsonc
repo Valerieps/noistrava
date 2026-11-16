@@ -1,4 +1,4 @@
-// Cloudflare Worker: the app's files, the API, the live connection and the cron (ADR-004).
+// Cloudflare Worker: the app's files, the API, the live connection; the cron comes from `cron-central` (ADR-014).
 // Secrets are not here: set GOOGLE_CLIENT_SECRET and BOOTSTRAP_ADMIN_EMAILS with
 // `npx wrangler secret put <NAME>`, and locally in .dev.vars (see .dev.vars.example). VAPID_KEY,
 // for the reminder's pushes (ADR-012), comes from `node scripts/vapid-key.mjs`.
@@ -18,8 +18,9 @@
   },
   // Never edit a shipped migration; add the next tag.
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Group"] }],
-  // One cron for every time-based job; each job decides whether it is due (GroupService.tick).
-  "triggers": { "crons": ["*/5 * * * *"] },
+  // No cron here: the central Worker `cron-central` calls this Worker's `Cron.tick()` every 5
+  // minutes (ADR-014). The empty list is what removes the schedule on Cloudflare; deleting the key does not.
+  "triggers": { "crons": [] },
   "vars": {
     // Public: the OAuth client ID from Google Cloud. The secret is a secret.
     "GOOGLE_CLIENT_ID": "625557632408-gerfknglms3tulge4v9utgo9bn41otbu.apps.googleusercontent.com",

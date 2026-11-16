@@ -11,14 +11,14 @@ O desenho técnico que o código não mostra sozinho.
 
 - **App:** web app (Vite + React + TypeScript), instalável (PWA). Fala só com a própria origem.
 - **Servidor:** um Cloudflare Worker serve os arquivos do app, a API em `/api`, a conexão ao vivo e
-  o cron. Todos os dados do grupo ficam num único Durable Object, `Group`, com SQLite. Ver ADR-004.
+  o cron, que vem do Worker `cron-central` (ADR-014). Todos os dados do grupo ficam num único Durable Object, `Group`, com SQLite. Ver ADR-004.
 - **Login:** Google, pelo fluxo de código OAuth no Worker, com cookie de sessão. Ver ADR-005.
 
 ```
 app (celular) ──POST /api/query|command──► Worker ──RPC──► Group (Durable Object, SQLite)
      ▲                                       ▲                    │
      └──────── WebSocket /api/live ──────────┘                    │ "mudou: members, invites…"
-                                             cron 5 min ──► tick  ▼
+                                             cron-central 5 min ► tick ▼
                                                      todos os apps abertos refazem a consulta
 ```
 
@@ -103,7 +103,7 @@ app (celular) ──POST /api/query|command──► Worker ──RPC──► G
   desafio já fechado.
 - **Resposta ao convite, edição do desafio:** recalculam o total na mesma transação, então aceitar
   tarde ou baixar a meta pode terminar o desafio com sucesso na hora.
-- **Cron (`tick`, a cada 5 minutos):** termina sem sucesso o desafio cujo `ends_at` passou e fecha o
+- **Cron (`tick`, a cada 5 minutos, chamado pelo Worker `cron-central` por service binding, ADR-014):** termina sem sucesso o desafio cujo `ends_at` passou e fecha o
   que passou do `closes_at`, gravando `challenge_results`. Cancelar fecha na hora.
 - **Integrante removida:** apaga as atividades dela, os corações, a conexão com o Strava e o
   lembrete com os aparelhos, e recalcula os desafios abertos.
